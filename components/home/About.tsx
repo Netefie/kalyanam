@@ -15,7 +15,7 @@ export default function About() {
             <div className="about-image-wrapper">
               <div className="about-image">
                 <Image
-                  src="/about.webp"
+                  src="/icon1.avif"
                   alt="Kalyanam Hotel"
                   fill
                   priority
@@ -82,18 +82,17 @@ export default function About() {
       </section>
 
       {/* CSS will come here */}
-      <style jsx>{`
+      <style >{`
       .about-section {
   background: #FCF7F1;
-  padding: 3rem 0;
+  padding: 2rem 0;
 }
 
 .about-container {
-  max-width: 1600px;
+  max-width: 1270px;
   margin: 0 auto;
-  padding: 0 4rem;
-}
-
+  padding: 2rem 2rem 1rem 2rem;
+      }
 .about-grid {
   display: grid;
   grid-template-columns: 40% 60%;
@@ -108,6 +107,7 @@ export default function About() {
 .about-image {
   position: relative;
   width: 100%;
+   border-radius: 12px;
   height: 480px;
   overflow: hidden;
 }
@@ -146,7 +146,7 @@ export default function About() {
 .about-description {
   font-family: var(--font-lato);
   font-size: 14px;
-  line-height: 1.7;
+  line-height: 1.6;
   color: #656565;
   max-width: 460px;
   margin: 0;
@@ -185,7 +185,7 @@ export default function About() {
   display: inline-block;
   position: relative;
   color: #A87749;
-  padding-bottom: 3px;
+  padding-bottom: 0px;
 }
 
 .link-text::after {
@@ -215,6 +215,7 @@ export default function About() {
 }
 
 .about-link:hover .arrow {
+ color: #A87749;
   transform: translateX(5px);
 }
 

@@ -77,7 +77,7 @@ export default function Experience() {
             <div className="experience-image">
 
               <Image
-                src="/experience.webp"
+                src="/icon2.jpg"
                 alt="Luxury Stay"
                 fill
               />
@@ -89,24 +89,25 @@ export default function Experience() {
         </div>
       </section>
 
-      <style jsx>{`
+      <style >{`
         .experience-section {
   background: #FCF7F1;
-  padding: 3rem 0;
+  padding: 2rem 0rem 1rem 0rem;
 }
 
 .experience-container {
-  max-width: 1400px;
+  width: 90%;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 0 2.5rem;
-  display: flex;
-  justify-content: space-between;
+
+  display: grid;
+  grid-template-columns: 45% 55%;
+  gap: 2rem;
   align-items: center;
-  gap: 5rem;
 }
 
 .experience-content {
-  width: 45%;
+  width: 100%;
 }
 
 .experience-heading {
@@ -149,7 +150,8 @@ export default function Experience() {
 }
 
 .experience-image-wrapper {
-  width: 40%;
+  width: 100%;
+  
 }
 
 .experience-image {
@@ -162,15 +164,24 @@ export default function Experience() {
 
 .experience-image :global(img) {
   object-fit: cover;
+    object-position: 65% center;
 }
 
 /* Tablet */
+/* =========================
+   TABLET
+========================= */
 
 @media (max-width: 1024px) {
+
+  .experience-section {
+    padding: 3rem 0;
+  }
+
   .experience-container {
-    flex-direction: column;
-    gap: 4rem;
-    padding: 0 2rem;
+    width: 90%;
+    grid-template-columns: 1fr;
+    gap: 3rem;
   }
 
   .experience-content,
@@ -178,38 +189,13 @@ export default function Experience() {
     width: 100%;
   }
 
-  .experience-title {
-    font-size: 48px;
-  }
-
-  .experience-description p {
-    font-size: 17px;
-    line-height: 1.9;
-  }
-
-  .experience-image {
-    height: 500px;
-  }
-}
-
-/* Mobile */
-
-@media (max-width: 768px) {
-  .experience-section {
-    padding: 4rem 0;
-  }
-
-  .experience-container {
-    padding: 0 1.5rem;
+  .experience-heading {
+    margin-bottom: 0.8rem;
   }
 
   .experience-title {
-    font-size: 36px;
+    font-size: 38px;
     line-height: 1.2;
-  }
-
-  .experience-subtitle {
-    font-size: 13px;
   }
 
   .experience-description p {
@@ -218,7 +204,87 @@ export default function Experience() {
   }
 
   .experience-image {
-    height: 320px;
+    height: 500px;
+  }
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 768px) {
+
+  .experience-section {
+    padding: 2.5rem 0;
+  }
+
+  .experience-container {
+    width: 92%;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .experience-content,
+  .experience-image-wrapper {
+    width: 100%;
+  }
+
+  .experience-heading {
+    gap: 10px;
+    margin-bottom: 0.8rem;
+  }
+
+  .experience-subtitle {
+    font-size: 12px;
+    letter-spacing: 0.06em;
+  }
+
+  .experience-title {
+    font-size: 30px;
+    line-height: 1.2;
+  }
+
+  .experience-description {
+    gap: 0.8rem;
+  }
+
+  .experience-description p {
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .experience-image {
+    height: 360px;
+  }
+}
+
+/* =========================
+   SMALL MOBILE
+========================= */
+
+@media (max-width: 480px) {
+
+  .experience-container {
+    width: 94%;
+    gap: 1.5rem;
+  }
+
+  .experience-title {
+    font-size: 26px;
+  }
+
+  .experience-subtitle {
+    font-size: 11px;
+  }
+
+  .experience-description p {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .experience-image {
+    height: 280px;
+    border-radius: 10px;
   }
 }
       `}</style>

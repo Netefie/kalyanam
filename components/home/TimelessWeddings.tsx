@@ -11,7 +11,7 @@ const weddingSlides = [
     shortTitle: "A RESPLENDENT AFFAIR",
     description:
       "We understand that your special day deserves nothing short of perfection, and our dedicated team is here to craft an unforgettable wedding experience that surpasses your imagination.",
-    image: "/1.png",
+    image: "/1.jpg",
   },
   {
     id: 2,
@@ -19,7 +19,7 @@ const weddingSlides = [
     shortTitle: "EXQUISITE MATRIMONIAL CEREMONIES",
     description:
       "Celebrate timeless traditions amidst elegant décor, majestic venues and impeccable hospitality designed for unforgettable matrimonial ceremonies.",
-    image: "/2.png",
+    image: "/2.avif",
   },
   {
     id: 3,
@@ -27,7 +27,7 @@ const weddingSlides = [
     shortTitle: "PICTURE PERFECT SHOOTS",
     description:
       "Every corner of Kalyanam is thoughtfully designed to become the perfect backdrop for your pre-wedding, wedding and post-wedding memories.",
-    image: "/3.png",
+    image: "/3.jpg",
   },
   {
     id: 4,
@@ -35,7 +35,7 @@ const weddingSlides = [
     shortTitle: "LUXURY RECEPTIONS",
     description:
       "Celebrate your grand reception with luxurious interiors, curated dining experiences and flawless hospitality that leaves every guest delighted.",
-    image: "/4.png",
+    image: "/4.jpg",
   },
 ];
 
@@ -74,7 +74,12 @@ export default function TimelessWeddings() {
   return (
     <>
       <section className="timeless-section">
-        <div className="wrapper">
+
+        {/* =======================
+            DESKTOP (UNCHANGED)
+        ======================== */}
+
+        <div className="wrapper desktop-view">
 
           {/* Previous Panel */}
 
@@ -121,6 +126,7 @@ export default function TimelessWeddings() {
               <button className="discover-btn">
                 Discover More
               </button>
+
             </div>
 
           </div>
@@ -141,337 +147,440 @@ export default function TimelessWeddings() {
           </div>
 
         </div>
+
+        {/* =======================
+            MOBILE ONLY
+        ======================== */}
+
+        <div className="mobile-carousel">
+
+          {weddingSlides.map((slide) => (
+
+            <div
+              className="mobile-card"
+              key={slide.id}
+            >
+
+              <div className="mobile-image">
+
+                <Image
+                  src={slide.image}
+                  alt={slide.title}
+                  fill
+                />
+
+              </div>
+
+              <div className="mobile-content">
+
+                <h2>{slide.title}</h2>
+
+                <p>{slide.description}</p>
+
+                <button className="discover-btn">
+                  Discover More
+                </button>
+
+              </div>
+
+            </div>
+
+          ))}
+
+        </div>
+
       </section>
-<style jsx>{`
-  .timeless-section {
-    background: #2b2929;;
-    padding: 50px 0;
-    overflow: hidden;
-  }
 
-  .wrapper {
-    width: 100%;
-    max-width: 1800px;
-    margin: auto;
+      <style>{`
+      .timeless-section {
+  background: #2b2929;
+  padding: 50px 0;
+  overflow: hidden;
+}
 
-    display: grid;
-    grid-template-columns: 0.60fr 1fr 0.60fr;
-    gap: 40px;
-    align-items: stretch;
-  }
+/* ===========================
+   DESKTOP
+=========================== */
 
-  /* ---------- SIDE PANELS ---------- */
+.desktop-view{
+  display:grid;
+}
 
-  .side-panel {
-    background: #2c2925;
-    border: 1px solid rgba(255,255,255,.35);
-    position: relative;
+.mobile-carousel{
+  display:none;
+}
 
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.wrapper{
+  width:100%;
+  max-width:1800px;
+  margin:auto;
 
-    min-height: 300px;
+  display:grid;
+  grid-template-columns:.60fr 1fr .60fr;
 
-    transition: .35s ease;
-  }
+  gap:40px;
+  align-items:stretch;
+}
 
-  .side-panel:hover{
-    background:#34302b;
-  }
+/* ---------- SIDE PANELS ---------- */
 
-  .side-panel h3{
-    color:#fff;
+.side-panel{
+  background:#2c2925;
+  border:1px solid rgba(255,255,255,.35);
 
-    font-family:"Cormorant Garamond", serif;
+  position:relative;
 
-    font-size:28px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
 
-    font-weight:400;
+  min-height:300px;
 
-    line-height:1.2;
+  transition:.35s;
+}
 
-    text-align:center;
+.side-panel:hover{
+  background:#34302b;
+}
 
-    text-transform:uppercase;
+.side-panel h3{
 
-    letter-spacing:.5px;
+  color:#fff;
 
-    max-width:180px;
+  font-family:"Cormorant Garamond",serif;
 
-    transition:.35s ease;
-  }
+  font-size:28px;
 
-  .circle-btn{
-    position:absolute;
+  font-weight:400;
 
-    width:62px;
-    height:62px;
+  line-height:1.2;
 
-    border-radius:50%;
+  text-align:center;
 
-    border:1px solid rgba(255,255,255,.8);
+  text-transform:uppercase;
 
-    background:transparent;
+  max-width:180px;
+}
 
-    color:#fff;
+.circle-btn{
 
-    display:flex;
-    align-items:center;
-    justify-content:center;
+  position:absolute;
 
-    cursor:pointer;
+  width:62px;
+  height:62px;
 
-    transition:.35s ease;
-  }
+  border-radius:50%;
 
-  .circle-btn:hover{
-    background:white;
-    color:#2c2925;
-    transform:scale(1.08);
-  }
+  border:1px solid rgba(255,255,255,.8);
 
-  .left .circle-btn{
-    left:38px;
-  }
+  background:transparent;
 
-  .right .circle-btn{
-    right:38px;
-  }
+  color:#fff;
 
-  /* ---------- CENTER ---------- */
+  display:flex;
+  align-items:center;
+  justify-content:center;
 
-  .center-card{
-    background:white;
-    overflow:hidden;
-    display:flex;
-    flex-direction:column;
-  }
-
-  .image-wrapper{
-    position:relative;
-    width:100%;
-    height:280px;
-    overflow:hidden;
-  }
+  cursor:pointer;
 
-  .image{
-    object-fit:cover;
-    transition:transform .8s ease;
-  }
-
-  .center-card:hover .image{
-    transform:scale(1.04);
-  }
+  transition:.3s;
+}
 
-  .content{
-    padding:10px 20px;
-    text-align:center;
-    transition:.4s ease;
-    min-height:80px;
-  }
+.circle-btn:hover{
 
-  .content h2{
-    font-family:"Cormorant Garamond", serif;
-    font-size:28px;
-    font-weight:400;
-    color:#55473b;
-    margin-bottom:2px;
-    letter-spacing:.5px;
-  }
+  background:#fff;
+  color:#2c2925;
+}
 
-  .content p{
-    max-width:760px;
-    margin:auto;
-    color:#666;
-    font-size:14px;
-    line-height:1.8;
-  }
+.left .circle-btn{
+  left:38px;
+}
 
-  .discover-btn{
+.right .circle-btn{
+  right:38px;
+}
 
-    margin-top:12px;
+/* ---------- CENTER CARD ---------- */
 
-    border:none;
+.center-card{
 
-    background:none;
+  background:#fff;
 
-    color:#a87a2d;
+  display:flex;
+  flex-direction:column;
 
-    font-size:17px;
+  overflow:hidden;
+}
 
-    cursor:pointer;
+.image-wrapper{
 
-    letter-spacing:1px;
+  position:relative;
 
-    transition:.3s;
-  }
+  width:100%;
 
-  .discover-btn:hover{
-    color:#7f5b18;
-  }
+  height:280px;
+}
 
-  /* ---------- ANIMATION ---------- */
+.image{
 
-  .fade-in{
-    animation:imageFade .6s ease forwards;
-  }
+  object-fit:cover;
 
-  .fade-out{
-    opacity:0;
-    transform:scale(1.06);
-    transition:.25s;
-  }
+  transition:.8s;
+}
 
-  .content-in{
-    animation:textFade .55s ease;
-  }
+.center-card:hover .image{
 
-  .content-out{
-    opacity:0;
-    transform:translateY(25px);
-    transition:.25s;
-  }
+  transform:scale(1.04);
+}
 
-  @keyframes imageFade{
+.content{
 
-    from{
-      opacity:0;
-      transform:scale(1.08);
-    }
+  padding:16px 20px;
 
-    to{
-      opacity:1;
-      transform:scale(1);
-    }
+  text-align:center;
+}
 
-  }
+.content h2{
 
-  @keyframes textFade{
+  font-family:"Cormorant Garamond",serif;
 
-    from{
-      opacity:0;
-      transform:translateY(25px);
-    }
+  font-size:28px;
 
-    to{
-      opacity:1;
-      transform:translateY(0);
-    }
+  color:#55473b;
 
-  }
+  font-weight:400;
 
-  /* ---------- TABLET ---------- */
+  margin-bottom:8px;
+}
 
-  @media(max-width:1200px){
+.content p{
 
-    .wrapper{
-      grid-template-columns:240px 1fr 240px;
-      gap:25px;
-    }
+  max-width:760px;
 
-    .side-panel{
-      min-height:600px;
-    }
+  margin:auto;
 
-    .side-panel h3{
-      font-size:30px;
-    }
+  color:#666;
 
-    .image-wrapper{
-      height:450px;
-    }
+  font-size:14px;
 
-    .content{
-      padding:45px;
-    }
+  line-height:1.8;
+}
 
-  }
+.discover-btn{
 
-  @media(max-width:992px){
+  margin-top:18px;
 
-    .wrapper{
-      grid-template-columns:1fr;
-    }
+  background:none;
 
-    .side-panel{
-      min-height:170px;
-    }
+  border:none;
 
-    .left{
-      order:2;
-    }
+  color:#a87a2d;
 
-    .center-card{
-      order:1;
-    }
+  cursor:pointer;
 
-    .right{
-      order:3;
-    }
+  font-size:17px;
 
-    .side-panel h3{
-      max-width:none;
-      font-size:26px;
-    }
+  letter-spacing:1px;
+}
 
-    .circle-btn{
-      position:static;
-      margin:0 25px;
-    }
+/* ---------- ANIMATION ---------- */
 
-    .left,
-    .right{
-      display:flex;
-      justify-content:center;
-      gap:30px;
-      flex-direction:row;
-    }
+.fade-in{
+  animation:imageFade .6s ease forwards;
+}
 
-    .image-wrapper{
-      height:400px;
-    }
+.fade-out{
+  opacity:0;
+  transform:scale(1.05);
+}
 
-  }
+.content-in{
+  animation:textFade .5s ease;
+}
 
-  @media(max-width:768px){
+.content-out{
+  opacity:0;
+  transform:translateY(20px);
+}
 
-    .timeless-section{
-      padding:60px 0;
-    }
+@keyframes imageFade{
 
-    .wrapper{
-      width:95%;
-      gap:18px;
-    }
+from{
+opacity:0;
+transform:scale(1.05);
+}
 
-    .image-wrapper{
-      height:280px;
-    }
+to{
+opacity:1;
+transform:scale(1);
+}
 
-    .content{
-      padding:30px 22px;
-    }
+}
 
-    .content h2{
-      font-size:30px;
-    }
+@keyframes textFade{
 
-    .content p{
-      font-size:16px;
-    }
+from{
+opacity:0;
+transform:translateY(20px);
+}
 
-    .side-panel h3{
-      font-size:20px;
-    }
+to{
+opacity:1;
+transform:translateY(0);
+}
 
-    .circle-btn{
-      width:50px;
-      height:50px;
-    }
+}
 
-  }
-      `}</style>
+/* ==========================================================
+                     MOBILE (TAJ STYLE)
+========================================================== */
+
+@media (max-width:992px){
+
+.desktop-view{
+display:none;
+}
+
+.mobile-carousel{
+
+display:flex;
+
+overflow-x:auto;
+
+overflow-y:hidden;
+
+gap:18px;
+
+padding:0 10%;
+
+scroll-snap-type:x mandatory;
+
+scroll-padding:0 10%;
+
+-webkit-overflow-scrolling:touch;
+
+scrollbar-width:none;
+}
+
+.mobile-carousel::-webkit-scrollbar{
+display:none;
+}
+
+.mobile-card{
+
+flex:0 0 85%;
+
+background:#fff;
+
+scroll-snap-align:center;
+
+border-radius:4px;
+
+overflow:hidden;
+
+box-shadow:0 8px 25px rgba(0,0,0,.18);
+}
+
+.mobile-image{
+
+position:relative;
+
+width:100%;
+
+height:240px;
+}
+
+.mobile-image img{
+
+object-fit:cover;
+}
+
+.mobile-content{
+
+padding:22px;
+
+text-align:center;
+}
+
+.mobile-content h2{
+
+font-family:"Cormorant Garamond",serif;
+
+font-size:24px;
+
+font-weight:400;
+
+color:#55473b;
+
+margin-bottom:10px;
+}
+
+.mobile-content p{
+
+font-size:14px;
+
+line-height:1.8;
+
+color:#666;
+}
+
+.mobile-content .discover-btn{
+
+margin-top:18px;
+
+background:none;
+
+border:none;
+
+color:#a87a2d;
+
+font-size:16px;
+}
+
+}
+
+/* ==========================================================
+                     SMALL MOBILE
+========================================================== */
+
+@media (max-width:768px){
+
+.mobile-carousel{
+
+padding:0 4%;
+
+gap:16px;
+}
+
+.mobile-card{
+
+flex:0 0 76%;
+}
+
+.mobile-image{
+
+height:210px;
+}
+
+.mobile-content{
+
+padding:18px;
+}
+
+.mobile-content h2{
+
+font-size:22px;
+}
+
+.mobile-content p{
+
+font-size:13px;
+
+line-height:1.7;
+}
+
+}
+`}</style>
     </>
   );
 }

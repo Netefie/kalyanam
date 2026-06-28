@@ -53,14 +53,14 @@ export default function Celebration() {
         </div>
       </section>
 
-      <style jsx>{`
+      <style >{`
         .celebration-section {
           background: #fcf7f1;
           padding: 30px 20px;
         }
 
         .celebration-container {
-          max-width: 1180px;
+          max-width: 1200px;
           margin: 0 auto;
           text-align: center;
         }
@@ -92,13 +92,13 @@ export default function Celebration() {
         }
 
  .explore-btn {
-  margin-top: 60px;
+  margin-top: 16px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 18px;
-
-  padding: 18px 42px;
+ border-radius: 6px;
+  padding: 10px 22px;
 
   background: #9D6D45;
   color: #fff;
@@ -125,11 +125,14 @@ export default function Celebration() {
   font-size: 24px;
   font-weight: 700;
   line-height: 1;
+  color: #fff;
   transition: transform .35s ease;
 }
 
 .explore-btn:hover .arrow {
   transform: translateX(6px);
+  color: #9D6D45;
+  
 }
 
         @media (max-width:1024px){
