@@ -8,6 +8,7 @@ import StoriesSection from "@/components/home/StoriesSection";
 import MomentsSection from "@/components/home/MomentsSection";
 import KaaraRestaurantSection from "@/components/home/KaaraRestaurantSection";
 
+
 export default function Home() {
   return (
     <main>

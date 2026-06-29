@@ -1,6 +1,7 @@
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import OfferPopup from "@/components/popup/OfferPopup";
+import Footer from "@/components/layout/Footer";
 
 import {
   Playfair_Display,
@@ -72,13 +73,18 @@ export default function RootLayout({
         ${pinyon.variable}
       `}
     >
-      <body className="overflow-x-hidden">
+      <body className="overflow-x-hidden bg-[#FCF8F2] text-black">
+
         <Navbar />
 
-        {/* Newsletter Popup */}
         <OfferPopup />
 
-        {children}
+        <main>
+          {children}
+        </main>
+
+        <Footer />
+
       </body>
     </html>
   );
