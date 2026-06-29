@@ -7,6 +7,8 @@ import {
   Inter,
   Lato,
   Montserrat,
+  Cormorant_Garamond,
+  Pinyon_Script,
 } from "next/font/google";
 
 const playfair = Playfair_Display({
@@ -34,6 +36,25 @@ const montserrat = Montserrat({
   display: "swap",
 });
 
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-cormorant",
+  display: "swap",
+});
+
+const pinyon = Pinyon_Script({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-pinyon",
+  display: "swap",
+});
+
+export const metadata = {
+  title: "Kalyanam Hotel & Resort",
+  description: "Luxury stays, weddings & celebrations.",
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -47,9 +68,11 @@ export default function RootLayout({
         ${inter.variable}
         ${lato.variable}
         ${montserrat.variable}
+        ${cormorant.variable}
+        ${pinyon.variable}
       `}
     >
-      <body>
+      <body className="overflow-x-hidden">
         <Navbar />
 
         {/* Newsletter Popup */}
