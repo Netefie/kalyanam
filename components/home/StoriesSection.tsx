@@ -116,7 +116,7 @@ export default function StoriesSection() {
       <style>{`
       .stories-section{
   background:#FCF7F1;
-  padding:50px 0;
+  padding:30px 0;
 }
 
 .stories-container{

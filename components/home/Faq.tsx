@@ -104,7 +104,10 @@ export default function Faq() {
     faqData[activeTab as keyof typeof faqData];
       return (
     <>
-      <section className="faq-section">
+      <section
+  id="faq"
+  className="faq-section"
+>
 
         <div className="faq-container">
 
@@ -223,7 +226,7 @@ export default function Faq() {
 .faq-section {
   width: 90%;
   background: #FCF7F1;
-  padding: 10px 0;
+  padding: 50px 0;
   margin: 0 auto; /* Centers the section horizontally */
   display: flex;
   justify-content: center; /* Centers child elements horizontally */

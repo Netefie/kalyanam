@@ -168,7 +168,7 @@ export default function Footer() {
 
                 <li>
                   <Link
-                    href="/restaurant"
+                    href="/kaara"
                     className="footer-reveal"
                   >
                     Kaara Rooftop
@@ -291,13 +291,13 @@ export default function Footer() {
                 </li>
 
                 <li>
-                  <Link
-                    href="/faq"
-                    className="footer-reveal"
-                  >
-                    FAQs
-                  </Link>
-                </li>
+  <Link
+    href="/#faq"
+    className="footer-reveal"
+  >
+    FAQs
+  </Link>
+</li>
 
               </ul>
 
