@@ -1,7 +1,5 @@
 import "./globals.css";
-import Navbar from "@/components/layout/Navbar";
-import OfferPopup from "@/components/popup/OfferPopup";
-import Footer from "@/components/layout/Footer";
+import LayoutWrapper from "@/components/LayoutWrapper";
 
 import {
   Playfair_Display,
@@ -75,17 +73,11 @@ export default function RootLayout({
     >
       <body className="overflow-x-hidden bg-[#FCF8F2] text-black">
 
-        <Navbar />
+  <LayoutWrapper>
+    {children}
+  </LayoutWrapper>
 
-        <OfferPopup />
-
-        <main>
-          {children}
-        </main>
-
-        <Footer />
-
-      </body>
+</body>
     </html>
   );
 }

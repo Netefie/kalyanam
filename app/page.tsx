@@ -1,3 +1,4 @@
+import HeroSection from "@/components/home/HeroSection";
 import About from "@/components/home/About";
 import Experience from "@/components/home/Experience";
 import Celebration from "@/components/home/Celebration";
@@ -13,7 +14,7 @@ export default function Home() {
   return (
     <main>
       {/* Hero Section */}
-      
+      <HeroSection />
       {/* About Section */}
       <About />
 
