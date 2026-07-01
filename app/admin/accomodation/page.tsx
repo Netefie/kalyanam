@@ -12,12 +12,7 @@ import {
 
 import AccommodationTabs from "../components/AccommodationTabs";
 import RoomTypes from "../components/RoomTypes";
-import PhysicalRooms from "../components/PhysicalRooms";
-import Pricing from "../components/Pricing";
-import Amenities from "../components/Amenities";
-import Gallery from "../components/Gallery";
-import Availability from "../components/Availability";
-import Policies from "../components/Policies";
+
 
 export default function AccommodationPage() {
 
@@ -109,38 +104,7 @@ export default function AccommodationPage() {
 
         {/* Content */}
 
-        <div className="contentCard">
-
-          {tab === "roomTypes" && (
-            <RoomTypes />
-          )}
-
-          {tab === "physicalRooms" && (
-            <PhysicalRooms />
-          )}
-
-          {tab === "pricing" && (
-            <Pricing />
-          )}
-
-          {tab === "amenities" && (
-            <Amenities />
-          )}
-
-          {tab === "gallery" && (
-            <Gallery />
-          )}
-
-          {tab === "availability" && (
-            <Availability />
-          )}
-
-          {tab === "policies" && (
-            <Policies />
-          )}
-
-        </div>
-
+       
       </div>
 
       <style jsx>{`
