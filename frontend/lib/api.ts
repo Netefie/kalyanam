@@ -164,6 +164,12 @@ export const api = {
     list: () => request<Room[]>("/rooms"),
     listAll: () => request<Room[]>("/rooms?all=true", { auth: true }),
     get: (slug: string) => request<Room>(`/rooms/${slug}`),
+    availability: (slug: string, checkIn: string, checkOut: string) =>
+      request<{ slug: string; total: number; booked: number; available: number }>(
+        `/rooms/${slug}/availability?checkIn=${encodeURIComponent(
+          checkIn
+        )}&checkOut=${encodeURIComponent(checkOut)}`
+      ),
     create: (data: Partial<Room>) =>
       request<Room>("/rooms", { method: "POST", body: data, auth: true }),
     update: (id: string, data: Partial<Room>) =>

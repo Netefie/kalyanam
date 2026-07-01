@@ -7,19 +7,29 @@ interface PriceCardProps {
   room: Room;
   nights: number;
   roomsSelected: number;
+  availableForDates?: number;
 }
 
 export default function PriceCard({
   room,
   nights,
   roomsSelected,
+  availableForDates,
 }: PriceCardProps) {
   const { setBooking } = useBookingContext();
 
   const total = room.offerPrice * nights * roomsSelected;
   const originalTotal = room.price * nights * roomsSelected;
 
+  const soldOut = availableForDates === 0;
+  const notEnough =
+    typeof availableForDates === "number" &&
+    availableForDates > 0 &&
+    availableForDates < roomsSelected;
+  const selectDisabled = soldOut || notEnough;
+
   const handleSelectRoom = () => {
+    if (selectDisabled) return;
     setBooking((prev) => ({
       ...prev,
       selectedRoom: room,
@@ -82,23 +92,44 @@ export default function PriceCard({
 
       </div>
 
+      {typeof availableForDates === "number" && (
+        <p
+          className={`mt-4 text-sm font-medium ${
+            soldOut ? "text-red-600" : "text-green-700"
+          }`}
+        >
+          {soldOut
+            ? "Sold out for your dates"
+            : `${availableForDates} room${
+                availableForDates > 1 ? "s" : ""
+              } left for your dates`}
+        </p>
+      )}
+
       <button
         onClick={handleSelectRoom}
-        className="
-          mt-6
+        disabled={selectDisabled}
+        className={`
+          mt-4
           w-full
           rounded-lg
-          bg-[#B68D40]
           py-3
           font-semibold
           text-white
           transition-all
           duration-300
-          hover:bg-[#9f7b37]
-          active:scale-[0.98]
-        "
+          ${
+            selectDisabled
+              ? "cursor-not-allowed bg-gray-300"
+              : "bg-[#B68D40] hover:bg-[#9f7b37] active:scale-[0.98]"
+          }
+        `}
       >
-        Select Room
+        {soldOut
+          ? "Sold Out"
+          : notEnough
+          ? `Only ${availableForDates} available`
+          : "Select Room"}
       </button>
     </div>
   );

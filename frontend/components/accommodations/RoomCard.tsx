@@ -20,12 +20,14 @@ interface RoomCardProps {
   room: Room;
   nights: number;
   roomsSelected: number;
+  availableForDates?: number;
 }
 
 export default function RoomCard({
   room,
   nights,
   roomsSelected,
+  availableForDates,
 }: RoomCardProps) {
   return (
     <div
@@ -99,6 +101,7 @@ export default function RoomCard({
                 room={room}
                 nights={nights}
                 roomsSelected={roomsSelected}
+                availableForDates={availableForDates}
               />
             </div>
           </div>

@@ -16,7 +16,7 @@ import PersonalDetails from "@/components/accommodations/PersonalDetails";
 // import BookingSuccess from "@/components/accommodations/BookingSuccess";
 
 function BookingContent() {
-  const { booking } = useBookingContext();
+  const { booking, resetBooking } = useBookingContext();
 
   return (
     <>
@@ -84,6 +84,15 @@ function BookingContent() {
                 Booking Reference: {booking.bookingCode}
               </p>
             )}
+
+            <div className="mt-8">
+              <button
+                onClick={resetBooking}
+                className="rounded-lg bg-[#B68D40] px-8 py-3 font-semibold text-white transition hover:bg-[#9f7b37]"
+              >
+                Book Another Stay
+              </button>
+            </div>
           </div>
         </section>
       )}

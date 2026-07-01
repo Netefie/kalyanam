@@ -53,6 +53,9 @@ export default function AvailableRooms() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // slug -> rooms still available for the selected dates.
+  const [availability, setAvailability] = useState<Record<string, number>>({});
+
   useEffect(() => {
     let cancelled = false;
     api.rooms
@@ -70,6 +73,39 @@ export default function AvailableRooms() {
       cancelled = true;
     };
   }, []);
+
+  // Once dates are chosen, ask the backend how many of each room are actually
+  // free for that range (so guests can't select sold-out rooms).
+  const checkInISO = booking.checkIn?.toISOString();
+  const checkOutISO = booking.checkOut?.toISOString();
+
+  useEffect(() => {
+    if (!checkInISO || !checkOutISO || rooms.length === 0) {
+      setAvailability({});
+      return;
+    }
+
+    let cancelled = false;
+    Promise.all(
+      rooms.map((room) =>
+        api.rooms
+          .availability(room.slug, checkInISO, checkOutISO)
+          .then((res) => [room.slug, res.available] as const)
+          .catch(() => [room.slug, undefined] as const)
+      )
+    ).then((entries) => {
+      if (cancelled) return;
+      const map: Record<string, number> = {};
+      for (const [slug, available] of entries) {
+        if (typeof available === "number") map[slug] = available;
+      }
+      setAvailability(map);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [checkInISO, checkOutISO, rooms]);
 
   const filteredRooms = rooms.filter((room) => {
     // Before search show all rooms
@@ -92,7 +128,7 @@ export default function AvailableRooms() {
   });
 
   return (
-    <section className="py-8 bg-[#faf8f3]">
+    <section id="available-rooms" className="py-8 bg-[#faf8f3]">
       <div className="max-w-7xl mx-auto px-6">
 
         <div className="mb-4">
@@ -144,6 +180,7 @@ export default function AvailableRooms() {
                 room={room}
                 nights={nights}
                 roomsSelected={booking.rooms}
+                availableForDates={availability[room.slug]}
               />
             ))}
           </div>
