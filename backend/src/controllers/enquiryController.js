@@ -1,10 +1,25 @@
 import { Enquiry } from "../models/Enquiry.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { requireFields, isEmail, check } from "../utils/validate.js";
 
 // POST /api/enquiries  (public) — reservation popup + contact form.
 export const createEnquiry = asyncHandler(async (req, res) => {
-  const enquiry = await Enquiry.create(req.body);
+  const type = req.body.type === "contact" ? "contact" : "reservation";
+
+  if (type === "contact") {
+    // Contact form: we need a way to reply.
+    requireFields(req.body, ["name", "email", "message"]);
+    check(isEmail(req.body.email), "A valid email address is required");
+  } else {
+    // Reservation "check availability": at minimum which room they want.
+    requireFields(req.body, ["roomType"]);
+    if (req.body.email) {
+      check(isEmail(req.body.email), "A valid email address is required");
+    }
+  }
+
+  const enquiry = await Enquiry.create({ ...req.body, type });
   res.status(201).json(enquiry);
 });
 

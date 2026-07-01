@@ -59,6 +59,8 @@ Base URL: `/api`
 | POST | `/blogs` | ✅ | Create post |
 | PUT | `/blogs/:id` | ✅ | Update post |
 | DELETE | `/blogs/:id` | ✅ | Delete post |
+| GET | `/settings` | – | Site settings (contact, policies, socials); auto-creates defaults |
+| PUT | `/settings` | ✅ | Update site settings |
 | GET | `/dashboard/stats` | ✅ | Admin dashboard stat cards |
 | GET | `/health` | – | Health check |
 

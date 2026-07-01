@@ -5,6 +5,7 @@ import { bookingRouter } from "./bookingRoutes.js";
 import { enquiryRouter } from "./enquiryRoutes.js";
 import { dashboardRouter } from "./dashboardRoutes.js";
 import { blogRouter } from "./blogRoutes.js";
+import { settingsRouter } from "./settingsRoutes.js";
 
 export const apiRouter = Router();
 
@@ -14,3 +15,4 @@ apiRouter.use("/bookings", bookingRouter);
 apiRouter.use("/enquiries", enquiryRouter);
 apiRouter.use("/dashboard", dashboardRouter);
 apiRouter.use("/blogs", blogRouter);
+apiRouter.use("/settings", settingsRouter);
