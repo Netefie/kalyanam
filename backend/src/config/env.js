@@ -36,6 +36,18 @@ export const env = {
     .map((o) => o.trim())
     .filter(Boolean),
 
+  // SMTP (transactional email). Leave blank to disable — the app then simply
+  // skips sending instead of erroring. Fill in later with your provider's
+  // host + an app password.
+  smtp: {
+    host: process.env.SMTP_HOST || "",
+    port: Number(process.env.SMTP_PORT) || 587,
+    secure: process.env.SMTP_SECURE === "true", // true for port 465
+    user: process.env.SMTP_USER || "",
+    pass: process.env.SMTP_PASS || "",
+    from: process.env.MAIL_FROM || "Kalyanam Hotel & Resort <no-reply@kalyanam.com>",
+  },
+
   // Seed admin credentials (used only by `npm run seed`).
   seedAdmin: {
     name: process.env.SEED_ADMIN_NAME || "Kalyanam Admin",

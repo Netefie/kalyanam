@@ -3,6 +3,8 @@ import { RoomType } from "../models/RoomType.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { getAvailableCount } from "../services/availability.js";
+import { sendMail } from "../services/mailer.js";
+import { bookingConfirmationEmail } from "../emails/bookingConfirmation.js";
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
@@ -67,6 +69,13 @@ export const createBooking = asyncHandler(async (req, res) => {
     status: "Pending",
     source: "website",
   });
+
+  // Fire-and-forget: a slow/failed email must never block or fail the booking.
+  // No-ops silently until SMTP is configured in the environment.
+  sendMail({
+    to: booking.guest.email,
+    ...bookingConfirmationEmail(booking),
+  }).catch((err) => console.error("[mail] confirmation failed:", err.message));
 
   res.status(201).json(booking);
 });
