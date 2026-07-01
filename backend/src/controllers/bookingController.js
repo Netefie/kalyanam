@@ -2,6 +2,7 @@ import { Booking } from "../models/Booking.js";
 import { RoomType } from "../models/RoomType.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { getAvailableCount } from "../services/availability.js";
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
@@ -39,6 +40,18 @@ export const createBooking = asyncHandler(async (req, res) => {
   const roomCount = Math.max(1, Number(rooms) || 1);
   const nightlyRate = room.offerPrice ?? room.price;
   const amount = nightlyRate * nights * roomCount;
+
+  // Block overbooking: requested rooms must fit within remaining inventory
+  // for the selected dates.
+  const { available } = await getAvailableCount(room, inDate, outDate);
+  if (roomCount > available) {
+    throw new ApiError(
+      409,
+      available > 0
+        ? `Only ${available} room(s) left for the selected dates`
+        : "No rooms available for the selected dates"
+    );
+  }
 
   const booking = await Booking.create({
     guest,

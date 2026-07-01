@@ -38,12 +38,14 @@ Base URL: `/api`
 | ------ | ---- | ---- | ----------- |
 | POST | `/auth/login` | – | Login, returns `{ token, admin }` |
 | GET | `/auth/me` | ✅ | Current admin |
+| PATCH | `/auth/password` | ✅ | Change own password (`currentPassword`, `newPassword`) |
 | GET | `/rooms` | – | List active rooms (`?all=true` + auth → include inactive) |
 | GET | `/rooms/:slug` | – | Single room |
+| GET | `/rooms/:slug/availability` | – | Rooms free for `?checkIn&checkOut` → `{ total, booked, available }` |
 | POST | `/rooms` | ✅ | Create room type |
 | PUT | `/rooms/:id` | ✅ | Update room type |
 | DELETE | `/rooms/:id` | ✅ | Delete room type |
-| POST | `/bookings` | – | Create booking (website) |
+| POST | `/bookings` | – | Create booking (website); priced server-side, blocks overbooking |
 | GET | `/bookings` | ✅ | List bookings (`?page&limit&status&search`) |
 | GET | `/bookings/:id` | ✅ | Single booking |
 | PATCH | `/bookings/:id/status` | ✅ | Update status |
@@ -52,6 +54,11 @@ Base URL: `/api`
 | GET | `/enquiries` | ✅ | List enquiries (`?page&limit&type&status`) |
 | PATCH | `/enquiries/:id` | ✅ | Update status |
 | DELETE | `/enquiries/:id` | ✅ | Delete enquiry |
+| GET | `/blogs` | – | List published posts (`?page&limit`; `?all=true` + auth → drafts) |
+| GET | `/blogs/:slug` | – | Single post |
+| POST | `/blogs` | ✅ | Create post |
+| PUT | `/blogs/:id` | ✅ | Update post |
+| DELETE | `/blogs/:id` | ✅ | Delete post |
 | GET | `/dashboard/stats` | ✅ | Admin dashboard stat cards |
 | GET | `/health` | – | Health check |
 

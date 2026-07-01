@@ -37,3 +37,26 @@ export const me = asyncHandler(async (req, res) => {
   if (!admin) throw new ApiError(404, "Admin not found");
   res.json({ id: admin._id, name: admin.name, email: admin.email, role: admin.role });
 });
+
+// PATCH /api/auth/password  (protected) — change own password.
+export const changePassword = asyncHandler(async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    throw new ApiError(400, "Current and new password are required");
+  }
+  if (String(newPassword).length < 8) {
+    throw new ApiError(400, "New password must be at least 8 characters");
+  }
+
+  const admin = await Admin.findById(req.admin.sub).select("+passwordHash");
+  if (!admin) throw new ApiError(404, "Admin not found");
+
+  const ok = await admin.comparePassword(currentPassword);
+  if (!ok) throw new ApiError(401, "Current password is incorrect");
+
+  admin.password = newPassword; // hashed by the pre-validate hook
+  await admin.save();
+
+  res.json({ success: true });
+});

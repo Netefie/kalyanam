@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   listRooms,
   getRoom,
+  getRoomAvailability,
   createRoom,
   updateRoom,
   deleteRoom,
@@ -12,6 +13,7 @@ export const roomRouter = Router();
 
 // Public reads (optionalAuth lets admins add ?all=true for inactive rooms).
 roomRouter.get("/", optionalAuth, listRooms);
+roomRouter.get("/:slug/availability", getRoomAvailability);
 roomRouter.get("/:slug", getRoom);
 
 // Admin-only writes.
