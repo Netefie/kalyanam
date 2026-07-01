@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Kalyanam
 
-## Getting Started
+Hotel & wedding venue website with a public site + admin panel (Next.js) and a
+lean Node + MongoDB API.
 
-First, run the development server:
+## Structure
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+kalyanam/
+├── frontend/   Next.js app — public site + /admin panel (talks to the API)
+└── backend/    Node + Express + MongoDB (Mongoose) REST API
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Each app has its own `package.json` and is installed/run independently.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Getting started
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 1. Backend
 
-## Learn More
+```bash
+cd backend
+cp .env.example .env          # set MONGODB_URI (Atlas free M0) + JWT_SECRET
+npm install
+npm run seed                  # creates admin + seeds room types
+npm run dev                   # http://localhost:5000
+```
 
-To learn more about Next.js, take a look at the following resources:
+See [backend/README.md](backend/README.md) for the full API reference and the
+cost-optimization notes (single lean service, Atlas M0, stateless JWT).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+> **macOS note:** port 5000 is used by AirPlay Receiver. If the backend can't
+> bind to it, run on another port (`PORT=5055 npm run dev`) and set
+> `NEXT_PUBLIC_API_URL` in the frontend to match.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 2. Frontend
 
-## Deploy on Vercel
+```bash
+cd frontend
+cp .env.example .env.local     # set NEXT_PUBLIC_API_URL to the backend URL
+npm install
+npm run dev                    # http://localhost:3000
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Admin panel: `http://localhost:3000/admin/login`
+(default seeded admin — `admin@kalyanam.com` / `Kalyanam@346`).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## What talks to what
+
+- Public booking flow (`/accommodations`) → `POST /api/bookings` (priced server-side)
+- Reservation popup + contact form → `POST /api/enquiries`
+- Admin login → `POST /api/auth/login` (JWT stored client-side; route-guarded)
+- Admin bookings / rooms / dashboard → the corresponding protected `/api/*` routes
+
+## Deploy
+
+- **Backend:** Render / Railway / Fly.io free tier + MongoDB Atlas M0. Build
+  `npm install`, start `npm start`, set `NODE_ENV=production`, `MONGODB_URI`,
+  `JWT_SECRET`, `CORS_ORIGIN` (your frontend URL).
+- **Frontend:** Vercel / Netlify. Set `NEXT_PUBLIC_API_URL` to the deployed
+  backend URL.
