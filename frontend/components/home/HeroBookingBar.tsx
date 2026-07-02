@@ -86,7 +86,7 @@ export default function HeroBookingBar() {
   };
 
   return (
-    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 w-[95%] max-w-7xl">
+    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 w-[95%] max-w-7xl">
       <div className="backdrop-blur-xl bg-[#5d5048]/75 border border-white/20 rounded-2xl shadow-2xl p-3">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
 
@@ -115,7 +115,7 @@ export default function HeroBookingBar() {
             </button>
 
             {roomOpen && (
-              <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-full rounded-xl border border-white/20 bg-[#4a3f38]/95 backdrop-blur-xl p-2 shadow-2xl">
+              <div className="absolute left-0 bottom-[calc(100%+8px)] z-50 w-full rounded-xl border border-white/20 bg-[#4a3f38]/95 backdrop-blur-xl p-2 shadow-2xl">
                 {roomTypes.map((r) => (
                   <button
                     key={r.id}
@@ -194,7 +194,7 @@ export default function HeroBookingBar() {
             </button>
 
             {guestsOpen && (
-              <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-full min-w-[280px] rounded-xl border border-white/20 bg-[#4a3f38]/95 backdrop-blur-xl p-5 shadow-2xl">
+              <div className="absolute left-0 bottom-[calc(100%+8px)] z-50 w-full min-w-[280px] rounded-xl border border-white/20 bg-[#4a3f38]/95 backdrop-blur-xl p-5 shadow-2xl">
                 <GuestRow
                   label="Adults"
                   value={adults}

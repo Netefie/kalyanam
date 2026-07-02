@@ -3,9 +3,10 @@ import HeroBookingBar from "./HeroBookingBar";
 
 export default function HeroSection() {
   return (
-    <section className="relative w-full h-screen overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0">
+    <section className="relative w-full h-screen">
+      {/* Background (clip the image here, not the whole section, so the
+          booking bar's dropdowns can overflow the hero) */}
+      <div className="absolute inset-0 overflow-hidden">
         <Image
           src="/hero.png"
           alt="Kalyanam Banquet Hall"
