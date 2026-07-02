@@ -27,8 +27,10 @@ export default function HeroBookingBar() {
 
   const [roomType, setRoomType] = useState("");
   const [range, setRange] = useState<DateRange | undefined>();
-  const [checkIn, setCheckIn] = useState<Date | null>(null);
-  const [checkOut, setCheckOut] = useState<Date | null>(null);
+  // Dates come straight from the calendar range — single source of truth so
+  // the label always reflects the current selection.
+  const checkIn = range?.from ?? null;
+  const checkOut = range?.to ?? null;
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(0);
   const [rooms, setRooms] = useState(1);
@@ -115,7 +117,7 @@ export default function HeroBookingBar() {
             </button>
 
             {roomOpen && (
-              <div className="absolute left-0 bottom-[calc(100%+8px)] z-50 w-full rounded-xl border border-white/20 bg-[#4a3f38]/95 backdrop-blur-xl p-2 shadow-2xl">
+              <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-full rounded-xl border border-white/20 bg-[#4a3f38]/95 backdrop-blur-xl p-2 shadow-2xl">
                 {roomTypes.map((r) => (
                   <button
                     key={r.id}
@@ -162,10 +164,7 @@ export default function HeroBookingBar() {
               selected={range}
               onSelect={setRange}
               onClose={() => setCalOpen(false)}
-              onApply={() => {
-                setCheckIn(range?.from ?? null);
-                setCheckOut(range?.to ?? null);
-              }}
+              onApply={() => setCalOpen(false)}
             />
           </div>
 
@@ -194,7 +193,7 @@ export default function HeroBookingBar() {
             </button>
 
             {guestsOpen && (
-              <div className="absolute left-0 bottom-[calc(100%+8px)] z-50 w-full min-w-[280px] rounded-xl border border-white/20 bg-[#4a3f38]/95 backdrop-blur-xl p-5 shadow-2xl">
+              <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-full min-w-[280px] rounded-xl border border-white/20 bg-[#4a3f38]/95 backdrop-blur-xl p-5 shadow-2xl">
                 <GuestRow
                   label="Adults"
                   value={adults}
