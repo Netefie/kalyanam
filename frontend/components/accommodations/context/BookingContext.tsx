@@ -22,6 +22,45 @@ export interface GuestDetails {
   specialRequest: string;
 }
 
+export type GuestErrors = Partial<Record<keyof GuestDetails, string>>;
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Indian GSTIN: 2-digit state + 10-char PAN + entity + 'Z' + checksum.
+const GSTIN_RE = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+
+// Field-level validation for the guest details form.
+export function validateGuestDetails(guest: GuestDetails): GuestErrors {
+  const errors: GuestErrors = {};
+
+  if (!guest.firstName.trim()) {
+    errors.firstName = "First name is required";
+  } else if (guest.firstName.trim().length < 2) {
+    errors.firstName = "Enter a valid first name";
+  }
+
+  if (!guest.email.trim()) {
+    errors.email = "Email address is required";
+  } else if (!EMAIL_RE.test(guest.email.trim())) {
+    errors.email = "Enter a valid email address";
+  }
+
+  const phoneDigits = guest.phone.replace(/\D/g, "");
+  if (!guest.phone.trim()) {
+    errors.phone = "Mobile number is required";
+  } else if (phoneDigits.length < 10 || phoneDigits.length > 15) {
+    errors.phone = "Enter a valid mobile number";
+  }
+
+  if (
+    guest.gstNumber.trim() &&
+    !GSTIN_RE.test(guest.gstNumber.trim().toUpperCase())
+  ) {
+    errors.gstNumber = "Enter a valid 15-character GSTIN";
+  }
+
+  return errors;
+}
+
 export interface BookingState {
   roomType: string;
 
@@ -55,6 +94,10 @@ interface BookingContextType {
   resetBooking: () => void;
 
   nights: number;
+
+  guestErrors: GuestErrors;
+
+  setGuestErrors: Dispatch<SetStateAction<GuestErrors>>;
 }
 
 const initialBookingState: BookingState = {
@@ -108,8 +151,11 @@ export function BookingProvider({
   const [booking, setBooking] =
     useState<BookingState>(initialBookingState);
 
+  const [guestErrors, setGuestErrors] = useState<GuestErrors>({});
+
   const resetBooking = () => {
     setBooking(initialBookingState);
+    setGuestErrors({});
   };
 
   const nights = useMemo(() => {
@@ -137,6 +183,8 @@ export function BookingProvider({
         setBooking,
         resetBooking,
         nights,
+        guestErrors,
+        setGuestErrors,
       }}
     >
       {children}

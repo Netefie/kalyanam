@@ -3,11 +3,15 @@
 import { useState } from "react";
 import Image from "next/image";
 import { CalendarDays, Users, BedDouble } from "lucide-react";
+import { format } from "date-fns";
 
-import { useBookingContext } from "./context/BookingContext";
+import {
+  useBookingContext,
+  validateGuestDetails,
+} from "./context/BookingContext";
 
 export default function BookingSummary() {
-  const { booking, setBooking, nights } = useBookingContext();
+  const { booking, setBooking, nights, setGuestErrors } = useBookingContext();
 
   const [error, setError] = useState("");
 
@@ -23,14 +27,17 @@ export default function BookingSummary() {
       return;
     }
 
-    const { firstName, email, phone } = booking.guest;
-    if (!firstName || !email || !phone) {
-      setError("Please enter your name, email and phone to continue.");
+    const errors = validateGuestDetails(booking.guest);
+    if (Object.keys(errors).length > 0) {
+      setGuestErrors(errors);
+      setError("Please complete the highlighted fields.");
+      window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
     // Proceed to the review / payment-confirmation step (the booking is
     // created there). Scroll up so the next step starts at the top.
+    setGuestErrors({});
     setBooking((prev) => ({ ...prev, currentStep: 3 }));
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -91,7 +98,7 @@ export default function BookingSummary() {
 
                 <p className="font-medium">
                   {booking.checkIn
-                    ? booking.checkIn.toLocaleDateString()
+                    ? format(booking.checkIn, "dd MMM yyyy")
                     : "--"}
                 </p>
               </div>
@@ -110,7 +117,7 @@ export default function BookingSummary() {
 
                 <p className="font-medium">
                   {booking.checkOut
-                    ? booking.checkOut.toLocaleDateString()
+                    ? format(booking.checkOut, "dd MMM yyyy")
                     : "--"}
                 </p>
               </div>
@@ -128,10 +135,12 @@ export default function BookingSummary() {
                 </p>
 
                 <p className="font-medium">
-                  {booking.adults} Adults
+                  {booking.adults} Adult{booking.adults > 1 ? "s" : ""}
 
                   {booking.children > 0 &&
-                    ` • ${booking.children} Children`}
+                    ` • ${booking.children} Child${
+                      booking.children > 1 ? "ren" : ""
+                    }`}
                 </p>
               </div>
             </div>
