@@ -45,7 +45,6 @@ export default function PaymentConfirmation() {
       });
 
       setBooking((prev) => ({ ...prev, bookingCode: created.bookingCode, currentStep: 4 }));
-      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       // Keep availability errors generic (don't expose inventory counts).
       if (err instanceof ApiError && err.status === 409) {

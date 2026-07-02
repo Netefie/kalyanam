@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import {
   BookingProvider,
   useBookingContext,
@@ -20,6 +20,18 @@ import PaymentConfirmation from "@/components/accommodations/PaymentConfirmation
 
 function BookingContent() {
   const { booking, setBooking, resetBooking } = useBookingContext();
+
+  // Keep the step section in view when moving between steps, so changing step
+  // never dumps the user at the hero or leaves them scrolled past the form.
+  const prevStep = useRef(booking.currentStep);
+  useEffect(() => {
+    if (prevStep.current !== booking.currentStep) {
+      prevStep.current = booking.currentStep;
+      document
+        .getElementById("booking-steps")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [booking.currentStep]);
 
   // Prefill "PLAN YOUR STAY" from ?roomType&checkIn&checkOut&adults&children&rooms
   // (set by the hero bar / navbar reservation widget) and auto-run the search.
@@ -54,8 +66,10 @@ function BookingContent() {
       {/* Hero */}
       <HeroAcc />
 
-      {/* Booking Progress */}
-      <BookingSteps currentStep={booking.currentStep} />
+      {/* Booking Progress (scroll anchor for step changes; offset for navbar) */}
+      <div id="booking-steps" className="scroll-mt-28">
+        <BookingSteps currentStep={booking.currentStep} />
+      </div>
 
       {/* STEP 1 */}
       {booking.currentStep === 1 && (

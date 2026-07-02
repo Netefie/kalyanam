@@ -31,15 +31,16 @@ export default function BookingSummary() {
     if (Object.keys(errors).length > 0) {
       setGuestErrors(errors);
       setError("Please complete the highlighted fields.");
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      document
+        .getElementById("booking-steps")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
       return;
     }
 
     // Proceed to the review / payment-confirmation step (the booking is
-    // created there). Scroll up so the next step starts at the top.
+    // created there). The page scrolls to the step section on step change.
     setGuestErrors({});
     setBooking((prev) => ({ ...prev, currentStep: 3 }));
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const subtotal =
