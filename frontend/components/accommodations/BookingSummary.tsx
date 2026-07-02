@@ -5,19 +5,17 @@ import Image from "next/image";
 import { CalendarDays, Users, BedDouble } from "lucide-react";
 
 import { useBookingContext } from "./context/BookingContext";
-import { api, ApiError } from "@/lib/api";
 
 export default function BookingSummary() {
   const { booking, setBooking, nights } = useBookingContext();
 
-  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   if (!booking.selectedRoom) return null;
 
   const room = booking.selectedRoom;
 
-  const handleConfirm = async () => {
+  const handleContinue = () => {
     setError("");
 
     if (!booking.checkIn || !booking.checkOut) {
@@ -31,32 +29,10 @@ export default function BookingSummary() {
       return;
     }
 
-    setSubmitting(true);
-    try {
-      const created = await api.bookings.create({
-        guest: booking.guest,
-        roomSlug: room.slug,
-        checkIn: booking.checkIn.toISOString(),
-        checkOut: booking.checkOut.toISOString(),
-        adults: booking.adults,
-        children: booking.children,
-        rooms: booking.rooms,
-      });
-
-      setBooking((prev) => ({
-        ...prev,
-        bookingCode: created.bookingCode,
-        currentStep: 4,
-      }));
-    } catch (err) {
-      setError(
-        err instanceof ApiError
-          ? err.message
-          : "Could not confirm your booking. Please try again."
-      );
-    } finally {
-      setSubmitting(false);
-    }
+    // Proceed to the review / payment-confirmation step (the booking is
+    // created there). Scroll up so the next step starts at the top.
+    setBooking((prev) => ({ ...prev, currentStep: 3 }));
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const subtotal =
@@ -231,8 +207,7 @@ export default function BookingSummary() {
           )}
 
           <button
-            onClick={handleConfirm}
-            disabled={submitting}
+            onClick={handleContinue}
             className="
               mt-8
               w-full
@@ -242,11 +217,9 @@ export default function BookingSummary() {
               text-white
               transition
               hover:bg-[#9f7b37]
-              disabled:opacity-70
-              disabled:cursor-not-allowed
             "
           >
-            {submitting ? "Confirming…" : "Confirm Booking"}
+            Continue to Payment
           </button>
 
         </div>

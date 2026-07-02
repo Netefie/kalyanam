@@ -12,6 +12,7 @@ import BookingSteps from "@/components/accommodations/BookingSteps";
 import BookingSearchBar from "@/components/accommodations/BookingSearchBar";
 import AvailableRooms from "@/components/accommodations/AvailableRooms";
 import PersonalDetails from "@/components/accommodations/PersonalDetails";
+import PaymentConfirmation from "@/components/accommodations/PaymentConfirmation";
 
 // Future Components
 // import PaymentDetails from "@/components/accommodations/PaymentDetails";
@@ -72,24 +73,9 @@ function BookingContent() {
         <PersonalDetails />
       )}
 
-      {/* STEP 3 */}
+      {/* STEP 3 — review + confirm (creates the booking) */}
       {booking.currentStep === 3 && (
-        <section className="py-24">
-          <div className="mx-auto max-w-7xl px-6 text-center">
-            <h2
-              className="text-5xl text-[#2d2d2d]"
-              style={{
-                fontFamily: "Cormorant Garamond",
-              }}
-            >
-              Payment Details
-            </h2>
-
-            <p className="mt-4 text-gray-500">
-              Payment module will be implemented next.
-            </p>
-          </div>
-        </section>
+        <PaymentConfirmation />
       )}
 
       {/* STEP 4 */}

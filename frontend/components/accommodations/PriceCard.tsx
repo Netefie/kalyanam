@@ -21,12 +21,11 @@ export default function PriceCard({
   const total = room.offerPrice * nights * roomsSelected;
   const originalTotal = room.price * nights * roomsSelected;
 
-  const soldOut = availableForDates === 0;
-  const notEnough =
-    typeof availableForDates === "number" &&
-    availableForDates > 0 &&
-    availableForDates < roomsSelected;
-  const selectDisabled = soldOut || notEnough;
+  // Availability is only known once dates are picked. "Available" means there
+  // are at least as many rooms free as the guest selected — no counts shown.
+  const availabilityKnown = typeof availableForDates === "number";
+  const available = !availabilityKnown || availableForDates >= roomsSelected;
+  const selectDisabled = availabilityKnown && !available;
 
   const handleSelectRoom = () => {
     if (selectDisabled) return;
@@ -92,17 +91,18 @@ export default function PriceCard({
 
       </div>
 
-      {typeof availableForDates === "number" && (
+      {availabilityKnown && (
         <p
-          className={`mt-4 text-sm font-medium ${
-            soldOut ? "text-red-600" : "text-green-700"
+          className={`mt-4 flex items-center gap-2 text-sm font-medium ${
+            available ? "text-green-700" : "text-red-600"
           }`}
         >
-          {soldOut
-            ? "Sold out for your dates"
-            : `${availableForDates} room${
-                availableForDates > 1 ? "s" : ""
-              } left for your dates`}
+          <span
+            className={`inline-block h-2 w-2 rounded-full ${
+              available ? "bg-green-600" : "bg-red-500"
+            }`}
+          />
+          {available ? "Available for your dates" : "Not available for your dates"}
         </p>
       )}
 
@@ -125,11 +125,7 @@ export default function PriceCard({
           }
         `}
       >
-        {soldOut
-          ? "Sold Out"
-          : notEnough
-          ? `Only ${availableForDates} available`
-          : "Select Room"}
+        {selectDisabled ? "Sold Out" : "Select Room"}
       </button>
     </div>
   );
