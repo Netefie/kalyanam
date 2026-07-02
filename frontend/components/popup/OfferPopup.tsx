@@ -1,9 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { api, ApiError } from "@/lib/api";
 
 export default function OfferPopup() {
   const [open, setOpen] = useState(false);
+
+  const [form, setForm] = useState({ name: "", phone: "", email: "" });
+  const [status, setStatus] = useState<"idle" | "sending" | "done">("idle");
+  const [error, setError] = useState("");
+
+  const set = (key: keyof typeof form, value: string) =>
+    setForm((f) => ({ ...f, [key]: value }));
 
   useEffect(() => {
     const alreadyShown = localStorage.getItem("kalyanam-popup");
@@ -24,12 +32,24 @@ export default function OfferPopup() {
     localStorage.setItem("kalyanam-popup", "true");
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    setStatus("sending");
 
-    alert("Thank you for subscribing!");
-
-    closePopup();
+    try {
+      await api.subscribers.create(form);
+      setStatus("done");
+      // Show the thank-you briefly, then dismiss (won't show again).
+      setTimeout(closePopup, 1800);
+    } catch (err) {
+      setStatus("idle");
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : "Could not subscribe right now. Please try again."
+      );
+    }
   };
 
   if (!open) return null;
@@ -66,25 +86,46 @@ export default function OfferPopup() {
               type="text"
               placeholder="Name"
               required
+              value={form.name}
+              onChange={(e) => set("name", e.target.value)}
             />
 
             <input
               type="tel"
               placeholder="Mobile Number"
               required
+              value={form.phone}
+              onChange={(e) => set("phone", e.target.value)}
             />
 
             <input
               type="email"
               placeholder="Email Address"
               required
+              value={form.email}
+              onChange={(e) => set("email", e.target.value)}
             />
+
+            {error && (
+              <p className="feedback error">{error}</p>
+            )}
+
+            {status === "done" && (
+              <p className="feedback success">
+                Thank you for subscribing!
+              </p>
+            )}
 
             <button
               type="submit"
               className="subscribe-btn"
+              disabled={status !== "idle"}
             >
-              SUBSCRIBE
+              {status === "sending"
+                ? "SUBSCRIBING…"
+                : status === "done"
+                ? "SUBSCRIBED ✓"
+                : "SUBSCRIBE"}
             </button>
 
           </form>
@@ -221,6 +262,31 @@ input:focus{
 
 .subscribe-btn:hover{
   background:#8B603C;
+}
+
+.subscribe-btn:disabled{
+  opacity:.75;
+  cursor:not-allowed;
+}
+
+.feedback{
+  margin:4px 0 0;
+  padding:10px 14px;
+  border-radius:6px;
+  font-family:var(--font-lato);
+  font-size:14px;
+}
+
+.feedback.error{
+  background:#FDECEC;
+  border:1px solid #F5C6C6;
+  color:#B91C1C;
+}
+
+.feedback.success{
+  background:#E9F7EF;
+  border:1px solid #BFE6CF;
+  color:#1B7A44;
 }
 
 .follow-text{

@@ -1,6 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
-import { Building2, CalendarDays, Users, ChevronDown } from "lucide-react";
+import HeroBookingBar from "./HeroBookingBar";
 
 export default function HeroSection() {
   return (
@@ -45,69 +44,8 @@ export default function HeroSection() {
         </div>
       </div>
 
-      {/* Floating Booking Search */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 w-[95%] max-w-7xl">
-        <div className="backdrop-blur-xl bg-[#5d5048]/75 border border-white/20 rounded-2xl shadow-2xl p-3">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
-
-            {/* Hotel */}
-            <button className="flex items-center justify-between px-6 h-20 border border-white/30 rounded-xl text-white hover:bg-white/10 transition">
-  <div className="flex items-center gap-4">
-    <Building2 size={28} />
-    <div className="text-left">
-      <p className="text-xs uppercase tracking-widest text-white/60">
-        Room
-      </p>
-      <p className="text-lg">Select Room</p>
-    </div>
-  </div>
-
-  <ChevronDown />
-</button>
-
-            {/* Date */}
-            <button className="flex items-center justify-between px-6 h-20 border border-white/30 rounded-xl text-white hover:bg-white/10 transition">
-              <div className="flex items-center gap-4">
-                <CalendarDays size={28} />
-                <div className="text-left">
-                  <p className="text-xs uppercase tracking-widest text-white/60">
-                    Date
-                  </p>
-                  <p className="text-lg">Check-in • Check-out</p>
-                </div>
-              </div>
-              <ChevronDown />
-            </button>
-
-            {/* Guests */}
-            <button className="flex items-center justify-between px-6 h-20 border border-white/30 rounded-xl text-white hover:bg-white/10 transition">
-              <div className="flex items-center gap-4">
-                <Users size={28} />
-                <div className="text-left">
-                  <p className="text-xs uppercase tracking-widest text-white/60">
-                    Guests
-                  </p>
-                  <p className="text-lg truncate">
-                    1 Room, 2 Adults
-                  </p>
-                </div>
-              </div>
-              <ChevronDown />
-            </button>
-
-           
-
-            {/* Book */}
-            <Link
-  href="/accommodations"
-  className="h-20 rounded-xl bg-[#d8b46b] text-black font-semibold text-lg hover:bg-[#e5c47c] transition flex items-center justify-center tracking-wide"
->
-  BOOK NOW
-</Link>
-
-          </div>
-        </div>
-      </div>
+      {/* Floating Booking Search (functional) */}
+      <HeroBookingBar />
     </section>
   );
 }

@@ -31,7 +31,8 @@ export const env = {
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "7d",
 
   // Comma-separated list of allowed browser origins for CORS.
-  corsOrigins: (process.env.CORS_ORIGIN || "http://localhost:3000")
+  // Dev default covers Next on :3000 and its fallback :3001.
+  corsOrigins: (process.env.CORS_ORIGIN || "http://localhost:3000,http://localhost:3001")
     .split(",")
     .map((o) => o.trim())
     .filter(Boolean),

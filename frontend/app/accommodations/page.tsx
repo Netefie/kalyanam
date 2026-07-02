@@ -1,9 +1,11 @@
 "use client";
 
+import { useEffect } from "react";
 import {
   BookingProvider,
   useBookingContext,
 } from "@/components/accommodations/context/BookingContext";
+import { readReservationParams } from "@/lib/reservation";
 
 import HeroAcc from "@/components/accommodations/HeroAcc";
 import BookingSteps from "@/components/accommodations/BookingSteps";
@@ -16,7 +18,35 @@ import PersonalDetails from "@/components/accommodations/PersonalDetails";
 // import BookingSuccess from "@/components/accommodations/BookingSuccess";
 
 function BookingContent() {
-  const { booking, resetBooking } = useBookingContext();
+  const { booking, setBooking, resetBooking } = useBookingContext();
+
+  // Prefill "PLAN YOUR STAY" from ?roomType&checkIn&checkOut&adults&children&rooms
+  // (set by the hero bar / navbar reservation widget) and auto-run the search.
+  useEffect(() => {
+    const parsed = readReservationParams(window.location.search);
+    if (!parsed) return;
+
+    setBooking((prev) => ({
+      ...prev,
+      roomType: parsed.roomType || prev.roomType,
+      checkIn: parsed.checkIn ?? prev.checkIn,
+      checkOut: parsed.checkOut ?? prev.checkOut,
+      adults: parsed.adults ?? prev.adults,
+      children: parsed.children ?? prev.children,
+      rooms: parsed.rooms ?? prev.rooms,
+      currentStep: 1,
+      // Auto-run the search only when dates are present.
+      searched: parsed.hasDates ? true : prev.searched,
+    }));
+
+    if (parsed.hasDates) {
+      setTimeout(() => {
+        document
+          .getElementById("available-rooms")
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 300);
+    }
+  }, [setBooking]);
 
   return (
     <>

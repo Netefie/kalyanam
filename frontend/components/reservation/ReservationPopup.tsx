@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { api, ApiError } from "@/lib/api";
+import { useRouter } from "next/navigation";
+import { buildAccommodationsUrl } from "@/lib/reservation";
 
 type Props = {
   open: boolean;
@@ -15,7 +16,7 @@ export default function ReservationPopup({
   const popupRef = useRef<HTMLDivElement>(null);
 
   const [roomType, setRoomType] =
-    useState("Deluxe Room");
+    useState("deluxe-room");
 
   const [checkIn, setCheckIn] =
     useState("");
@@ -29,8 +30,9 @@ const [adults, setAdults] = useState(2);
 
 const [children, setChildren] = useState(0);
 
-const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
 const [error, setError] = useState("");
+
+const router = useRouter();
 
   useEffect(() => {
     function handleClickOutside(
@@ -63,33 +65,30 @@ const [error, setError] = useState("");
 
   if (!open) return null;
 
-async function handleSubmit(
+function handleSubmit(
   e: React.FormEvent
 ) {
   e.preventDefault();
   setError("");
-  setStatus("sending");
 
-  try {
-    await api.enquiries.create({
-      type: "reservation",
+  if (!checkIn || !checkOut) {
+    setError("Please select your check-in and check-out dates.");
+    return;
+  }
+
+  // Carry the selection to the accommodations page, which prefills
+  // "PLAN YOUR STAY" and runs the search automatically.
+  onClose();
+  router.push(
+    buildAccommodationsUrl({
       roomType,
-      rooms,
+      checkIn,
+      checkOut,
       adults,
       children,
-      // Only send dates when picked — avoids casting empty strings to Date.
-      ...(checkIn ? { checkIn } : {}),
-      ...(checkOut ? { checkOut } : {}),
-    });
-    setStatus("sent");
-  } catch (err) {
-    setStatus("idle");
-    setError(
-      err instanceof ApiError
-        ? err.message
-        : "Could not send your request. Please try again."
-    );
-  }
+      rooms,
+    })
+  );
 }
 
   return (
@@ -114,12 +113,12 @@ async function handleSubmit(
                 )
               }
             >
-              <option>
-                Deluxe Room
+              <option value="deluxe-room">
+                Deluxe
               </option>
 
-              <option>
-                Super Deluxe Room
+              <option value="super-deluxe-room">
+                Super Deluxe
               </option>
 
             </select>
@@ -264,23 +263,12 @@ async function handleSubmit(
   <p className="popup-feedback error">{error}</p>
 )}
 
-{status === "sent" && (
-  <p className="popup-feedback success">
-    Request received! Our team will contact you shortly.
-  </p>
-)}
-
 <button
   type="button"
   className="check-btn"
   onClick={handleSubmit}
-  disabled={status === "sending"}
 >
-  {status === "sending"
-    ? "SENDING…"
-    : status === "sent"
-    ? "REQUEST SENT ✓"
-    : "CHECK AVAILABILITY"}
+  CHECK AVAILABILITY
 </button>
 
         </form>

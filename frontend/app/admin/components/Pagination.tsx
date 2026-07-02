@@ -11,6 +11,7 @@ interface PaginationProps {
   totalItems: number;
   pageSize: number;
   onPageChange: (page: number) => void;
+  itemLabel?: string;
 }
 
 // Build a compact page list with ellipses, e.g. [1, "...", 4, 5, 6, "...", 12].
@@ -37,6 +38,7 @@ export default function Pagination({
   totalItems,
   pageSize,
   onPageChange,
+  itemLabel = "bookings",
 }: PaginationProps) {
   const from = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const to = Math.min(currentPage * pageSize, totalItems);
@@ -55,7 +57,7 @@ export default function Pagination({
             <strong>{to}</strong>
             {" "}of{" "}
             <strong>{totalItems}</strong>
-            {" "}bookings
+            {" "}{itemLabel}
           </span>
 
         </div>

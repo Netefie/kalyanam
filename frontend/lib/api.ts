@@ -148,6 +148,24 @@ export interface DashboardStats {
   totalRooms: number;
 }
 
+export interface Enquiry {
+  _id: string;
+  type: "contact" | "reservation";
+  name: string;
+  email: string;
+  phone: string;
+  roomType?: string;
+  checkIn?: string;
+  checkOut?: string;
+  rooms?: number;
+  adults?: number;
+  children?: number;
+  subject?: string;
+  message?: string;
+  status: "new" | "contacted" | "closed";
+  createdAt: string;
+}
+
 /* ----------------------------------- api ---------------------------------- */
 
 export const api = {
@@ -211,15 +229,41 @@ export const api = {
       request("/enquiries", { method: "POST", body: data }),
     list: (params: { page?: number; limit?: number; type?: string; status?: string } = {}) => {
       const qs = new URLSearchParams(
-        Object.entries(params).filter(([, v]) => v != null && v !== "") as [string, string][]
+        Object.entries(params)
+          .filter(([, v]) => v != null && v !== "")
+          .map(([k, v]) => [k, String(v)])
       ).toString();
-      return request<Paginated<Record<string, unknown>>>(`/enquiries${qs ? `?${qs}` : ""}`, {
+      return request<Paginated<Enquiry>>(`/enquiries${qs ? `?${qs}` : ""}`, {
         auth: true,
       });
     },
+    updateStatus: (id: string, status: Enquiry["status"]) =>
+      request<Enquiry>(`/enquiries/${id}`, {
+        method: "PATCH",
+        body: { status },
+        auth: true,
+      }),
+    remove: (id: string) =>
+      request<{ success: boolean }>(`/enquiries/${id}`, { method: "DELETE", auth: true }),
   },
 
   dashboard: {
     stats: () => request<DashboardStats>("/dashboard/stats", { auth: true }),
+  },
+
+  subscribers: {
+    create: (data: { name?: string; email: string; phone?: string }) =>
+      request<{ success: boolean }>("/subscribers", { method: "POST", body: data }),
+    list: (params: { page?: number; limit?: number } = {}) => {
+      const qs = new URLSearchParams(
+        Object.entries(params)
+          .filter(([, v]) => v != null)
+          .map(([k, v]) => [k, String(v)])
+      ).toString();
+      return request<Paginated<{ name: string; email: string; phone: string }>>(
+        `/subscribers${qs ? `?${qs}` : ""}`,
+        { auth: true }
+      );
+    },
   },
 };
