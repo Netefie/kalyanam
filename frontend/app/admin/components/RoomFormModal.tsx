@@ -2,20 +2,16 @@
 
 import { useState } from "react";
 import { X } from "lucide-react";
-import { api, ApiError, type Room } from "@/lib/api";
+import { api, ApiError, type Room, type RatePlan } from "@/lib/api";
+import { slugify } from "@/lib/slugify";
+import RatePlanFields, {
+  DEFAULT_RATE_PLANS,
+} from "./RatePlanFields";
 
 interface RoomFormModalProps {
   room: Room | null; // null → create, otherwise edit
   onClose: () => void;
   onSaved: () => void;
-}
-
-function slugify(value: string) {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
 }
 
 export default function RoomFormModal({
@@ -43,6 +39,12 @@ export default function RoomFormModal({
     active: room?.active ?? true,
   });
 
+  const [ratePlans, setRatePlans] = useState<RatePlan[]>(
+    room?.ratePlans && room.ratePlans.length > 0
+      ? room.ratePlans
+      : DEFAULT_RATE_PLANS
+  );
+
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -59,6 +61,8 @@ export default function RoomFormModal({
       slug: form.slug.trim() || slugify(form.name),
       // Drop offerPrice when zero/blank so it doesn't undercut price.
       offerPrice: form.offerPrice > 0 ? form.offerPrice : undefined,
+      // Drop plans left with no name — an in-progress row the admin didn't finish.
+      ratePlans: ratePlans.filter((plan) => plan.name.trim()),
     };
 
     try {
@@ -130,7 +134,7 @@ export default function RoomFormModal({
 
           <div className="row">
             <div className="field">
-              <label>Price / night (₹)</label>
+              <label>Base price / night (₹)</label>
               <input
                 type="number"
                 min={0}
@@ -140,7 +144,7 @@ export default function RoomFormModal({
               />
             </div>
             <div className="field">
-              <label>Offer price / night (₹)</label>
+              <label>Base offer price / night (₹)</label>
               <input
                 type="number"
                 min={0}
@@ -149,6 +153,10 @@ export default function RoomFormModal({
               />
             </div>
           </div>
+          <p className="hint">
+            Used as a fallback when no rate plans below are configured, and
+            shown elsewhere the room is listed without a specific plan.
+          </p>
 
           <div className="row">
             <div className="field">
@@ -197,6 +205,11 @@ export default function RoomFormModal({
                 onChange={(e) => set("availableRooms", Number(e.target.value))}
               />
             </div>
+          </div>
+
+          <div className="field">
+            <label>Rate plans</label>
+            <RatePlanFields value={ratePlans} onChange={setRatePlans} />
           </div>
 
           <div className="checks">
@@ -318,6 +331,12 @@ export default function RoomFormModal({
           font-size:13px;
           font-weight:600;
           color:#666;
+        }
+
+        .hint{
+          margin:-10px 0 16px;
+          font-size:12px;
+          color:#999;
         }
 
         input,

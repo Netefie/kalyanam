@@ -25,6 +25,12 @@ const bookingSchema = new mongoose.Schema(
     roomType: { type: mongoose.Schema.Types.ObjectId, ref: "RoomType" },
     roomName: { type: String, required: true },
 
+    // Snapshot of the rate plan chosen at booking time (e.g. "Room with
+    // Breakfast"), so later edits to the room's plans don't rewrite history.
+    ratePlanCode: { type: String, default: "" },
+    ratePlanName: { type: String, default: "" },
+    nightlyRate: { type: Number, min: 0 },
+
     checkIn: { type: Date, required: true },
     checkOut: { type: Date, required: true },
     nights: { type: Number, default: 1, min: 1 },

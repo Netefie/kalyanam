@@ -3,6 +3,7 @@ import { RoomType } from "../models/RoomType.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { getAvailableCount } from "../services/availability.js";
+import { findRatePlan } from "../services/ratePlans.js";
 import { sendMail } from "../services/mailer.js";
 import { bookingConfirmationEmail } from "../emails/bookingConfirmation.js";
 
@@ -15,8 +16,17 @@ function nightsBetween(checkIn, checkOut) {
 
 // POST /api/bookings  (public) — created from the website booking flow.
 export const createBooking = asyncHandler(async (req, res) => {
-  const { guest, roomSlug, roomId, checkIn, checkOut, adults, children, rooms } =
-    req.body;
+  const {
+    guest,
+    roomSlug,
+    roomId,
+    ratePlanCode,
+    checkIn,
+    checkOut,
+    adults,
+    children,
+    rooms,
+  } = req.body;
 
   if (!guest?.firstName || !guest?.email || !guest?.phone) {
     throw new ApiError(400, "Guest name, email and phone are required");
@@ -40,7 +50,8 @@ export const createBooking = asyncHandler(async (req, res) => {
 
   const nights = nightsBetween(inDate, outDate);
   const roomCount = Math.max(1, Number(rooms) || 1);
-  const nightlyRate = room.offerPrice ?? room.price;
+  const plan = findRatePlan(room, ratePlanCode);
+  const nightlyRate = plan.offerPrice ?? plan.price;
   const amount = nightlyRate * nights * roomCount;
 
   // Block overbooking: requested rooms must fit within remaining inventory
@@ -59,6 +70,9 @@ export const createBooking = asyncHandler(async (req, res) => {
     guest,
     roomType: room._id,
     roomName: room.name,
+    ratePlanCode: plan.code,
+    ratePlanName: plan.name,
+    nightlyRate,
     checkIn: inDate,
     checkOut: outDate,
     nights,

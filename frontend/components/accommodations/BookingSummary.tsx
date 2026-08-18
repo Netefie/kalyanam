@@ -9,6 +9,7 @@ import {
   useBookingContext,
   validateGuestDetails,
 } from "./context/BookingContext";
+import { computeStayTotals, formatINR, nightlyRate } from "@/lib/pricing";
 
 export default function BookingSummary() {
   const { booking, setBooking, nights, setGuestErrors } = useBookingContext();
@@ -18,6 +19,7 @@ export default function BookingSummary() {
   if (!booking.selectedRoom) return null;
 
   const room = booking.selectedRoom;
+  const plan = booking.selectedRatePlan;
 
   const handleContinue = () => {
     setError("");
@@ -43,14 +45,12 @@ export default function BookingSummary() {
     setBooking((prev) => ({ ...prev, currentStep: 3 }));
   };
 
-  const subtotal =
-    room.offerPrice *
-    nights *
-    booking.rooms;
-
-  const taxes = Math.round(subtotal * 0.18);
-
-  const total = subtotal + taxes;
+  const rate = nightlyRate(plan, room);
+  const { subtotal, taxes, total } = computeStayTotals({
+    rate,
+    nights,
+    rooms: booking.rooms,
+  });
 
   return (
     <div className="sticky top-28">
@@ -77,7 +77,7 @@ export default function BookingSummary() {
           </h2>
 
           <p className="mt-1 text-sm text-gray-500">
-            Premium Accommodation
+            {plan ? plan.name : "Premium Accommodation"}
           </p>
 
           <div className="my-3 border-t border-dashed" />
@@ -174,12 +174,12 @@ export default function BookingSummary() {
             <div className="flex justify-between">
 
               <span className="text-gray-600">
-                ₹{room.offerPrice.toLocaleString()} × {nights} Night
+                {formatINR(rate)} × {nights} Night
                 {nights > 1 ? "s" : ""}
               </span>
 
               <span>
-                ₹{subtotal.toLocaleString()}
+                {formatINR(subtotal)}
               </span>
 
             </div>
@@ -191,7 +191,7 @@ export default function BookingSummary() {
               </span>
 
               <span>
-                ₹{taxes.toLocaleString()}
+                {formatINR(taxes)}
               </span>
 
             </div>
@@ -203,7 +203,7 @@ export default function BookingSummary() {
               </span>
 
               <span className="text-2xl font-bold text-[#B68D40]">
-                ₹{total.toLocaleString()}
+                {formatINR(total)}
               </span>
 
             </div>

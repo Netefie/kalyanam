@@ -10,7 +10,7 @@ import {
   useState,
 } from "react";
 
-import type { Room } from "../AvailableRooms";
+import type { Room, RatePlan } from "../AvailableRooms";
 
 export interface GuestDetails {
   title: string;
@@ -80,6 +80,10 @@ export interface BookingState {
 
   selectedRoom: Room | null;
 
+  // The rate plan chosen on the selected room (Room Only / Room with
+  // Breakfast / ...). Cleared alongside selectedRoom on reset.
+  selectedRatePlan: RatePlan | null;
+
   guest: GuestDetails;
 
   // Set once the booking is created on the backend (shown on confirmation).
@@ -118,6 +122,8 @@ const initialBookingState: BookingState = {
   currentStep: 1,
 
   selectedRoom: null,
+
+  selectedRatePlan: null,
 
   guest: {
     title: "",

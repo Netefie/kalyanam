@@ -1,5 +1,26 @@
 import mongoose from "mongoose";
 
+// A sellable rate for a room type ("Room Only", "Room with Breakfast", ...).
+// Rooms without any rate plan fall back to the room's own price — see
+// services/ratePlans.js, which is the only place that resolution happens.
+const ratePlanSchema = new mongoose.Schema(
+  {
+    code: { type: String, required: true, trim: true, lowercase: true }, // "room-only"
+    name: { type: String, required: true, trim: true }, // "Room with Breakfast"
+    label: { type: String, default: "Standard Rate" }, // small-caps line above the price
+
+    price: { type: Number, required: true, min: 0 }, // rack rate per night, INR
+    offerPrice: { type: Number, min: 0 }, // sell rate per night
+
+    breakfast: { type: Boolean, default: false },
+    refundable: { type: Boolean, default: true },
+
+    inclusions: { type: [String], default: [] }, // bullet lines shown in the card
+    active: { type: Boolean, default: true },
+  },
+  { _id: false }
+);
+
 // One document per bookable room category (Deluxe, Super Deluxe, Suite...).
 // Fields mirror what both the public booking UI and the admin panel render.
 const roomTypeSchema = new mongoose.Schema(
@@ -15,6 +36,9 @@ const roomTypeSchema = new mongoose.Schema(
 
     price: { type: Number, required: true, min: 0 }, // per night, INR
     offerPrice: { type: Number, min: 0 }, // discounted per-night price
+
+    // Sellable rates for this room. Empty means "use the base price above".
+    ratePlans: { type: [ratePlanSchema], default: [] },
 
     size: { type: String, default: "" }, // e.g. "320 sq.ft"
     bed: { type: String, default: "" }, // e.g. "King Bed"

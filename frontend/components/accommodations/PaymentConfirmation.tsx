@@ -6,6 +6,7 @@ import { CalendarDays, Users, BedDouble, ChevronLeft } from "lucide-react";
 
 import { useBookingContext } from "./context/BookingContext";
 import { api, ApiError } from "@/lib/api";
+import { computeStayTotals, formatINR, nightlyRate } from "@/lib/pricing";
 
 export default function PaymentConfirmation() {
   const { booking, setBooking, nights } = useBookingContext();
@@ -16,9 +17,13 @@ export default function PaymentConfirmation() {
   const room = booking.selectedRoom;
   if (!room) return null;
 
-  const subtotal = room.offerPrice * nights * booking.rooms;
-  const taxes = Math.round(subtotal * 0.18);
-  const total = subtotal + taxes;
+  const plan = booking.selectedRatePlan;
+  const rate = nightlyRate(plan, room);
+  const { subtotal, taxes, total } = computeStayTotals({
+    rate,
+    nights,
+    rooms: booking.rooms,
+  });
 
   const fmt = (d: Date | null) => (d ? d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "--");
 
@@ -37,6 +42,7 @@ export default function PaymentConfirmation() {
       const created = await api.bookings.create({
         guest: booking.guest,
         roomSlug: room.slug,
+        ratePlanCode: plan?.code,
         checkIn: booking.checkIn.toISOString(),
         checkOut: booking.checkOut.toISOString(),
         adults: booking.adults,
@@ -83,7 +89,9 @@ export default function PaymentConfirmation() {
               </div>
               <div className="p-6">
                 <h2 className="text-2xl font-semibold text-[#222]">{room.title}</h2>
-                <p className="mt-1 text-sm text-gray-500">Premium Accommodation</p>
+                <p className="mt-1 text-sm text-gray-500">
+                  {plan ? plan.name : "Premium Accommodation"}
+                </p>
 
                 <div className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-4">
                   <Info icon={<CalendarDays size={18} />} label="Check In" value={fmt(booking.checkIn)} />
@@ -117,16 +125,16 @@ export default function PaymentConfirmation() {
 
               <div className="mt-5 space-y-3">
                 <div className="flex justify-between text-gray-600">
-                  <span>₹{room.offerPrice.toLocaleString()} × {nights} × {booking.rooms}</span>
-                  <span>₹{subtotal.toLocaleString()}</span>
+                  <span>{formatINR(rate)} × {nights} × {booking.rooms}</span>
+                  <span>{formatINR(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>Taxes &amp; GST (18%)</span>
-                  <span>₹{taxes.toLocaleString()}</span>
+                  <span>{formatINR(taxes)}</span>
                 </div>
                 <div className="flex justify-between border-t pt-4">
                   <span className="text-xl font-semibold">Total</span>
-                  <span className="text-2xl font-bold text-[#B68D40]">₹{total.toLocaleString()}</span>
+                  <span className="text-2xl font-bold text-[#B68D40]">{formatINR(total)}</span>
                 </div>
               </div>
 

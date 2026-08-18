@@ -12,7 +12,7 @@ export default function ImageGallery({
   title,
 }: Props) {
   return (
-    <div className="relative h-full min-h-320px">
+    <div className="relative h-full">
       <Image
         src={image}
         alt={title}

@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import RoomCard from "./RoomCard";
 import { useBookingContext } from "./context/BookingContext";
-import { api, type Room as ApiRoom } from "@/lib/api";
+import { api, type Room as ApiRoom, type RatePlan } from "@/lib/api";
+
+export type { RatePlan };
 
 export interface Room {
   id: number;
@@ -13,6 +15,7 @@ export interface Room {
   image: string;
   price: number;
   offerPrice: number;
+  ratePlans: RatePlan[];
   rating: number;
   reviews: number;
   size: string;
@@ -35,6 +38,7 @@ function mapRoom(r: ApiRoom, index: number): Room {
     image: r.image,
     price: r.price,
     offerPrice: r.offerPrice ?? r.price,
+    ratePlans: r.ratePlans,
     rating: r.rating,
     reviews: r.reviews,
     size: r.size,
@@ -47,7 +51,7 @@ function mapRoom(r: ApiRoom, index: number): Room {
 }
 
 export default function AvailableRooms() {
-  const { booking, nights } = useBookingContext();
+  const { booking } = useBookingContext();
 
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
@@ -178,7 +182,6 @@ export default function AvailableRooms() {
               <RoomCard
                 key={room.id}
                 room={room}
-                nights={nights}
                 roomsSelected={booking.rooms}
                 availableForDates={availability[room.slug]}
               />

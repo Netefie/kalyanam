@@ -106,7 +106,15 @@ export default function BookingTable({
 
                     </td>
 
-                    <td>{booking.roomName}</td>
+                    <td>
+                      {booking.roomName}
+                      {booking.ratePlanName && (
+                        <>
+                          <br />
+                          <span>{booking.ratePlanName}</span>
+                        </>
+                      )}
+                    </td>
 
                     <td>
                       {formatDate(booking.checkIn)}

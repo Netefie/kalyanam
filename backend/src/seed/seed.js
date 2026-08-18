@@ -27,6 +27,31 @@ const rooms = [
     availableRooms: 5,
     featured: true,
     active: true,
+    ratePlans: [
+      {
+        code: "room-only",
+        name: "Room Only",
+        label: "Standard Rate",
+        price: 5499,
+        offerPrice: 4699,
+        breakfast: false,
+        refundable: false,
+        inclusions: ["Non-Refundable"],
+      },
+      {
+        code: "room-with-breakfast",
+        name: "Room with Breakfast",
+        label: "Standard Rate",
+        price: 5999,
+        offerPrice: 5199,
+        breakfast: true,
+        refundable: true,
+        inclusions: [
+          "Inclusive of a buffet breakfast at a designated dining venue",
+          "Free cancellation",
+        ],
+      },
+    ],
   },
   {
     name: "Super Deluxe Room",
@@ -47,6 +72,31 @@ const rooms = [
     availableRooms: 3,
     featured: false,
     active: true,
+    ratePlans: [
+      {
+        code: "room-only",
+        name: "Room Only",
+        label: "Standard Rate",
+        price: 7499,
+        offerPrice: 6599,
+        breakfast: false,
+        refundable: false,
+        inclusions: ["Non-Refundable"],
+      },
+      {
+        code: "room-with-breakfast",
+        name: "Room with Breakfast",
+        label: "Standard Rate",
+        price: 7999,
+        offerPrice: 7099,
+        breakfast: true,
+        refundable: true,
+        inclusions: [
+          "Inclusive of a buffet breakfast at a designated dining venue",
+          "Free cancellation",
+        ],
+      },
+    ],
   },
   {
     name: "Luxury Suite",
@@ -67,6 +117,31 @@ const rooms = [
     availableRooms: 2,
     featured: true,
     active: true,
+    ratePlans: [
+      {
+        code: "room-only",
+        name: "Room Only",
+        label: "Standard Rate",
+        price: 8999,
+        offerPrice: 8999,
+        breakfast: false,
+        refundable: false,
+        inclusions: ["Non-Refundable"],
+      },
+      {
+        code: "room-with-breakfast",
+        name: "Room with Breakfast",
+        label: "Standard Rate",
+        price: 9499,
+        offerPrice: 9499,
+        breakfast: true,
+        refundable: true,
+        inclusions: [
+          "Inclusive of a buffet breakfast at a designated dining venue",
+          "Free cancellation",
+        ],
+      },
+    ],
   },
 ];
 

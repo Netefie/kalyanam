@@ -7,32 +7,13 @@ interface Props {
   room: Room;
 }
 
-export default function RoomActions({
-  room,
-}: Props) {
+export default function RoomActions({ room }: Props) {
   return (
-    <div className="flex gap-3">
-      <Link
-        href={`/accommodations/${room.slug}`}
-      >
-        <button
-          className="
-          border
-          border-[#B68D40]
-          text-[#B68D40]
-          px-5
-          py-3
-          rounded-lg
-          hover:bg-[#B68D40]
-          hover:text-white
-          transition
-        "
-        >
-          View Details
-        </button>
-      </Link>
-
-     
-    </div>
+    <Link
+      href={`/accommodations/${room.slug}`}
+      className="text-sm font-medium text-[#B68D40] underline underline-offset-4 transition hover:text-[#9f7b37]"
+    >
+      More Details
+    </Link>
   );
 }

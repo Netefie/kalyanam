@@ -74,6 +74,20 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
 /* --------------------------------- types ---------------------------------- */
 
+// A sellable rate for a room ("Room Only", "Room with Breakfast", ...).
+// Mirrors backend/src/models/RoomType.js's ratePlanSchema.
+export interface RatePlan {
+  code: string;
+  name: string;
+  label: string;
+  price: number;
+  offerPrice?: number;
+  breakfast: boolean;
+  refundable: boolean;
+  inclusions: string[];
+  active?: boolean;
+}
+
 export interface Room {
   _id: string;
   name: string;
@@ -83,6 +97,9 @@ export interface Room {
   images: string[];
   price: number;
   offerPrice?: number;
+  // Always populated by the API (falls back to a single derived plan when
+  // the room has none configured) — see backend/src/services/ratePlans.js.
+  ratePlans: RatePlan[];
   size: string;
   bed: string;
   maxGuests: number;
@@ -113,6 +130,9 @@ export interface Booking {
   guest: Required<GuestInput>;
   roomType: string;
   roomName: string;
+  ratePlanCode?: string;
+  ratePlanName?: string;
+  nightlyRate?: number;
   checkIn: string;
   checkOut: string;
   nights: number;
@@ -201,6 +221,7 @@ export const api = {
       guest: GuestInput;
       roomSlug?: string;
       roomId?: string;
+      ratePlanCode?: string;
       checkIn: string;
       checkOut: string;
       adults: number;
