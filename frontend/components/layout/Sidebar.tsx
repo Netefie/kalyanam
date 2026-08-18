@@ -54,11 +54,13 @@ export default function Sidebar({
 
       <aside
         className={`fixed left-0 top-[92px] z-50
-        h-[calc(100vh-92px)]
+        flex flex-col
+        h-[calc(100dvh-92px)]
+        max-w-full
         w-[330px]
         bg-[#F5E9DD]
         shadow-xl
-        transition-all
+        transition-transform
         duration-500
         ease-in-out
         ${
@@ -68,9 +70,10 @@ export default function Sidebar({
         }`}
       >
 
-        {/* Top */}
+        {/* Top — pinned, so the close control stays reachable while the
+            panel below scrolls. */}
 
-        <div className="flex justify-end p-5">
+        <div className="flex shrink-0 justify-end p-5">
 
           <button
             onClick={onClose}
@@ -80,6 +83,13 @@ export default function Sidebar({
           </button>
 
         </div>
+
+        {/* Scrollable body — on a zoomed or short viewport the nav is taller
+            than the sidebar, so it has to scroll rather than overflow off
+            the bottom of the screen. */}
+
+        <div className="flex-1 overflow-y-auto overscroll-contain">
+
                 {/* Book Button */}
 
         <div className="px-6 pb-6">
@@ -159,6 +169,8 @@ export default function Sidebar({
           </Link>
 
         </nav>
+
+        </div>
 
       </aside>
     </>

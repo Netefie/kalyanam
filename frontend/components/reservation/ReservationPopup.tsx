@@ -281,6 +281,16 @@ function handleSubmit(
   right: 0;
 
   width: 470px;
+  max-width: calc(100vw - 24px);
+
+  /* The popup hangs off a position:fixed header, so anything past the
+     bottom of the viewport can never be scrolled into view by the page.
+     Cap it to the space below the navbar and scroll internally instead —
+     this is what breaks when the browser is zoomed in and the content no
+     longer fits. dvh keeps it right under mobile browser chrome. */
+  max-height: calc(100dvh - 104px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 
   background: #fff;
 

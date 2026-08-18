@@ -156,16 +156,22 @@ export default function OfferPopup() {
 
   width: 30%;
   min-width: 420px;
-  max-width: 520px;
-  height: 100vh;
+  max-width: min(520px, 100vw);
+  height: 100dvh;
 
   background: #F8F5EE;
 
   z-index: 9999;
 
   display: flex;
-  align-items: center;
+  /* "safe" keeps the content centred while it fits, but falls back to
+     start-alignment once it's taller than the panel. Plain centring
+     overflows equally in both directions and clips the top beyond the
+     reach of the scrollbar (visible when zoomed in). */
+  align-items: safe center;
   justify-content: center;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 
   padding: 60px;
 
