@@ -36,7 +36,7 @@ export default function HeroKaara() {
               create unforgettable evenings.
             </p>
 
-            <Link href="/reservation" className="cta">
+            <Link href="/contact" className="cta">
               Reserve Your Table
               <ArrowRight size={18} />
             </Link>

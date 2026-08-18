@@ -140,7 +140,7 @@ export default function KaaraRestaurantSection() {
             {/* CTA */}
 
             <Link
-              href="/restaurant"
+              href="/kaara"
               className="exploreButton"
             >
               Explore More

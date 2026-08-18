@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { buildAccommodationsUrl } from "@/lib/reservation";
 
 export default function RoomsSection() {
   return (
@@ -26,7 +27,10 @@ export default function RoomsSection() {
   <p>Elegant comfort for a relaxing stay.</p>
 </div>  
 
-            <Link href="/rooms/deluxe" className="room-btn">
+            <Link
+              href={buildAccommodationsUrl({ roomType: "deluxe-room" })}
+              className="room-btn"
+            >
               View Details →
             </Link>
 
@@ -46,7 +50,10 @@ export default function RoomsSection() {
   <p>Luxury interiors with premium comfort.</p>
 </div>
 
-            <Link href="/rooms/super-deluxe" className="room-btn">
+            <Link
+              href={buildAccommodationsUrl({ roomType: "super-deluxe-room" })}
+              className="room-btn"
+            >
               View Details →
             </Link>
 

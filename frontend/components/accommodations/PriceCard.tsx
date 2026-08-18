@@ -11,9 +11,9 @@ interface PriceCardProps {
   availableForDates?: number;
 }
 
-// The price + Select panel for a single rate plan. One of these renders per
-// plan inside RatePlanRow, so it stays deliberately compact — the full
-// nights/rooms/tax breakdown is shown once the guest reaches BookingSummary.
+// The price + Select panel for a single rate plan. One renders per plan inside
+// RatePlanRow, so it stays compact — the full nights/rooms/tax breakdown is
+// shown once the guest reaches BookingSummary.
 export default function PriceCard({
   room,
   plan,
@@ -42,25 +42,29 @@ export default function PriceCard({
 
   return (
     <div className="flex h-full flex-col">
-      <p className="text-xs uppercase tracking-[2px] text-gray-500">{plan.label}</p>
+      <p className="text-sm uppercase tracking-[1.5px] text-[#8B5E34]">
+        {plan.label}
+      </p>
 
-      <div className="mt-3">
-        <span className="text-3xl font-bold text-[#B68D40]">{formatINR(rate)}</span>
-        <span className="ml-1 text-sm text-gray-500">/Night</span>
+      <div className="mt-2 flex items-baseline gap-1.5">
+        <span className="text-3xl font-semibold text-[#222]">
+          {formatINR(rate)}
+        </span>
+        <span className="text-sm text-gray-500">/Night</span>
       </div>
 
       {availabilityKnown && (
         <p
-          className={`mt-3 flex items-center gap-2 text-sm font-medium ${
+          className={`mt-2 flex items-center gap-1.5 text-xs font-medium ${
             available ? "text-green-700" : "text-red-600"
           }`}
         >
           <span
-            className={`inline-block h-2 w-2 rounded-full ${
+            className={`inline-block h-1.5 w-1.5 rounded-full ${
               available ? "bg-green-600" : "bg-red-500"
             }`}
           />
-          {available ? "Available for your dates" : "Not available for your dates"}
+          {available ? "Available" : "Not available"}
         </p>
       )}
 
@@ -69,17 +73,18 @@ export default function PriceCard({
           onClick={handleSelectPlan}
           disabled={selectDisabled}
           className={`
-            w-full
-            rounded-lg
-            py-3
-            font-semibold
+            font-cormorant
+            rounded
+            px-9
+            py-2.5
+            text-lg
             text-white
             transition-all
             duration-300
             ${
               selectDisabled
                 ? "cursor-not-allowed bg-gray-300"
-                : "bg-[#B68D40] hover:bg-[#9f7b37] active:scale-[0.98]"
+                : "bg-[#8B6B47] hover:bg-[#75593b] hover:shadow-md active:scale-[0.97]"
             }
           `}
         >

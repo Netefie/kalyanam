@@ -13,12 +13,7 @@ export default function PersonalDetails() {
         {/* Heading */}
 
         <div className="mb-6">
-          <h1
-            className="text-4xl text-[#2d2d2d]"
-            style={{
-              fontFamily: "Cormorant Garamond",
-            }}
-          >
+          <h1 className="font-cormorant text-4xl text-[#2d2d2d]">
             Guest Details
           </h1>
 

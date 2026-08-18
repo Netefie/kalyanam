@@ -8,32 +8,37 @@ interface RoomCardProps {
   room: Room;
   roomsSelected: number;
   availableForDates?: number;
+  index?: number;
 }
 
-// A room in the Available Rooms list: an info column (photo, specs,
-// amenities) beside a stacked list of rate plans, each independently priced
-// and selectable.
+// A room in the Available Rooms list: a compact info column (photo + specs)
+// beside a column of equal-height rate plans, each independently priced and
+// selectable. `items-stretch` is what lets the plan column match the info
+// column's height instead of leaving dead space beneath it.
 export default function RoomCard({
   room,
   roomsSelected,
   availableForDates,
+  index = 0,
 }: RoomCardProps) {
   return (
     <div
+      style={{ animationDelay: `${index * 90}ms` }}
       className="
+        group
+        animate-fade-up
         overflow-hidden
-        rounded-xl
-        border
-        border-gray-200
+        rounded-2xl
         bg-white
         shadow-sm
         transition-all
         duration-300
-        hover:shadow-lg
+        hover:-translate-y-0.5
+        hover:shadow-xl
       "
     >
-      <div className="grid lg:grid-cols-12">
-        <div className="lg:col-span-4 lg:border-r lg:border-gray-200">
+      <div className="grid items-stretch lg:grid-cols-12">
+        <div className="lg:col-span-4">
           <RoomSummary room={room} />
         </div>
 

@@ -13,6 +13,7 @@ export interface Room {
   title: string;
   description: string;
   image: string;
+  images: string[];
   price: number;
   offerPrice: number;
   ratePlans: RatePlan[];
@@ -36,6 +37,7 @@ function mapRoom(r: ApiRoom, index: number): Room {
     title: r.name,
     description: r.description,
     image: r.image,
+    images: r.images ?? [],
     price: r.price,
     offerPrice: r.offerPrice ?? r.price,
     ratePlans: r.ratePlans,
@@ -137,12 +139,7 @@ export default function AvailableRooms() {
 
         <div className="mb-4">
 
-          <h2
-            className="text-4xl text-[#2d2d2d]"
-            style={{
-              fontFamily: "Cormorant Garamond",
-            }}
-          >
+          <h2 className="font-cormorant text-4xl text-[#2d2d2d]">
             Available Rooms
           </h2>
 
@@ -178,10 +175,11 @@ export default function AvailableRooms() {
           </div>
         ) : (
           <div className="space-y-10">
-            {filteredRooms.map((room) => (
+            {filteredRooms.map((room, index) => (
               <RoomCard
                 key={room.id}
                 room={room}
+                index={index}
                 roomsSelected={booking.rooms}
                 availableForDates={availability[room.slug]}
               />

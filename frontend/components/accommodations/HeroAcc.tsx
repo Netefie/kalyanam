@@ -34,7 +34,7 @@ export default function HeroAcc() {
             {/* CTA */}
 
             <div className="heroacc-actions">
-              <Link href="/accommodation" className="heroacc-btn">
+              <Link href="#available-rooms" className="heroacc-btn">
                 <span>EXPLORE MORE</span>
                 <span className="heroacc-arrow">→</span>
               </Link>

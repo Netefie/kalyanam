@@ -2,9 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { api, ApiError } from "@/lib/api";
+import useScrollLock from "@/hooks/useScrollLock";
 
 export default function OfferPopup() {
   const [open, setOpen] = useState(false);
+
+  useScrollLock(open);
 
   const [form, setForm] = useState({ name: "", phone: "", email: "" });
   const [status, setStatus] = useState<"idle" | "sending" | "done">("idle");
@@ -18,17 +21,13 @@ export default function OfferPopup() {
 
     if (alreadyShown) return;
 
-    const timer = setTimeout(() => {
-      setOpen(true);
-      document.body.style.overflow = "hidden";
-    }, 15000);
+    const timer = setTimeout(() => setOpen(true), 15000);
 
     return () => clearTimeout(timer);
   }, []);
 
   const closePopup = () => {
     setOpen(false);
-    document.body.style.overflow = "auto";
     localStorage.setItem("kalyanam-popup", "true");
   };
 

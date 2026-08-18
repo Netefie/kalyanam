@@ -70,7 +70,7 @@ export default function PaymentConfirmation() {
       <div className="mx-auto max-w-5xl px-6">
 
         <div className="mb-6">
-          <h1 className="text-4xl text-[#2d2d2d]" style={{ fontFamily: "Cormorant Garamond" }}>
+          <h1 className="font-cormorant text-4xl text-[#2d2d2d]">
             Review &amp; Confirm
           </h1>
           <p className="mt-1 text-gray-500">

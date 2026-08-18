@@ -133,7 +133,7 @@ export default function MomentsSection() {
             </p>
 
             <Link
-              href="/gallery"
+              href="/experiences"
               className="know-more"
             >
               KNOW MORE →

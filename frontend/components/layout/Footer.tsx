@@ -70,7 +70,7 @@ export default function Footer() {
               </p>
 
               <Link
-                href="/reservation"
+                href="/accommodations"
                 className="footer-btn"
               >
                 Make Reservation
@@ -109,7 +109,7 @@ export default function Footer() {
 
                 <li>
                   <Link
-                    href="/accommodation"
+                    href="/accommodations"
                     className="footer-reveal"
                   >
                     Accommodation

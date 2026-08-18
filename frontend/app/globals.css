@@ -9,6 +9,44 @@
   --font-inter: "Inter", sans-serif;
   --font-lato: "Lato", sans-serif;
   --font-montserrat: "Montserrat", sans-serif;
+  --font-cormorant: "Cormorant Garamond", serif;
+
+  /* Motion — shared entry animations. Declared here so components use
+     `animate-*` utilities instead of one-off inline keyframes. */
+  --animate-fade-up: fade-up 0.5s ease-out both;
+  --animate-fade-in: fade-in 0.25s ease-out both;
+  --animate-zoom-in: zoom-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes zoom-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
 }
 
 /* --------------------------
@@ -39,4 +77,21 @@ nav a {
 
 button {
   transition: all .35s ease;
+}
+
+/* --------------------------
+   Accessibility
+--------------------------- */
+
+/* Respect the OS "reduce motion" setting — the booking flow animates on
+   entry and hover, which can be uncomfortable for motion-sensitive users. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

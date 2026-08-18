@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { X } from "lucide-react";
+import useScrollLock from "@/hooks/useScrollLock";
 
 interface SidebarProps {
   open: boolean;
@@ -13,6 +14,8 @@ export default function Sidebar({
   open,
   onClose,
 }: SidebarProps) {
+  useScrollLock(open);
+
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -25,14 +28,7 @@ export default function Sidebar({
       handleEscape
     );
 
-    if (open) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "auto";
-    }
-
     return () => {
-      document.body.style.overflow = "auto";
       document.removeEventListener(
         "keydown",
         handleEscape

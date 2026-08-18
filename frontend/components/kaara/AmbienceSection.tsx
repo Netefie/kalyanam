@@ -33,7 +33,7 @@ export default function AmbienceSection() {
             </p>
 
             <Link
-              href="/restaurant/ambience"
+              href="/contact"
               className="ambience-btn"
             >
               Explore Ambience

@@ -96,12 +96,7 @@ function BookingContent() {
       {booking.currentStep === 4 && (
         <section className="py-24">
           <div className="mx-auto max-w-7xl px-6 text-center">
-            <h2
-              className="text-5xl text-[#2d2d2d]"
-              style={{
-                fontFamily: "Cormorant Garamond",
-              }}
-            >
+            <h2 className="font-cormorant text-5xl text-[#2d2d2d]">
               Booking Confirmed
             </h2>
 

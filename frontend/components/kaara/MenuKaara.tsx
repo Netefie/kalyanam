@@ -50,7 +50,7 @@ export default function MenuKaara() {
             </p>
 
             <Link
-              href="/restaurant/menu"
+              href="https://dinein.petpooja.com/qr/nre1djqbag/T-5"
               className="menu-btn"
             >
               Explore Our Menu
