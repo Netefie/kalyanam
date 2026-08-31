@@ -12,10 +12,13 @@ interface BookingTableProps {
   onRowClick: (booking: Booking) => void;
 }
 
+// "Cancelled" is deliberately not offered here — cancelling a booking with
+// captured money now requires an explicit refund decision (see
+// backend/src/services/bookingLifecycle.js#cancelBooking), which this quick
+// dropdown has no room for. Open the row (BookingDetailDrawer) to cancel.
 const STATUSES: Booking["status"][] = [
   "Pending",
   "Confirmed",
-  "Cancelled",
   "CheckedIn",
   "CheckedOut",
   "Expired",
@@ -139,26 +142,37 @@ export default function BookingTable({
                     </td>
 
                     <td onClick={(e) => e.stopPropagation()}>
-                      <select
-                        className={`status ${statusClass(booking.status)}`}
-                        value={booking.status}
-                        onChange={(e) =>
-                          onStatusChange(
-                            booking._id,
-                            e.target.value as Booking["status"]
-                          )
-                        }
-                      >
-                        {STATUSES.map((s) => (
-                          <option key={s} value={s}>
-                            {s === "CheckedIn"
-                              ? "Checked In"
-                              : s === "CheckedOut"
-                              ? "Checked Out"
-                              : s}
-                          </option>
-                        ))}
-                      </select>
+                      {/* Cancelled and Checked Out are terminal — see
+                          backend/src/services/bookingLifecycle.js's
+                          ALLOWED_TRANSITIONS, which permits no further move
+                          from either. An editable dropdown there would just
+                          offer choices the API rejects. */}
+                      {booking.status === "Cancelled" || booking.status === "CheckedOut" ? (
+                        <span className={`status ${statusClass(booking.status)} readOnly`}>
+                          {booking.status === "CheckedOut" ? "Checked Out" : "Cancelled"}
+                        </span>
+                      ) : (
+                        <select
+                          className={`status ${statusClass(booking.status)}`}
+                          value={booking.status}
+                          onChange={(e) =>
+                            onStatusChange(
+                              booking._id,
+                              e.target.value as Booking["status"]
+                            )
+                          }
+                        >
+                          {STATUSES.map((s) => (
+                            <option key={s} value={s}>
+                              {s === "CheckedIn"
+                                ? "Checked In"
+                                : s === "CheckedOut"
+                                ? "Checked Out"
+                                : s}
+                            </option>
+                          ))}
+                        </select>
+                      )}
                     </td>
 
                     <td onClick={(e) => e.stopPropagation()}>
@@ -324,6 +338,11 @@ export default function BookingTable({
         .expired{
           background:#F3F4F6;
           color:#6B7280;
+        }
+
+        .readOnly{
+          cursor:default;
+          display:inline-block;
         }
 
         .actions{

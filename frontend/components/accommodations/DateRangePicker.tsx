@@ -14,12 +14,19 @@ interface DateRangePickerProps {
     checkIn: Date | null,
     checkOut: Date | null
   ) => void;
+  // Forwarded to LuxuryCalendar so it can shade sold-out days for whatever
+  // is currently selected — the room type filter ("" = any room) and how
+  // many rooms are wanted.
+  roomSlug?: string;
+  roomsRequested?: number;
 }
 
 export default function DateRangePicker({
   checkIn,
   checkOut,
   onChange,
+  roomSlug,
+  roomsRequested,
 }: DateRangePickerProps) {
   const [open, setOpen] = useState(false);
 
@@ -121,6 +128,8 @@ export default function DateRangePicker({
             range?.to ?? null
           );
         }}
+        roomSlug={roomSlug}
+        roomsRequested={roomsRequested}
       />
 
       <style jsx>{`

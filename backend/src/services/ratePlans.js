@@ -44,5 +44,12 @@ export function findRatePlan(room, code) {
 // populated `ratePlans` array, regardless of what's actually stored.
 export function toPublicRoom(room) {
   const plain = room.toObject ? room.toObject() : room;
+  // `.lean()` reads return whatever's actually in MongoDB, schema changes
+  // notwithstanding — a document written before `availableRooms` was
+  // removed from models/RoomType.js still has it stored. Availability is
+  // always date-range-dependent and computed live (services/availability.js),
+  // so this stale static number must never leak into a response as if it
+  // still meant something.
+  delete plain.availableRooms;
   return { ...plain, ratePlans: resolveRatePlans(room) };
 }

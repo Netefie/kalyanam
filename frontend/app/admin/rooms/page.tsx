@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   BedDouble,
   Users,
@@ -10,6 +11,7 @@ import {
   Trash2,
   Plus,
   Star,
+  CalendarDays,
 } from "lucide-react";
 import RoomFormModal from "../components/RoomFormModal";
 import { api, type Room } from "@/lib/api";
@@ -119,18 +121,17 @@ export default function RoomsPage() {
                     <div><BedDouble size={16} /> {room.totalRooms} Rooms</div>
                   </div>
 
-                  <div className="availability">
-                    <div>
-                      <strong>{room.availableRooms}</strong>
-                      Available
-                    </div>
-                    <div>
-                      <strong>
-                        {Math.max(0, room.totalRooms - room.availableRooms)}
-                      </strong>
-                      Occupied
-                    </div>
-                  </div>
+                  {/* "Available" is never a static number — it depends on a
+                      date range, so this links to the live calendar instead
+                      of showing a stale count (see
+                      backend/src/services/availability.js). */}
+                  <Link
+                    href={`/admin/availability?slug=${encodeURIComponent(room.slug)}`}
+                    className="availabilityLink"
+                  >
+                    <CalendarDays size={15} />
+                    View live availability
+                  </Link>
 
                   <div className="actions">
                     <button title="Edit" onClick={() => openEdit(room)}>
@@ -327,28 +328,25 @@ export default function RoomsPage() {
           color:#B68D40;
         }
 
-        .availability{
+        .availabilityLink{
           display:flex;
-          gap:14px;
+          align-items:center;
+          justify-content:center;
+          gap:8px;
           margin-bottom:20px;
-        }
-
-        .availability div{
-          flex:1;
           background:#faf7f2;
           border-radius:12px;
           padding:12px;
           text-align:center;
           font-size:13px;
-          color:#777;
-          display:flex;
-          flex-direction:column;
-          gap:2px;
+          font-weight:600;
+          color:#8d6a29;
+          text-decoration:none;
+          transition:.2s;
         }
 
-        .availability strong{
-          font-size:20px;
-          color:#222;
+        .availabilityLink:hover{
+          background:#f3ecdd;
         }
 
         .actions{

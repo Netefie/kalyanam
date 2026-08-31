@@ -5,7 +5,7 @@
 // Usage:
 //   node scripts/test-mail.mjs              # safe default: no real sends
 //   npm run dev                             # in another terminal, first
-//   node scripts/test-mail.mjs --live       # also delivers all 14 templates
+//   node scripts/test-mail.mjs --live       # also delivers all 15 templates
 //                                            # for real, to MAIL_TEST_TO
 //   node scripts/test-mail.mjs --live --to=someone@example.com
 //
@@ -100,7 +100,7 @@ async function main() {
   console.log("\n2. Template rendering");
   {
     const keys = Object.keys(templates);
-    assert(keys.length === 14, `registry has 14 templates (found ${keys.length})`, keys);
+    assert(keys.length === 15, `registry has 15 templates (found ${keys.length})`, keys);
 
     for (const [key, tpl] of Object.entries(templates)) {
       let subject, html, text;
@@ -190,6 +190,10 @@ async function main() {
     };
     const baseBooking = {
       guest: baseGuest,
+      // A syntactically valid ObjectId is enough — Booking.roomType is
+      // required (see src/models/Booking.js) but this fixture only
+      // exercises the mail scheduler, which never dereferences it.
+      roomType: "000000000000000000000000",
       roomName: "Test Room",
       ratePlanName: "Room Only",
       nights: 1,
@@ -304,7 +308,7 @@ async function main() {
     await drainMailQueue({ timeoutMs: 90000 });
 
     const rows = await MailLog.find({ dedupeKey: new RegExp(`^test-mail-live-${stamp}-`) }).lean();
-    assert(rows.length === 14, `all 14 live sends produced a MailLog row (found ${rows.length})`);
+    assert(rows.length === 15, `all 15 live sends produced a MailLog row (found ${rows.length})`);
     for (const row of rows) {
       assert(row.status === "sent", `${row.template}: delivered (status=sent)`, row.lastError || row.status);
       assert(Boolean(row.messageId), `${row.template}: has a real messageId`, row.messageId);

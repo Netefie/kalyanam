@@ -291,13 +291,60 @@ async function main() {
   }
 
   // 8. Overbooking guard -------------------------------------------------
+  // Two independent guards, checked in order: a request beyond the site's
+  // configured per-booking room cap (services/bookingRequest.js) is a 400 —
+  // it's an invalid request regardless of what's in stock. A request within
+  // that cap but beyond what's actually free for the dates is a 409 —
+  // services/availability.js#reserveInventory, which is what actually
+  // protects the physical inventory from being oversold.
   console.log("\n8. Overbooking guard");
   {
     const dates = futureDates(60, 1);
     const { data: roomAvail } = await api(
       `/api/rooms/deluxe-room/availability?checkIn=${dates.checkIn}&checkOut=${dates.checkOut}`
     );
-    const tooMany = roomAvail.total + 5;
+    const beyondCap = roomAvail.total + 5;
+
+    const capResult = await api("/api/payments/order", {
+      method: "POST",
+      body: {
+        guest: guest(),
+        roomSlug: "deluxe-room",
+        ratePlanCode: "room-only",
+        checkIn: dates.checkIn,
+        checkOut: dates.checkOut,
+        adults: 1,
+        children: 0,
+        rooms: beyondCap,
+      },
+    });
+    assert(
+      capResult.status === 400,
+      `requesting ${beyondCap} rooms (beyond the per-booking cap) → 400`,
+      capResult.data
+    );
+
+    // Now exhaust what's actually available in room-cap-sized bites, and
+    // confirm the next request genuinely can't fit.
+    let remaining = roomAvail.available;
+    while (remaining > 0) {
+      const take = Math.min(5, remaining);
+      const { status, data } = await api("/api/payments/order", {
+        method: "POST",
+        body: {
+          guest: guest(),
+          roomSlug: "deluxe-room",
+          ratePlanCode: "room-only",
+          checkIn: dates.checkIn,
+          checkOut: dates.checkOut,
+          adults: 1,
+          children: 0,
+          rooms: take,
+        },
+      });
+      assert(status === 201, `booking ${take} of the remaining ${remaining} room(s) succeeds`, data);
+      remaining -= take;
+    }
 
     const { status, data } = await api("/api/payments/order", {
       method: "POST",
@@ -309,10 +356,10 @@ async function main() {
         checkOut: dates.checkOut,
         adults: 1,
         children: 0,
-        rooms: tooMany,
+        rooms: 1,
       },
     });
-    assert(status === 409, `requesting ${tooMany} rooms (only ${roomAvail.total} exist) → 409`, data);
+    assert(status === 409, "one more room once inventory is exhausted → 409", data);
   }
 
   // 9. Refund guards -------------------------------------------------------

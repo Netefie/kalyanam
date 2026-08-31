@@ -24,6 +24,16 @@ function fmtDate(iso: string) {
   });
 }
 
+// "14:00" -> "2:00 PM" — Settings stores check-in/out as 24h "HH:mm" (see
+// backend/src/models/Settings.js), this is purely a display convenience.
+function fmtTime(hhmm: string) {
+  const [h, m] = hhmm.split(":").map(Number);
+  if (!Number.isFinite(h) || !Number.isFinite(m)) return hhmm;
+  const period = h >= 12 ? "PM" : "AM";
+  const hour12 = h % 12 === 0 ? 12 : h % 12;
+  return `${hour12}:${String(m).padStart(2, "0")} ${period}`;
+}
+
 // The confirmation screen — fetches the fully-settled booking (pricing +
 // payment breakdown) via the same public receipt lookup a guest could use
 // later, rather than trusting whatever was last held in context, so what's
@@ -32,6 +42,17 @@ export default function BookingSuccess() {
   const { booking, resetBooking } = useBookingContext();
   const [record, setRecord] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
+  // Defaults match Settings' own schema defaults (backend/src/models/
+  // Settings.js), so this reads correctly even before the fetch below
+  // resolves rather than showing a blank time.
+  const [times, setTimes] = useState({ checkInTime: "14:00", checkOutTime: "11:00" });
+
+  useEffect(() => {
+    api.settings
+      .get()
+      .then((s) => setTimes({ checkInTime: s.checkInTime, checkOutTime: s.checkOutTime }))
+      .catch(() => {});
+  }, []);
 
   const code = booking.bookingCode;
   const email = booking.guest.email;
@@ -85,8 +106,8 @@ export default function BookingSuccess() {
           ) : record ? (
             <>
               <div className="mt-10 grid grid-cols-2 gap-6 text-left sm:grid-cols-4">
-                <Detail icon={<CalendarDays size={16} />} label="Check In" value={fmtDate(record.checkIn)} sub="from 2:00 PM" />
-                <Detail icon={<CalendarDays size={16} />} label="Check Out" value={fmtDate(record.checkOut)} sub="by 11:00 AM" />
+                <Detail icon={<CalendarDays size={16} />} label="Check In" value={fmtDate(record.checkIn)} sub={`from ${fmtTime(times.checkInTime)}`} />
+                <Detail icon={<CalendarDays size={16} />} label="Check Out" value={fmtDate(record.checkOut)} sub={`by ${fmtTime(times.checkOutTime)}`} />
                 <Detail
                   icon={<Users size={16} />}
                   label="Guests"

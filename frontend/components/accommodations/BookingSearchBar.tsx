@@ -112,6 +112,8 @@ export default function BookingSearchBar() {
                   checkOut,
                 })
               }
+              roomSlug={booking.roomType}
+              roomsRequested={booking.rooms}
             />
 
           </div>

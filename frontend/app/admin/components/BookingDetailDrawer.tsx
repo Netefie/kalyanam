@@ -1,10 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { X, CreditCard, RotateCcw } from "lucide-react";
-import type { Booking } from "@/lib/api";
+import { X, CreditCard, RotateCcw, LogIn, LogOut, XCircle, AlertTriangle } from "lucide-react";
+import { api, ApiError, type Booking } from "@/lib/api";
 import PaymentStatusPill from "./PaymentStatusPill";
 import RefundDialog from "./RefundDialog";
+import CancelBookingDialog from "./CancelBookingDialog";
+
+// The routine forward moves this drawer offers directly — mirrors
+// backend/src/services/bookingLifecycle.js's ALLOWED_TRANSITIONS minus
+// Cancelled, which always goes through CancelBookingDialog instead (a plain
+// PATCH to Cancelled is rejected server-side once there's a captured
+// payment to account for).
+const NEXT_STATUS: Partial<Record<Booking["status"], { label: string; status: Booking["status"] }>> = {
+  Confirmed: { label: "Check In", status: "CheckedIn" },
+  CheckedIn: { label: "Check Out", status: "CheckedOut" },
+};
+
+const CANCELLABLE_STATUSES: Booking["status"][] = ["Pending", "Confirmed", "CheckedIn"];
 
 interface BookingDetailDrawerProps {
   booking: Booking;
@@ -33,10 +46,31 @@ function formatDate(iso?: string) {
 export default function BookingDetailDrawer({ booking, onClose, onUpdated }: BookingDetailDrawerProps) {
   const [current, setCurrent] = useState(booking);
   const [showRefund, setShowRefund] = useState(false);
+  const [showCancel, setShowCancel] = useState(false);
+  const [advancing, setAdvancing] = useState(false);
+  const [advanceError, setAdvanceError] = useState("");
 
   const fullName = `${current.guest.firstName} ${current.guest.lastName || ""}`.trim();
   const remaining = current.payment.amountPaid - current.payment.refundedAmount;
   const canRefund = ["paid", "partially_refunded"].includes(current.payment.status) && remaining > 0;
+  const nextStatus = NEXT_STATUS[current.status];
+  const canCancel = CANCELLABLE_STATUSES.includes(current.status);
+  const needsAttention = Boolean(current.notifications?.needsAttentionAt);
+
+  const handleAdvance = async () => {
+    if (!nextStatus) return;
+    setAdvanceError("");
+    setAdvancing(true);
+    try {
+      const updated = await api.bookings.updateStatus(current._id, nextStatus.status);
+      setCurrent(updated);
+      onUpdated(updated);
+    } catch (err) {
+      setAdvanceError(err instanceof ApiError ? err.message : "Could not update the booking status.");
+    } finally {
+      setAdvancing(false);
+    }
+  };
 
   return (
     <>
@@ -48,6 +82,7 @@ export default function BookingDetailDrawer({ booking, onClose, onUpdated }: Boo
               <div className="pills">
                 <span className={`statusPill ${current.status.toLowerCase()}`}>{current.status}</span>
                 <PaymentStatusPill status={current.payment.status} />
+                {needsAttention && <span className="statusPill attention">Needs Attention</span>}
               </div>
             </div>
             <button className="closeBtn" onClick={onClose}>
@@ -56,6 +91,32 @@ export default function BookingDetailDrawer({ booking, onClose, onUpdated }: Boo
           </div>
 
           <div className="body">
+            {needsAttention && (
+              <div className="attentionBox">
+                <AlertTriangle size={16} />
+                This booking&apos;s payment was captured after its room hold lapsed, and the room had
+                already sold to someone else. Refund the guest from here — the stay itself was cancelled
+                automatically.
+              </div>
+            )}
+
+            {(nextStatus || canCancel) && (
+              <div className="quickActions">
+                {nextStatus && (
+                  <button className="advanceBtn" onClick={handleAdvance} disabled={advancing}>
+                    {nextStatus.status === "CheckedIn" ? <LogIn size={16} /> : <LogOut size={16} />}
+                    {advancing ? "Updating…" : nextStatus.label}
+                  </button>
+                )}
+                {canCancel && (
+                  <button className="cancelActionBtn" onClick={() => setShowCancel(true)}>
+                    <XCircle size={16} /> Cancel Booking
+                  </button>
+                )}
+              </div>
+            )}
+            {advanceError && <p className="advanceError">{advanceError}</p>}
+
             <Section title="Guest">
               <Row label="Name" value={fullName || "—"} />
               <Row label="Email" value={current.guest.email} />
@@ -137,6 +198,18 @@ export default function BookingDetailDrawer({ booking, onClose, onUpdated }: Boo
             setCurrent(updated);
             onUpdated(updated);
             setShowRefund(false);
+          }}
+        />
+      )}
+
+      {showCancel && (
+        <CancelBookingDialog
+          booking={current}
+          onClose={() => setShowCancel(false)}
+          onCancelled={(updated) => {
+            setCurrent(updated);
+            onUpdated(updated);
+            setShowCancel(false);
           }}
         />
       )}
@@ -225,6 +298,79 @@ export default function BookingDetailDrawer({ booking, onClose, onUpdated }: Boo
         .statusPill.expired {
           background: #f3f4f6;
           color: #6b7280;
+        }
+        .statusPill.attention {
+          background: #fee2e2;
+          color: #b91c1c;
+        }
+
+        .attentionBox {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+          background: #fdecec;
+          border: 1px solid #f5c6c6;
+          color: #b91c1c;
+          padding: 14px 16px;
+          border-radius: 14px;
+          font-size: 13px;
+          line-height: 1.5;
+          margin-bottom: 16px;
+        }
+
+        .quickActions {
+          display: flex;
+          gap: 10px;
+          margin-bottom: 8px;
+        }
+
+        .advanceBtn {
+          flex: 1;
+          height: 46px;
+          border: none;
+          border-radius: 12px;
+          background: #b68d40;
+          color: #fff;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          cursor: pointer;
+        }
+
+        .advanceBtn:hover:not(:disabled) {
+          background: #a57d35;
+        }
+
+        .advanceBtn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
+        .cancelActionBtn {
+          flex: 1;
+          height: 46px;
+          border: 1px solid #f5c6c6;
+          border-radius: 12px;
+          background: #fff;
+          color: #b91c1c;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          cursor: pointer;
+        }
+
+        .cancelActionBtn:hover {
+          background: #fdecec;
+        }
+
+        .advanceError {
+          color: #b91c1c;
+          font-size: 13px;
+          margin: 8px 0 16px;
         }
 
         .closeBtn {

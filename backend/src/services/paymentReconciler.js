@@ -5,7 +5,14 @@
 // twice — the guest's browser and Razorpay's webhook race for the same
 // event, and either one (or both) may arrive first.
 import { Booking } from "../models/Booking.js";
-import { onBookingConfirmed, onPaymentFailed, onRefundProcessed } from "./notifications.js";
+import { RoomType } from "../models/RoomType.js";
+import { getAvailableCount } from "./availability.js";
+import {
+  onBookingConfirmed,
+  onPaymentFailed,
+  onRefundProcessed,
+  onBookingNeedsAttention,
+} from "./notifications.js";
 
 // Extracts the bits of a Razorpay payment object we store/display.
 function paymentSnapshot(rpPayment) {
@@ -40,11 +47,45 @@ export async function applyPaymentSuccess({ booking, rpPayment }) {
   booking.payment.paidAt = new Date();
   booking.payment.failureReason = "";
   booking.holdExpiresAt = undefined;
-  if (booking.status === "Pending") booking.status = "Confirmed";
+
+  let strandedNoRoom = false;
+
+  if (booking.status === "Pending") {
+    booking.status = "Confirmed";
+  } else if (booking.status === "Expired" || booking.status === "Cancelled") {
+    // The hold lapsed (services/bookingSweeper.js flipped this to Expired —
+    // or a guest cancelled) before Razorpay's capture caught up: a slow
+    // bank, a webhook delayed behind a retry queue, or a guest who paid
+    // right as the hold's last second ticked over. Whether this can still
+    // be confirmed depends on whether the room got sold to someone else in
+    // the meantime — availability.js excludes Expired/Cancelled bookings
+    // from every count, so this booking currently holds nothing regardless
+    // of what its `rooms` field says.
+    const room = await RoomType.findById(booking.roomType).select("totalRooms").lean();
+    const { available } = room
+      ? await getAvailableCount(room, booking.checkIn, booking.checkOut, booking._id)
+      : { available: 0 };
+
+    if (room && available >= booking.rooms) {
+      booking.status = "Confirmed";
+    } else {
+      // Already sold, or the room type itself is gone. The payment stands
+      // — this is real money genuinely captured — but the stay does not.
+      // Left Cancelled and flagged rather than silently emailing "Booking
+      // Confirmed" for a room the guest does not have.
+      booking.status = "Cancelled";
+      booking.notifications.needsAttentionAt = new Date();
+      strandedNoRoom = true;
+    }
+  }
 
   await booking.save();
 
-  onBookingConfirmed(booking);
+  if (strandedNoRoom) {
+    onBookingNeedsAttention(booking);
+  } else {
+    onBookingConfirmed(booking);
+  }
 
   return booking;
 }

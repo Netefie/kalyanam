@@ -1,0 +1,108 @@
+# Deploys the Kalyanam API to AWS Lambda — zero-cost architecture (see
+# /Users/kavin/.claude/plans/dapper-popping-firefly.md for the full plan and
+# the free-tier reasoning behind every choice below):
+#
+# - A Function URL instead of API Gateway: API Gateway's free requests are a
+#   12-month tier that eventually bills; Function URLs never charge per
+#   request.
+# - No VPC: a VPC-attached Lambda needs a NAT Gateway (~$32/mo) for internet
+#   egress. Staying out of a VPC keeps this at $0 — the tradeoff is Atlas M0's
+#   IP allowlist has to stay open (Lambda's egress IPs are dynamic), so SCRAM
+#   auth is the only real door.
+# - 7-day log retention so CloudWatch storage stays inside the 5 GB/mo
+#   always-free ingest instead of accumulating forever.
+# - `AWS_PROFILE=kalyanam npm run deploy` (see package.json) — this profile's
+#   IAM policy is scoped to resources named kalyanam-api-*, matching this
+#   service name, so it cannot touch any other AWS resource.
+service: kalyanam-api
+frameworkVersion: '3'
+useDotenv: true
+
+provider:
+  name: aws
+  # Serverless Framework v3's local schema validator doesn't yet recognize
+  # nodejs22.x as a valid runtime name (even though AWS itself supports it),
+  # so this pins to nodejs20.x — matches this repo's `engines.node: >=20`
+  # and LeanPlate's proven working config.
+  runtime: nodejs20.x
+  region: ap-south-1
+  memorySize: 256
+  timeout: 30
+  logRetentionInDays: 7
+  # Nothing here needs a Lambda version/alias (no canary routing, no
+  # provisioned concurrency) — turning this off removes one
+  # AWS::Lambda::Version resource per function from the stack.
+  versionFunctions: false
+  # Keeps the deployment-artifacts S3 bucket from growing unbounded — only
+  # the current + previous zip are kept instead of every deploy ever made.
+  deploymentBucket:
+    maxPreviousDeploymentArtifacts: 1
+  environment:
+    NODE_ENV: production
+    CORS_ORIGIN: ${env:CORS_ORIGIN}
+    MONGODB_URI: ${env:MONGODB_URI}
+    JWT_SECRET: ${env:JWT_SECRET}
+    JWT_EXPIRES_IN: ${env:JWT_EXPIRES_IN, '7d'}
+    SMTP_HOST: ${env:SMTP_HOST, ''}
+    SMTP_PORT: ${env:SMTP_PORT, '465'}
+    SMTP_SECURE: ${env:SMTP_SECURE, 'true'}
+    SMTP_USER: ${env:SMTP_USER, ''}
+    SMTP_PASS: ${env:SMTP_PASS, ''}
+    MAIL_FROM: ${env:MAIL_FROM, ''}
+    MAIL_REPLY_TO: ${env:MAIL_REPLY_TO, ''}
+    MAIL_ADMIN_TO: ${env:MAIL_ADMIN_TO, ''}
+    MAIL_TEST_TO: ${env:MAIL_TEST_TO, ''}
+    MAIL_ENABLED: ${env:MAIL_ENABLED, 'true'}
+    MAIL_DRY_RUN: ${env:MAIL_DRY_RUN, 'false'}
+    MAIL_MAX_RETRIES: ${env:MAIL_MAX_RETRIES, '3'}
+    SITE_URL: ${env:SITE_URL, ''}
+    RAZORPAY_KEY_ID: ${env:RAZORPAY_KEY_ID}
+    RAZORPAY_KEY_SECRET: ${env:RAZORPAY_KEY_SECRET}
+    RAZORPAY_WEBHOOK_SECRET: ${env:RAZORPAY_WEBHOOK_SECRET}
+    PAYMENT_CURRENCY: ${env:PAYMENT_CURRENCY, 'INR'}
+    BOOKING_HOLD_MINUTES: ${env:BOOKING_HOLD_MINUTES, '15'}
+    HOTEL_TIMEZONE: ${env:HOTEL_TIMEZONE, 'Asia/Kolkata'}
+    BOOKING_MAX_NIGHTS: ${env:BOOKING_MAX_NIGHTS, '30'}
+    BOOKING_MAX_ROOMS: ${env:BOOKING_MAX_ROOMS, '5'}
+    BOOKING_MAX_ADVANCE_DAYS: ${env:BOOKING_MAX_ADVANCE_DAYS, '365'}
+
+package:
+  patterns:
+    - '!.env*'
+    - '!scripts/**'
+    - '!README.md'
+
+functions:
+  api:
+    handler: src/lambda.handler
+    url:
+      cors:
+        # Function URL CORS is enforced by the Lambda service itself (it
+        # answers the OPTIONS preflight before the function even runs), so
+        # unlike the app-level CORS_ORIGIN env var above it can't be a
+        # comma-string resolved at runtime — it has to be a literal list
+        # here. Keep this in sync with CORS_ORIGIN in backend/.env, which
+        # the Express `cors()` middleware in app.js enforces as the second,
+        # request-time layer. Update the placeholder before deploying.
+        allowedOrigins:
+          # Localhost only for now — this lets the local Next.js dev server
+          # run against the deployed Lambda. Add the Vercel domain here (and
+          # to CORS_ORIGIN + SITE_URL in .env) when the frontend ships.
+          - http://localhost:3000
+          - http://localhost:3001
+        allowedHeaders:
+          - Content-Type
+          - Authorization
+        allowedMethods:
+          - '*'
+        allowCredentials: false
+
+  sweepBookings:
+    handler: src/handlers/sweepers.sweepBookings
+    events:
+      - schedule: rate(5 minutes)
+
+  sweepMail:
+    handler: src/handlers/sweepers.sweepMail
+    events:
+      - schedule: rate(10 minutes)

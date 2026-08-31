@@ -53,6 +53,13 @@ export function createApp() {
   // Payment endpoints get a tighter limit on top of the global one above —
   // order creation and verification are more expensive (they call out to
   // Razorpay) and more attractive to abuse than a typical read endpoint.
+  //
+  // The webhook is exempt: it's Razorpay's own retry-driven safety net for
+  // a guest who paid but closed the tab before the browser could call
+  // /verify (see controllers/paymentController.js#handleWebhook), and it's
+  // already signature-verified — a burst of real guest checkout traffic on
+  // this same limiter must never cause a genuine payment.captured event to
+  // 429 and go unretried into a stranded, unconfirmed booking.
   app.use(
     "/api/payments",
     rateLimit({
@@ -60,6 +67,7 @@ export function createApp() {
       max: 60,
       standardHeaders: true,
       legacyHeaders: false,
+      skip: (req) => req.path === "/webhook",
     })
   );
 

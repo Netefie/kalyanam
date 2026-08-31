@@ -47,6 +47,18 @@ export default function PaymentConfirmation() {
   const busy = flow === "creating" || flow === "awaiting-checkout" || flow === "verifying";
   const canRetry = flow === "failed" || flow === "dismissed";
 
+  // The quote already carries live availability (POST /bookings/quote —
+  // see hooks/useBookingQuote.ts); an in-progress payment attempt already
+  // holds its own rooms via /payments/order, so this guard only applies
+  // before that hold exists — otherwise a guest who's mid-retry after a
+  // declined card would be wrongly blocked by their own hold no longer
+  // showing as "available" to a fresh quote.
+  const hasActiveHold =
+    Boolean(booking.payment.holdExpiresAt) &&
+    new Date(booking.payment.holdExpiresAt as string).getTime() > Date.now();
+  const insufficientAvailability =
+    Boolean(quote) && !hasActiveHold && quote!.availability.available < booking.rooms;
+
   if (!room) return null;
 
   const fmt = (d: Date | null) =>
@@ -107,6 +119,19 @@ export default function PaymentConfirmation() {
       setBooking((prev) => ({
         ...prev,
         payment: { ...prev.payment, error: "Please select your check-in and check-out dates first." },
+      }));
+      return;
+    }
+
+    if (insufficientAvailability) {
+      // Belt-and-suspenders: the button is already disabled for this case,
+      // but the actual guarantee against overbooking is server-side (see
+      // backend/src/services/availability.js#reserveInventory) — this just
+      // stops a stale click from opening a Razorpay order for a room that
+      // isn't there.
+      setBooking((prev) => ({
+        ...prev,
+        payment: { ...prev.payment, error: "Sorry, this room is no longer available for your selected dates." },
       }));
       return;
     }
@@ -214,6 +239,17 @@ export default function PaymentConfirmation() {
   }
 
   const goBack = () => setBooking((prev) => ({ ...prev, currentStep: 2 }));
+
+  // Sends the guest back to room selection with a clean slate — used when
+  // the room they'd picked has since sold out for these dates, so re-review
+  // & pay with the same (now-invalid) selection isn't even an option.
+  const chooseDifferentRoom = () =>
+    setBooking((prev) => ({
+      ...prev,
+      currentStep: 1,
+      selectedRoom: null,
+      selectedRatePlan: null,
+    }));
 
   return (
     <section className="bg-[#faf8f4] py-10">
@@ -335,6 +371,20 @@ export default function PaymentConfirmation() {
                 </div>
               ) : null}
 
+              {insufficientAvailability && (
+                <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {quote!.availability.available === 0
+                    ? "This room has just sold out for your selected dates."
+                    : `Only ${quote!.availability.available} room(s) left for these dates — fewer than the ${booking.rooms} you selected.`}
+                  <button
+                    onClick={chooseDifferentRoom}
+                    className="mt-2 block font-semibold text-red-800 underline"
+                  >
+                    Choose a different room or dates
+                  </button>
+                </div>
+              )}
+
               <div className="mt-6 flex items-center gap-2 rounded-lg bg-[#faf8f4] px-4 py-3 text-xs text-gray-500">
                 <ShieldCheck size={16} className="shrink-0 text-[#B68D40]" />
                 Payments are processed securely by Razorpay. We never see or store your card details.
@@ -371,7 +421,7 @@ export default function PaymentConfirmation() {
               ) : (
                 <button
                   onClick={handlePay}
-                  disabled={busy || !quote}
+                  disabled={busy || !quote || insufficientAvailability}
                   className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg bg-[#B68D40] py-4 font-semibold text-white transition hover:bg-[#9f7b37] disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   <Lock size={16} />

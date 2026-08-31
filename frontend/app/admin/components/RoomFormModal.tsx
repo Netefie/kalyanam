@@ -32,7 +32,6 @@ export default function RoomFormModal({
     bed: room?.bed ?? "",
     maxGuests: room?.maxGuests ?? 2,
     totalRooms: room?.totalRooms ?? 0,
-    availableRooms: room?.availableRooms ?? 0,
     breakfast: room?.breakfast ?? true,
     cancellation: room?.cancellation ?? true,
     featured: room?.featured ?? false,
@@ -184,9 +183,6 @@ export default function RoomFormModal({
                 onChange={(e) => set("maxGuests", Number(e.target.value))}
               />
             </div>
-          </div>
-
-          <div className="row">
             <div className="field">
               <label>Total rooms</label>
               <input
@@ -194,15 +190,6 @@ export default function RoomFormModal({
                 min={0}
                 value={form.totalRooms}
                 onChange={(e) => set("totalRooms", Number(e.target.value))}
-              />
-            </div>
-            <div className="field">
-              <label>Available rooms</label>
-              <input
-                type="number"
-                min={0}
-                value={form.availableRooms}
-                onChange={(e) => set("availableRooms", Number(e.target.value))}
               />
             </div>
           </div>

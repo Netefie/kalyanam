@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { nextSequence } from "./Counter.js";
+import { toHotelDay } from "../utils/dates.js";
 
 const guestSchema = new mongoose.Schema(
   {
@@ -41,6 +42,14 @@ const notificationsSchema = new mongoose.Schema(
     postStaySentAt: { type: Date },
     holdExpiringSentAt: { type: Date },
     cancelledSentAt: { type: Date },
+
+    // Set when a payment settles (webhook/verify capture) for a booking
+    // whose hold had already lapsed to Expired and the room has since sold
+    // to someone else — see services/paymentReconciler.js#applyPaymentSuccess.
+    // The money is real and recorded, but the room isn't, so this can't
+    // silently resolve to Confirmed; it flags the booking for a staff
+    // refund decision instead. Cleared once a staff member resolves it.
+    needsAttentionAt: { type: Date },
   },
   { _id: false }
 );
@@ -105,8 +114,12 @@ const bookingSchema = new mongoose.Schema(
     guest: { type: guestSchema, required: true },
 
     // Reference plus a name snapshot, so the booking still reads correctly
-    // even if the room type is later renamed or removed.
-    roomType: { type: mongoose.Schema.Types.ObjectId, ref: "RoomType" },
+    // even if the room type is later renamed or removed. Required: every
+    // availability read (services/availability.js) groups/filters by this
+    // field, and a bookingless roomType previously meant a booking that
+    // silently vanished from every inventory count while still holding a
+    // guest's confirmation.
+    roomType: { type: mongoose.Schema.Types.ObjectId, ref: "RoomType", required: true },
     roomName: { type: String, required: true },
 
     // Snapshot of the rate plan chosen at booking time (e.g. "Room with
@@ -114,6 +127,11 @@ const bookingSchema = new mongoose.Schema(
     ratePlanCode: { type: String, default: "" },
     ratePlanName: { type: String, default: "" },
     nightlyRate: { type: Number, min: 0 },
+    // Whether the chosen plan was refundable *at booking time* — the guest
+    // self-service cancel (controllers/bookingController.js#cancelBookingSelf)
+    // reads this rather than re-resolving the room's *current* rate plans,
+    // which may have since changed or been removed entirely.
+    ratePlanRefundable: { type: Boolean, default: true },
 
     checkIn: { type: Date, required: true },
     checkOut: { type: Date, required: true },
@@ -142,6 +160,28 @@ const bookingSchema = new mongoose.Schema(
       index: true,
     },
     source: { type: String, enum: ["website", "admin"], default: "website" },
+
+    // Stamped by services/bookingLifecycle.js when a booking actually moves
+    // through the front desk — distinct from `createdAt`/`updatedAt`, which
+    // track the document, not the stay.
+    checkedInAt: { type: Date },
+    checkedOutAt: { type: Date },
+
+    // Who cancelled this booking and why — separate from the notification
+    // send-guards in `notifications` above, this is the durable record an
+    // admin or a guest's own self-service cancellation leaves behind.
+    cancellation: {
+      at: { type: Date },
+      reason: { type: String, default: "" },
+      by: { type: String, enum: ["guest", "staff", ""], default: "" },
+    },
+
+    // Soft-delete: a booking with captured, unrefunded money must never
+    // disappear outright (see services/bookingLifecycle.js), so
+    // DELETE /bookings/:id sets this instead of removing the document.
+    // `{ deletedAt: null }` also matches documents where the field was
+    // never set, so existing queries need no extra `$or`.
+    deletedAt: { type: Date },
   },
   { timestamps: true }
 );
@@ -151,6 +191,12 @@ bookingSchema.index({ createdAt: -1 });
 bookingSchema.index({ "payment.orderId": 1 }, { unique: true, sparse: true });
 bookingSchema.index({ "payment.paymentId": 1 }, { sparse: true });
 bookingSchema.index({ holdExpiresAt: 1 });
+// The exact shape services/availability.js#bookingOverlapMatch queries by —
+// without this, every availability check (one per room per date change,
+// pre-batching too) was a full collection scan. `status` before the date
+// range narrows the index to holding bookings first, which is the
+// selective part once the table has any real history of cancellations.
+bookingSchema.index({ roomType: 1, status: 1, checkIn: 1, checkOut: 1 });
 
 // Auto-assign a sequential booking code (BK-1001, BK-1002, ...) from an
 // atomic counter — safe under concurrent creates, unlike a document count.
@@ -225,4 +271,42 @@ export async function backfillLegacyPaymentDefaults() {
         `${paymentResult.modifiedCount}/${pricingResult.modifiedCount}/${notificationsResult.modifiedCount} legacy booking(s)`
     );
   }
+}
+
+// One-time migration guard, called at server startup alongside
+// backfillLegacyPaymentDefaults() above. Every booking made before
+// utils/dates.js#toHotelDay existed stored whatever instant its client
+// happened to send — a browser's IST-local midnight, a script's UTC
+// midnight — so two bookings for what a guest would call "the same night"
+// could differ by several hours and silently fail to overlap in
+// services/availability.js's date-range match. This re-anchors every
+// existing checkIn/checkOut to hotel-local midnight so old and new bookings
+// compare correctly against each other. Idempotent (re-anchoring an
+// already-anchored date is a no-op) and cheap to re-run on every boot: it
+// only touches rows whose stored instant isn't already midnight-aligned.
+export async function normalizeLegacyStayDates() {
+  const candidates = await Booking.find(
+    { $or: [{ checkIn: { $exists: true } }, { checkOut: { $exists: true } }] },
+    { checkIn: 1, checkOut: 1 }
+  ).lean();
+
+  const isMidnight = (d) => d instanceof Date && d.getUTCHours() === 0 && d.getUTCMinutes() === 0;
+
+  const ops = [];
+  for (const booking of candidates) {
+    if (isMidnight(booking.checkIn) && isMidnight(booking.checkOut)) continue;
+
+    const checkIn = toHotelDay(booking.checkIn);
+    const checkOut = toHotelDay(booking.checkOut);
+    if (!checkIn || !checkOut) continue; // leave unparseable dates for manual review
+
+    ops.push({
+      updateOne: { filter: { _id: booking._id }, update: { $set: { checkIn, checkOut } } },
+    });
+  }
+
+  if (ops.length === 0) return;
+
+  const result = await Booking.bulkWrite(ops);
+  console.log(`[migrate] normalized stay dates to hotel-local days on ${result.modifiedCount} legacy booking(s)`);
 }

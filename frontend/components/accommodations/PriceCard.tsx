@@ -3,6 +3,7 @@
 import { Room, RatePlan } from "./AvailableRooms";
 import { useBookingContext } from "./context/BookingContext";
 import { formatINR, nightlyRate } from "@/lib/pricing";
+import { availabilityLabel } from "@/lib/availability";
 
 interface PriceCardProps {
   room: Room;
@@ -24,11 +25,14 @@ export default function PriceCard({
 
   const rate = nightlyRate(plan);
 
-  // Availability is only known once dates are picked. "Available" means there
-  // are at least as many rooms free as the guest selected — no counts shown.
-  const availabilityKnown = typeof availableForDates === "number";
-  const available = !availabilityKnown || availableForDates >= roomsSelected;
-  const selectDisabled = availabilityKnown && !available;
+  // Availability is only known once dates are picked (lib/availability.ts's
+  // `tone: "unknown"` when `availableForDates` is undefined). "Sold out"
+  // means fewer rooms remain than the guest currently wants; below the low-
+  // stock threshold the guest sees the exact count instead of a flat
+  // "Available", so a scarce date range doesn't come as a surprise at
+  // checkout.
+  const status = availabilityLabel(availableForDates, roomsSelected);
+  const selectDisabled = status.tone === "soldOut";
 
   const handleSelectPlan = () => {
     if (selectDisabled) return;
@@ -53,18 +57,26 @@ export default function PriceCard({
         <span className="text-sm text-gray-500">/Night</span>
       </div>
 
-      {availabilityKnown && (
+      {status.tone !== "unknown" && (
         <p
           className={`mt-2 flex items-center gap-1.5 text-xs font-medium ${
-            available ? "text-green-700" : "text-red-600"
+            status.tone === "soldOut"
+              ? "text-red-600"
+              : status.tone === "low"
+              ? "text-amber-600"
+              : "text-green-700"
           }`}
         >
           <span
             className={`inline-block h-1.5 w-1.5 rounded-full ${
-              available ? "bg-green-600" : "bg-red-500"
+              status.tone === "soldOut"
+                ? "bg-red-500"
+                : status.tone === "low"
+                ? "bg-amber-500"
+                : "bg-green-600"
             }`}
           />
-          {available ? "Available" : "Not available"}
+          {status.label}
         </p>
       )}
 

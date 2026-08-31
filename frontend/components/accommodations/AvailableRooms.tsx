@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import RoomCard from "./RoomCard";
 import { useBookingContext } from "./context/BookingContext";
+import useRoomAvailability from "@/hooks/useRoomAvailability";
 import { api, type Room as ApiRoom, type RatePlan } from "@/lib/api";
 
 export type { RatePlan };
@@ -24,7 +25,6 @@ export interface Room {
   bed: string;
   breakfast: boolean;
   cancellation: boolean;
-  available: boolean;
 }
 
 // Map the backend room shape onto the shape this UI already expects, so none
@@ -48,7 +48,6 @@ function mapRoom(r: ApiRoom, index: number): Room {
     bed: r.bed,
     breakfast: r.breakfast,
     cancellation: r.cancellation,
-    available: r.availableRooms > 0,
   };
 }
 
@@ -58,9 +57,6 @@ export default function AvailableRooms() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  // slug -> rooms still available for the selected dates.
-  const [availability, setAvailability] = useState<Record<string, number>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -80,38 +76,13 @@ export default function AvailableRooms() {
     };
   }, []);
 
-  // Once dates are chosen, ask the backend how many of each room are actually
-  // free for that range (so guests can't select sold-out rooms).
-  const checkInISO = booking.checkIn?.toISOString();
-  const checkOutISO = booking.checkOut?.toISOString();
-
-  useEffect(() => {
-    if (!checkInISO || !checkOutISO || rooms.length === 0) {
-      setAvailability({});
-      return;
-    }
-
-    let cancelled = false;
-    Promise.all(
-      rooms.map((room) =>
-        api.rooms
-          .availability(room.slug, checkInISO, checkOutISO)
-          .then((res) => [room.slug, res.available] as const)
-          .catch(() => [room.slug, undefined] as const)
-      )
-    ).then((entries) => {
-      if (cancelled) return;
-      const map: Record<string, number> = {};
-      for (const [slug, available] of entries) {
-        if (typeof available === "number") map[slug] = available;
-      }
-      setAvailability(map);
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [checkInISO, checkOutISO, rooms]);
+  // slug -> rooms still available for the selected dates — one batch
+  // request for every room instead of one request per room (see
+  // hooks/useRoomAvailability.ts).
+  const { availability } = useRoomAvailability({
+    checkIn: booking.checkIn,
+    checkOut: booking.checkOut,
+  });
 
   const filteredRooms = rooms.filter((room) => {
     // Before search show all rooms
@@ -129,13 +100,26 @@ export default function AvailableRooms() {
     // 4 booking 2 rooms of a 2-guest room fits. Comparing against a single
     // room's capacity regardless of `rooms` requested used to hide every
     // room for exactly this case ("No Rooms Available" for a family that
-    // would fit fine across two doubles).
-    if (booking.adults > room.guests * booking.rooms) {
+    // would fit fine across two doubles). Children count toward capacity
+    // too — a 2+2 family used to pass this check against a 2-guest room
+    // simply because only `adults` was compared.
+    if (booking.adults + booking.children > room.guests * booking.rooms) {
       return false;
     }
 
     return true;
   });
+
+  // Once dates are picked, "available" means rooms that can actually take
+  // this booking's room count — a room already sold out for the range
+  // shouldn't inflate the headline count even though it still shows in the
+  // list (as "Sold Out", so the guest can see it and pick different dates).
+  const availableCount = booking.searched && (booking.checkIn || booking.checkOut)
+    ? filteredRooms.filter((room) => {
+        const forDates = availability[room.slug];
+        return forDates === undefined || forDates >= booking.rooms;
+      }).length
+    : filteredRooms.length;
 
   return (
     <section id="available-rooms" className="py-8 bg-[#faf8f3]">
@@ -150,8 +134,8 @@ export default function AvailableRooms() {
           <p className="text-gray-500 mt-2">
             {loading
               ? "Loading rooms…"
-              : `${filteredRooms.length} room${
-                  filteredRooms.length !== 1 ? "s" : ""
+              : `${availableCount} room${
+                  availableCount !== 1 ? "s" : ""
                 } available for your selected dates.`}
           </p>
         </div>

@@ -57,6 +57,21 @@ export function onBookingConfirmed(booking) {
   ]);
 }
 
+// A payment captured for a booking whose hold had already lapsed, and the
+// room turned out to be already sold to someone else by the time it did
+// (services/paymentReconciler.js#applyPaymentSuccess). Staff-only — the
+// guest still needs a human to sort out a refund, not an automated email
+// that would just confuse them ("confirmed" and "cancelled" in the same
+// breath), so nothing goes to the guest here.
+export function onBookingNeedsAttention(booking) {
+  return sendToStaff({
+    template: "staff-booking-needs-attention",
+    data: { booking },
+    dedupeKey: `staff-booking-needs-attention:${booking.bookingCode}`,
+    refs: { booking: booking._id },
+  });
+}
+
 // A booking's status moves to Cancelled
 // (controllers/bookingController.js#updateBookingStatus).
 export function onBookingCancelled(booking, { reason } = {}) {

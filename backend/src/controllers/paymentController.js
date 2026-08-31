@@ -3,9 +3,9 @@ import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { requireFields, isEmail, check } from "../utils/validate.js";
 import { env } from "../config/env.js";
-import { getAvailableCount } from "../services/availability.js";
+import { reserveInventory } from "../services/availability.js";
 import { quoteStay } from "../services/pricing.js";
-import { resolveRoomForBooking, resolveStayDates } from "../services/bookingRequest.js";
+import { resolveStayRequest } from "../services/bookingRequest.js";
 import {
   createOrder,
   fetchPayment,
@@ -40,48 +40,60 @@ export const createPaymentOrder = asyncHandler(async (req, res) => {
   requireFields(guest || {}, ["firstName", "email", "phone"]);
   check(isEmail(guest.email), "Enter a valid email address");
 
-  const room = await resolveRoomForBooking({ roomId, roomSlug });
-  const { inDate, outDate } = resolveStayDates(checkIn, checkOut);
-  const quote = await quoteStay({ room, ratePlanCode, checkIn: inDate, checkOut: outDate, rooms });
+  // The public booking path — inactive rooms, past/oversized/over-capacity
+  // stays are all rejected here, identically to /bookings/quote.
+  const { room, inDate, outDate, rooms: roomCount } = await resolveStayRequest({
+    roomId,
+    roomSlug,
+    checkIn,
+    checkOut,
+    rooms,
+    adults,
+    children,
+  });
 
-  const { available } = await getAvailableCount(room, inDate, outDate);
-  if (quote.rooms > available) {
-    throw new ApiError(
-      409,
-      available > 0
-        ? `Only ${available} room(s) left for the selected dates`
-        : "No rooms available for the selected dates"
-    );
-  }
+  const quote = await quoteStay({ room, ratePlanCode, checkIn: inDate, checkOut: outDate, rooms: roomCount });
 
   const holdExpiresAt = new Date(Date.now() + env.bookingHoldMinutes * 60 * 1000);
+  const guestCount = Math.max(1, Number(adults) || 1);
+  const childCount = Math.max(0, Number(children) || 0);
 
-  const booking = await Booking.create({
-    guest,
-    roomType: room._id,
-    roomName: room.name,
-    ratePlanCode: quote.plan.code,
-    ratePlanName: quote.plan.name,
-    nightlyRate: quote.nightlyRate,
+  // reserveInventory both blocks overbooking against the current count and
+  // resolves the race where two requests both saw the last room free — see
+  // services/availability.js.
+  const booking = await reserveInventory({
+    room,
     checkIn: inDate,
     checkOut: outDate,
-    nights: quote.nights,
-    adults: Math.max(1, Number(adults) || 1),
-    children: Math.max(0, Number(children) || 0),
-    rooms: quote.rooms,
-    amount: quote.total,
-    pricing: {
+    rooms: roomCount,
+    build: () => ({
+      guest,
+      roomType: room._id,
+      roomName: room.name,
+      ratePlanCode: quote.plan.code,
+      ratePlanName: quote.plan.name,
+      ratePlanRefundable: quote.plan.refundable !== false,
       nightlyRate: quote.nightlyRate,
-      subtotal: quote.subtotal,
-      taxPercent: quote.taxPercent,
-      taxAmount: quote.taxAmount,
-      total: quote.total,
-      currency: quote.currency,
-    },
-    status: "Pending",
-    payment: { status: "created", currency: quote.currency },
-    holdExpiresAt,
-    source: "website",
+      checkIn: inDate,
+      checkOut: outDate,
+      nights: quote.nights,
+      adults: guestCount,
+      children: childCount,
+      rooms: roomCount,
+      amount: quote.total,
+      pricing: {
+        nightlyRate: quote.nightlyRate,
+        subtotal: quote.subtotal,
+        taxPercent: quote.taxPercent,
+        taxAmount: quote.taxAmount,
+        total: quote.total,
+        currency: quote.currency,
+      },
+      status: "Pending",
+      payment: { status: "created", currency: quote.currency },
+      holdExpiresAt,
+      source: "website",
+    }),
   });
 
   // The order must exist for the booking to be payable — if Razorpay is
@@ -260,6 +272,7 @@ export const lookupBooking = asyncHandler(async (req, res) => {
   const booking = await Booking.findOne({
     bookingCode: String(code).trim(),
     "guest.email": String(email).trim().toLowerCase(),
+    deletedAt: null,
   }).lean();
 
   if (!booking) throw new ApiError(404, "We couldn't find a booking with those details");

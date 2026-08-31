@@ -97,11 +97,33 @@ export const env = {
     keySecret: isProd
       ? required("RAZORPAY_KEY_SECRET")
       : process.env.RAZORPAY_KEY_SECRET || "",
-    webhookSecret: process.env.RAZORPAY_WEBHOOK_SECRET || "",
+    // Required in production: without it, verifyWebhookSignature() always
+    // returns false (services/razorpay.js) and every real Razorpay webhook
+    // silently 400s forever — the guest-closed-the-tab safety net never
+    // fires and nobody is told why. Optional in dev so the app still boots
+    // without a tunnel/webhook configured.
+    webhookSecret: isProd
+      ? required("RAZORPAY_WEBHOOK_SECRET")
+      : process.env.RAZORPAY_WEBHOOK_SECRET || "",
     currency: process.env.PAYMENT_CURRENCY || "INR",
   },
 
   // How long a website booking holds its room inventory while the guest is
   // on the payment page. Expired holds are released by services/bookingSweeper.js.
   bookingHoldMinutes: Number(process.env.BOOKING_HOLD_MINUTES) || 15,
+
+  // The IANA zone every stay date is anchored to (see utils/dates.js). Two
+  // bookings for "the same night" must resolve to the same stored instant
+  // regardless of which client/timezone sent the request — this is the one
+  // knob that defines what "the same night" means.
+  hotelTimezone: process.env.HOTEL_TIMEZONE || "Asia/Kolkata",
+
+  // Site-wide booking policy defaults, applied by utils/dates.js#parseStayDates
+  // and services/bookingRequest.js so every entry point (quote, admin create,
+  // payment order) enforces the same limits instead of each re-deriving them.
+  booking: {
+    maxNights: Number(process.env.BOOKING_MAX_NIGHTS) || 30,
+    maxRooms: Number(process.env.BOOKING_MAX_ROOMS) || 5,
+    maxAdvanceDays: Number(process.env.BOOKING_MAX_ADVANCE_DAYS) || 365,
+  },
 };

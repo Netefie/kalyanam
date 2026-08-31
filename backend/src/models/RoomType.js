@@ -51,9 +51,15 @@ const roomTypeSchema = new mongoose.Schema(
     rating: { type: Number, default: 0, min: 0, max: 5 },
     reviews: { type: Number, default: 0, min: 0 },
 
-    // Inventory counts used by the admin dashboard.
+    // Total physical rooms of this type. "Available" is never stored here —
+    // it depends on a date range, and is always computed live from current
+    // bookings + blocks against this ceiling (see services/availability.js).
+    // An earlier `availableRooms` field used to sit next to this one as a
+    // static, hand-edited number the admin UI rendered as if it were live
+    // occupancy; it was removed for exactly that reason (see
+    // services/ratePlans.js#toPublicRoom, which strips it from any legacy
+    // document that still has it stored).
     totalRooms: { type: Number, default: 0, min: 0 },
-    availableRooms: { type: Number, default: 0, min: 0 },
 
     featured: { type: Boolean, default: false },
     active: { type: Boolean, default: true },

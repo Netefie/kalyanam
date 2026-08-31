@@ -40,6 +40,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# serverless framework (backend Lambda deploy build output)
+.serverless/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

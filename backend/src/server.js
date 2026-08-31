@@ -5,12 +5,13 @@ import { startBookingSweeper, stopBookingSweeper } from "./services/bookingSweep
 import { startMailScheduler, stopMailScheduler } from "./services/mailScheduler.js";
 import { verifyTransport, drainMailQueue } from "./services/mailer.js";
 import { ensureBookingCounterSeeded } from "./models/Counter.js";
-import { Booking, backfillLegacyPaymentDefaults } from "./models/Booking.js";
+import { Booking, backfillLegacyPaymentDefaults, normalizeLegacyStayDates } from "./models/Booking.js";
 
 async function start() {
   await connectDB();
   await ensureBookingCounterSeeded(Booking);
   await backfillLegacyPaymentDefaults();
+  await normalizeLegacyStayDates();
 
   // Confirms SMTP credentials work (or logs a clear reason they don't) once
   // at boot, instead of finding out on the first real send. Never throws —

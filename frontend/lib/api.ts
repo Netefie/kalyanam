@@ -126,10 +126,86 @@ export interface Room {
   cancellation: boolean;
   rating: number;
   reviews: number;
+  // Total physical rooms of this type. There is no static "available" count
+  // stored alongside it — availability always depends on a date range and
+  // is computed live (see api.rooms.availability / api.rooms.availabilityCalendar
+  // and backend/src/services/availability.js).
   totalRooms: number;
-  availableRooms: number;
   featured: boolean;
   active: boolean;
+}
+
+// One room type's live availability over a date range — the shape both
+// GET /rooms/availability and GET /rooms/:slug/availability return per room.
+// Mirrors backend/src/services/availability.js#getAvailableCount.
+export interface RoomAvailability {
+  total: number;
+  booked: number;
+  blocked: number;
+  available: number;
+}
+
+// GET /rooms/availability response — one batch read for every active room
+// over a shared date range, keyed by slug. Replaces issuing one request per
+// room on every date change — see hooks/useRoomAvailability.ts.
+export interface AvailabilityMap {
+  checkIn: string;
+  checkOut: string;
+  rooms: Record<string, RoomAvailability>;
+}
+
+// One day's availability — GET /rooms/availability/calendar's per-room,
+// per-day breakdown, used by the date picker (sold-out days) and the admin
+// Availability calendar grid.
+export interface DailyAvailability {
+  date: string; // "YYYY-MM-DD"
+  total: number;
+  booked: number;
+  blocked: number;
+  available: number;
+}
+
+export interface RoomAvailabilityCalendar {
+  slug: string;
+  name: string;
+  totalRooms: number;
+  days: DailyAvailability[];
+}
+
+export interface AvailabilityCalendarResponse {
+  from: string;
+  to: string;
+  rooms: RoomAvailabilityCalendar[];
+}
+
+// Mirrors backend/src/models/RoomBlock.js — an admin-created hold on
+// inventory that isn't a guest booking (maintenance, an owner stay, a group
+// hold), consuming stock the same way a booking does.
+export interface RoomBlock {
+  _id: string;
+  roomType: string;
+  from: string;
+  to: string;
+  rooms: number;
+  reason: string;
+  createdAt: string;
+}
+
+// Mirrors backend/src/models/Settings.js's singleton document.
+export interface SiteSettings {
+  key: string;
+  hotelName: string;
+  tagline: string;
+  email: string;
+  phone: string;
+  address: string;
+  checkInTime: string;
+  checkOutTime: string;
+  taxPercent: number;
+  currency: string;
+  cancellationWindowHours: number;
+  socials: { instagram: string; facebook: string; youtube: string };
+  policies: { cancellation: string; houseRules: string };
 }
 
 export interface GuestInput {
@@ -210,6 +286,10 @@ export interface Booking {
   holdExpiresAt?: string;
   status: "Pending" | "Confirmed" | "Cancelled" | "CheckedIn" | "CheckedOut" | "Expired";
   source: "website" | "admin";
+  checkedInAt?: string;
+  checkedOutAt?: string;
+  cancellation?: { at?: string; reason: string; by: "guest" | "staff" | "" };
+  notifications?: { needsAttentionAt?: string };
   createdAt: string;
 }
 
@@ -282,6 +362,17 @@ export interface Enquiry {
   createdAt: string;
 }
 
+// Mirrors backend/src/models/Subscriber.js — a newsletter / "exclusive
+// offers" opt-in from the site popup.
+export interface Subscriber {
+  _id: string;
+  name: string;
+  email: string;
+  phone: string;
+  source: string;
+  createdAt: string;
+}
+
 // Mirrors backend/src/models/MailLog.js's status enum.
 export type MailStatus = "queued" | "sent" | "failed" | "skipped" | "dry-run";
 
@@ -346,17 +437,46 @@ export const api = {
     listAll: () => request<Room[]>("/rooms?all=true", { auth: true }),
     get: (slug: string) => request<Room>(`/rooms/${slug}`),
     availability: (slug: string, checkIn: string, checkOut: string) =>
-      request<{ slug: string; total: number; booked: number; available: number }>(
+      request<{ slug: string } & RoomAvailability>(
         `/rooms/${slug}/availability?checkIn=${encodeURIComponent(
           checkIn
         )}&checkOut=${encodeURIComponent(checkOut)}`
       ),
+    // One batch read for every active room over a shared date range — see
+    // hooks/useRoomAvailability.ts, which replaced the former per-room
+    // fan-out with this single request.
+    availabilityBatch: (checkIn: string, checkOut: string, signal?: AbortSignal) =>
+      request<AvailabilityMap>(
+        `/rooms/availability?checkIn=${encodeURIComponent(checkIn)}&checkOut=${encodeURIComponent(checkOut)}`,
+        { signal }
+      ),
+    // Per-day availability across a range, for the date picker's sold-out
+    // days and the admin Availability calendar grid.
+    availabilityCalendar: (from: string, to: string, slug?: string) => {
+      const qs = new URLSearchParams({ from, to, ...(slug ? { slug } : {}) }).toString();
+      return request<AvailabilityCalendarResponse>(`/rooms/availability/calendar?${qs}`);
+    },
     create: (data: Partial<Room>) =>
       request<Room>("/rooms", { method: "POST", body: data, auth: true }),
     update: (id: string, data: Partial<Room>) =>
       request<Room>(`/rooms/${id}`, { method: "PUT", body: data, auth: true }),
     remove: (id: string) =>
       request<{ success: boolean }>(`/rooms/${id}`, { method: "DELETE", auth: true }),
+  },
+
+  // Admin-only inventory blocks (maintenance, an owner stay, a group hold) —
+  // backs the Availability calendar's block/unblock actions.
+  roomBlocks: {
+    list: (params: { roomType?: string; from?: string; to?: string } = {}) => {
+      const qs = new URLSearchParams(
+        Object.entries(params).filter(([, v]) => v != null && v !== "") as [string, string][]
+      ).toString();
+      return request<{ items: RoomBlock[] }>(`/room-blocks${qs ? `?${qs}` : ""}`, { auth: true });
+    },
+    create: (data: { roomType: string; from: string; to: string; rooms: number; reason?: string }) =>
+      request<RoomBlock>("/room-blocks", { method: "POST", body: data, auth: true }),
+    remove: (id: string) =>
+      request<{ success: boolean }>(`/room-blocks/${id}`, { method: "DELETE", auth: true }),
   },
 
   bookings: {
@@ -409,6 +529,15 @@ export const api = {
         body: { status },
         auth: true,
       }),
+    // Admin cancellation — `refund` is required whenever the booking has a
+    // captured, unrefunded payment (see backend/src/services/bookingLifecycle.js).
+    cancelAdmin: (id: string, data: { reason?: string; refund?: { amount?: number; reason?: string } } = {}) =>
+      request<Booking>(`/bookings/${id}/cancel`, { method: "POST", body: data, auth: true }),
+    // Guest self-service cancellation by booking code + email — same pairing
+    // as api.payments.lookup, so a leaked code alone can't cancel someone
+    // else's stay.
+    cancel: (data: { code: string; email: string; reason?: string }) =>
+      request<Booking>("/bookings/cancel", { method: "POST", body: data }),
     remove: (id: string) =>
       request<{ success: boolean }>(`/bookings/${id}`, { method: "DELETE", auth: true }),
   },
@@ -509,11 +638,17 @@ export const api = {
           .filter(([, v]) => v != null)
           .map(([k, v]) => [k, String(v)])
       ).toString();
-      return request<Paginated<{ name: string; email: string; phone: string }>>(
-        `/subscribers${qs ? `?${qs}` : ""}`,
-        { auth: true }
-      );
+      return request<Paginated<Subscriber>>(`/subscribers${qs ? `?${qs}` : ""}`, { auth: true });
     },
+  },
+
+  // The site-wide singleton (GST, check-in/out times, contact, policies,
+  // cancellation window) — read publicly, written by admin. See
+  // backend/src/models/Settings.js.
+  settings: {
+    get: () => request<SiteSettings>("/settings"),
+    update: (data: Partial<SiteSettings>) =>
+      request<SiteSettings>("/settings", { method: "PUT", body: data, auth: true }),
   },
 
   mail: {

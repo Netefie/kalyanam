@@ -24,7 +24,6 @@ const rooms = [
     breakfast: true,
     cancellation: true,
     totalRooms: 12,
-    availableRooms: 5,
     featured: true,
     active: true,
     ratePlans: [
@@ -69,7 +68,6 @@ const rooms = [
     breakfast: true,
     cancellation: true,
     totalRooms: 10,
-    availableRooms: 3,
     featured: false,
     active: true,
     ratePlans: [
@@ -117,7 +115,6 @@ const rooms = [
     breakfast: true,
     cancellation: true,
     totalRooms: 6,
-    availableRooms: 2,
     featured: true,
     active: true,
     ratePlans: [

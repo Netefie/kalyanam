@@ -30,6 +30,18 @@ function BookingContent() {
     }
   }, [booking.currentStep]);
 
+  // Steps 2 and 3 both require a selected room (PersonalDetails/BookingSummary
+  // and PaymentConfirmation each render nothing without one). A resumed
+  // session — sessionStorage restored on a fresh load, or the guest using
+  // the browser's back/forward buttons — can otherwise land on either step
+  // with `selectedRoom: null`, which read as a blank page with no way
+  // forward. Bounce back to room selection instead.
+  useEffect(() => {
+    if ((booking.currentStep === 2 || booking.currentStep === 3) && !booking.selectedRoom) {
+      setBooking((prev) => ({ ...prev, currentStep: 1 }));
+    }
+  }, [booking.currentStep, booking.selectedRoom, setBooking]);
+
   // Prefill "PLAN YOUR STAY" from ?roomType&checkIn&checkOut&adults&children&rooms
   // (set by the hero bar / navbar reservation widget) and auto-run the search.
   useEffect(() => {

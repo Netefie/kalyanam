@@ -19,6 +19,7 @@ import staffNewEnquiry from "./staffNewEnquiry.js";
 import staffPaymentFailed from "./staffPaymentFailed.js";
 import staffRefund from "./staffRefund.js";
 import staffNewSubscriber from "./staffNewSubscriber.js";
+import staffBookingNeedsAttention from "./staffBookingNeedsAttention.js";
 
 const all = [
   bookingConfirmed,
@@ -35,6 +36,7 @@ const all = [
   staffPaymentFailed,
   staffRefund,
   staffNewSubscriber,
+  staffBookingNeedsAttention,
 ];
 
 export const templates = Object.fromEntries(all.map((t) => [t.key, t]));

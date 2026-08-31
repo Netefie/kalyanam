@@ -1,10 +1,17 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DayPicker, DateRange } from "react-day-picker";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { format } from "date-fns";
+import { format, startOfMonth, endOfMonth } from "date-fns";
 import "react-day-picker/dist/style.css";
+import { api } from "@/lib/api";
+
+// "2026-09-10" for a calendar cell's Date — date-fns's format() reads local
+// wall-clock fields (not UTC), so this always matches the day the guest
+// sees regardless of their timezone, which is what the backend's own
+// hotel-day-anchored keys represent (see backend/src/utils/dates.js#toDayKey).
+const toDayKey = (date: Date) => format(date, "yyyy-MM-dd");
 
 interface LuxuryCalendarProps {
   open: boolean;
@@ -12,6 +19,12 @@ interface LuxuryCalendarProps {
   onSelect: (range: DateRange | undefined) => void;
   onClose: () => void;
   onApply: () => void;
+  // The room type currently filtered on ("" = any room) and how many rooms
+  // the guest wants — together they decide which calendar days show as
+  // sold out. Optional so this component still works anywhere a caller
+  // doesn't have that context yet.
+  roomSlug?: string;
+  roomsRequested?: number;
 }
 
 export default function LuxuryCalendar({
@@ -20,8 +33,59 @@ export default function LuxuryCalendar({
   onSelect,
   onClose,
   onApply,
+  roomSlug,
+  roomsRequested = 1,
 }: LuxuryCalendarProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const [month, setMonth] = useState<Date>(selected?.from ?? new Date());
+
+  // Days in the visible month where every relevant room (the selected room
+  // type, or — with "Any Room" — every active room) has fewer rooms free
+  // than the guest wants. Refetched whenever the visible month, the room
+  // filter, or the room count changes.
+  const [soldOutDays, setSoldOutDays] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+
+    const from = startOfMonth(month);
+    const to = endOfMonth(month);
+
+    api.rooms
+      .availabilityCalendar(from.toISOString(), to.toISOString(), roomSlug || undefined)
+      .then((res) => {
+        if (cancelled) return;
+        // A day is sold out only when *every* returned room type is sold
+        // out on it — with no room filter that's every active room; with
+        // one selected, the response has just that one.
+        const dayCounts = new Map<string, number>(); // date key -> rooms still short of every room type checked
+        const totalRooms = res.rooms.length;
+        if (totalRooms === 0) {
+          setSoldOutDays(new Set());
+          return;
+        }
+        for (const room of res.rooms) {
+          for (const day of room.days) {
+            if (day.available < roomsRequested) {
+              dayCounts.set(day.date, (dayCounts.get(day.date) || 0) + 1);
+            }
+          }
+        }
+        const soldOut = new Set<string>();
+        for (const [date, count] of dayCounts) {
+          if (count >= totalRooms) soldOut.add(date);
+        }
+        setSoldOutDays(soldOut);
+      })
+      .catch(() => {
+        if (!cancelled) setSoldOutDays(new Set());
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, month, roomSlug, roomsRequested]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -59,11 +123,16 @@ export default function LuxuryCalendar({
           <DayPicker
             mode="range"
             numberOfMonths={1}
+            month={month}
+            onMonthChange={setMonth}
             selected={selected}
             onSelect={onSelect}
-            disabled={{
-              before: new Date(),
-            }}
+            disabled={[
+              { before: new Date() },
+              (date: Date) => soldOutDays.has(toDayKey(date)),
+            ]}
+            modifiers={{ soldOut: (date: Date) => soldOutDays.has(toDayKey(date)) }}
+            modifiersClassNames={{ soldOut: "rdp-day_sold_out" }}
             showOutsideDays
             components={{
               PreviousMonthButton: (props) => (
@@ -254,6 +323,22 @@ export default function LuxuryCalendar({
   .rdp-day_today .rdp-day_button {
     border: 1px solid #b28a35;
     color: #b28a35;
+  }
+
+  /* Sold out: every room type is fully booked/blocked this day for the
+     requested room count. Struck through and muted rather than merely
+     disabled-looking, so it reads as "unavailable" rather than "outside
+     the bookable range" the way a past date does. */
+  .rdp-day_sold_out .rdp-day_button {
+    color: #c7bda7;
+    text-decoration: line-through;
+    text-decoration-color: #c7bda7;
+  }
+
+  .rdp-day_sold_out:hover .rdp-day_button {
+    background: transparent;
+    color: #c7bda7;
+    cursor: not-allowed;
   }
 
   /* ---------------- Footer ---------------- */

@@ -8,6 +8,7 @@ import { clearToken } from "@/lib/api";
 import {
   LayoutDashboard,
   CalendarCheck,
+  CalendarRange,
   BedDouble,
   MessageSquare,
   Settings,
@@ -15,6 +16,7 @@ import {
   ChevronRight,
   IndianRupee,
   Mail,
+  Users,
 } from "lucide-react";
 
 const menuItems = [
@@ -39,14 +41,29 @@ const menuItems = [
     icon: BedDouble,
   },
   {
+    title: "Availability",
+    href: "/admin/availability",
+    icon: CalendarRange,
+  },
+  {
     title: "Enquiries",
     href: "/admin/enquiries",
     icon: MessageSquare,
   },
   {
+    title: "Subscribers",
+    href: "/admin/subscribers",
+    icon: Users,
+  },
+  {
     title: "Emails",
     href: "/admin/emails",
     icon: Mail,
+  },
+  {
+    title: "Settings",
+    href: "/admin/settings",
+    icon: Settings,
   },
 
 ];
