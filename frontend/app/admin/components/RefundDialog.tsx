@@ -108,9 +108,13 @@ export default function RefundDialog({ booking, onClose, onRefunded }: RefundDia
           inset: 0;
           background: rgba(0, 0, 0, 0.45);
           display: flex;
-          align-items: center;
+          /* "safe" degrades to start-alignment once the modal is taller than the
+             viewport, instead of overflowing equally off the top and bottom
+             where the top half is beyond the reach of any scrollbar. */
+          align-items: safe center;
           justify-content: center;
           padding: 24px;
+          overflow-y: auto;
           z-index: 1100;
         }
 
@@ -119,6 +123,13 @@ export default function RefundDialog({ booking, onClose, onRefunded }: RefundDia
           border-radius: 20px;
           width: 100%;
           max-width: 440px;
+          /* A fixed overlay sits outside page scroll, so anything past the
+             bottom of the viewport can never be scrolled to. Cap it to the
+             space inside the backdrop padding and scroll internally instead —
+             this is what breaks when the browser is zoomed in. */
+          max-height: calc(100dvh - 48px);
+          overflow-y: auto;
+          overscroll-behavior: contain;
           padding: 28px;
           box-shadow: 0 30px 70px rgba(0, 0, 0, 0.25);
         }

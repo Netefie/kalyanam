@@ -29,11 +29,15 @@ export default function Navbar() {
             : "bg-transparent"
         }`}
       >
-        <div className="max-w-[1500px] mx-auto h-[92px] px-10 grid grid-cols-3 items-center">
+        {/* The 92px height is load-bearing — Sidebar positions itself with
+            top-[92px] / h-[calc(100dvh-92px)]. So rather than let the bar grow,
+            the contents shrink to stay inside it when the viewport narrows
+            (which is what zooming in does). */}
+        <div className="max-w-[1500px] mx-auto h-[92px] px-4 sm:px-6 lg:px-10 grid grid-cols-3 items-center gap-2">
 
           {/* LEFT */}
 
-          <div className="flex items-center gap-12">
+          <div className="flex min-w-0 items-center gap-4 lg:gap-12">
 
             <button
               onClick={() => setSidebarOpen(true)}
@@ -42,7 +46,7 @@ export default function Navbar() {
               <Menu
                 size={34}
                 strokeWidth={1.7}
-                className={`transition-colors duration-300 ${
+                className={`h-6 w-6 shrink-0 transition-colors duration-300 sm:h-[34px] sm:w-[34px] ${
                   active ? "text-black" : "text-white"
                 }`}
               />
@@ -98,7 +102,7 @@ export default function Navbar() {
                 height={115}
                 alt="Kalyanam"
                 priority
-                className="transition-all duration-500"
+                className="h-auto w-[62px] transition-all duration-500 sm:w-[90px] lg:w-[115px]"
               />
             </Link>
 
@@ -113,7 +117,7 @@ export default function Navbar() {
                 onClick={() =>
                   setShowReservation(!showReservation)
                 }
-                className={`px-8 py-4 uppercase tracking-[2px] text-sm font-semibold transition-all duration-300 ${
+                className={`whitespace-nowrap px-3 py-2.5 text-[10px] uppercase tracking-[1px] font-semibold transition-all duration-300 sm:px-5 sm:py-3 sm:text-xs sm:tracking-[2px] lg:px-8 lg:py-4 lg:text-sm ${
                   active
                     ? "bg-[#A66F43] text-white hover:bg-[#8E623D]"
                     : "border border-white text-white hover:bg-white hover:text-black"

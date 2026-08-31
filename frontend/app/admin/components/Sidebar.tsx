@@ -178,7 +178,9 @@ export default function Sidebar() {
     top: 0;
     left: 0;
     width: 300px;
-    height: 100vh;
+    /* dvh so the nav still ends at the visible bottom under mobile browser
+       chrome; it already scrolls internally when the menu outgrows it. */
+    height: 100dvh;
     background: #956124;
     border-right: 1px solid rgba(255,255,255,.06);
     display: flex;

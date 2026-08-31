@@ -110,7 +110,9 @@ const ContactBanner = () => {
         .contact-banner {
           position: relative;
           width: 100%;
-          overflow: hidden;
+          /* Clips the .leaf ornaments, which hang off both edges at -20px.
+             x-axis only, so tall content is never cut off. */
+          overflow-x: clip;
           background: linear-gradient(
             rgba(5, 35, 24, 0.96),
             rgba(5, 35, 24, 0.98)

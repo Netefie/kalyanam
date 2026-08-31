@@ -342,9 +342,11 @@ export default function PaymentsPage() {
         .tableCard {
           background: #fff;
           border-radius: 22px;
-          overflow: hidden;
-          box-shadow: 0 12px 35px rgba(0, 0, 0, 0.05);
+          /* Was "overflow: hidden" with "overflow-x: auto" after it, which clipped
+             the y axis for no reason. The card has auto height, so scrolling on
+             x alone never produces a vertical scrollbar. */
           overflow-x: auto;
+          box-shadow: 0 12px 35px rgba(0, 0, 0, 0.05);
         }
 
         table {

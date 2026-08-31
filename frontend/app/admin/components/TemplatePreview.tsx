@@ -129,7 +129,10 @@ export default function TemplatePreview({ templates, defaultTestTo }: TemplatePr
 
         .list{
           background:#fff; border-radius:18px; padding:14px;
-          box-shadow:0 10px 30px rgba(0,0,0,.05); max-height:720px; overflow-y:auto;
+          box-shadow:0 10px 30px rgba(0,0,0,.05);
+          /* Cap to the space actually on screen, so a zoomed-in (short) viewport
+             does not leave the bottom of the list below the fold. */
+          max-height:min(720px, max(220px, calc(100dvh - 200px))); overflow-y:auto;
         }
         .groupLabel{
           font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
@@ -175,8 +178,13 @@ export default function TemplatePreview({ templates, defaultTestTo }: TemplatePr
           border:1px solid #ECE4D6; border-radius:14px; overflow:hidden; background:#F8F5EF;
           display:flex; justify-content:center; padding:20px;
         }
-        .frame{ width:100%; height:640px; border:none; background:#fff; border-radius:8px; }
-        .frameWrap.mobile .frame{ width:390px; }
+        .frame{
+          width:100%; height:640px; max-height:max(280px, calc(100dvh - 260px));
+          border:none; background:#fff; border-radius:8px;
+        }
+        /* max-width so the 390px mobile preview shrinks rather than pushing the
+           pane wider than the page when the browser is zoomed in. */
+        .frameWrap.mobile .frame{ width:390px; max-width:100%; }
         .loading{ padding:60px 20px; color:#999; text-align:center; width:100%; }
 
         @media(max-width:900px){

@@ -213,7 +213,11 @@ export default function BookingTable({
         .tableCard{
           background:#fff;
           border-radius:22px;
-          overflow:hidden;
+          /* Scroll on x unconditionally rather than only under a width media
+             query — the table has a min-width, so it can outgrow its container
+             at any viewport once the browser is zoomed in. The card is the
+             scroller, so the rounded corners still clip the table. */
+          overflow-x:auto;
           box-shadow:0 12px 35px rgba(0,0,0,.05);
         }
 
@@ -370,10 +374,6 @@ export default function BookingTable({
         }
 
         @media(max-width:1200px){
-
-          .tableCard{
-            overflow:auto;
-          }
 
           table{
             min-width:1250px;

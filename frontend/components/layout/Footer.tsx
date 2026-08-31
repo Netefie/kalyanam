@@ -379,7 +379,10 @@ export default function Footer() {
       <style>{`
       .footer{
     position:relative;
-    overflow:hidden;
+    /* Clip the decorative column dividers (.footer-column::before sits at
+       left:-28px) on the x axis only. "clip" rather than "hidden" so this
+       never becomes a scroll container and never hides anything vertically. */
+    overflow-x:clip;
     background:#111111;
     color:#ECE6DB;
 }

@@ -63,7 +63,11 @@ export default function HeroContact() {
 .contact-hero{
     position:relative;
     width:100%;
-    height:100vh;
+    /* min-height, not height: zoomed in the content outgrows the viewport and
+       a fixed height clipped it out of scroll range. svh so mobile browser
+       chrome collapsing does not reflow the hero mid-scroll. */
+    min-height:100svh;
+    padding:120px 0;
 
     background-size:cover;
     background-position:center;
@@ -71,9 +75,11 @@ export default function HeroContact() {
 
     display:flex;
     justify-content:center;
-    align-items:center;
+    /* "safe" degrades to start-alignment once the content is taller than
+       the box, rather than overflowing off both edges. */
+    align-items:safe center;
 
-    overflow:hidden;
+    overflow-x:clip;
 }
 
 .contact-overlay{
@@ -233,7 +239,8 @@ export default function HeroContact() {
 @media (max-width:992px){
 
     .contact-hero{
-        height:85vh;
+        min-height:85svh;
+        padding:110px 0;
     }
 
     .contact-container{
@@ -267,7 +274,8 @@ export default function HeroContact() {
 @media (max-width:768px){
 
     .contact-hero{
-        height:80vh;
+        min-height:80svh;
+        padding:100px 0;
     }
 
     .contact-container{
@@ -319,7 +327,8 @@ export default function HeroContact() {
 @media (max-width:480px){
 
     .contact-hero{
-        height:75vh;
+        min-height:75svh;
+        padding:90px 0;
     }
 
     .contact-container{

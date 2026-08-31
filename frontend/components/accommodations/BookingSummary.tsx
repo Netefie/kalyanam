@@ -56,8 +56,11 @@ export default function BookingSummary() {
     setBooking((prev) => ({ ...prev, currentStep: 3 }));
   };
 
+  // The panel is capped and self-scrolling: a sticky element pins its top, so
+  // once it is taller than the viewport (short screen, or zoomed in) its
+  // footer — the Continue button — would sit permanently below the fold.
   return (
-    <div className="sticky top-28">
+    <div className="sticky top-28 max-h-[calc(100dvh-8rem)] overflow-y-auto overscroll-contain">
 
       <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
 

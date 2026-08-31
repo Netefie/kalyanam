@@ -59,8 +59,23 @@ html {
 
 body {
   margin: 0;
-  overflow-x: hidden;
   background: #FCF7F1;
+}
+
+/* No `overflow-x: hidden` here on purpose. It hides horizontal overflow
+   instead of letting it scroll, so anything wider than the viewport —
+   which is what zooming in produces — becomes unreachable rather than
+   merely awkward. The sections with decorative overhangs clip themselves
+   (`overflow-x: clip` in Footer / WeddingsEnd / ContactBanner); everything
+   else that can't shrink scrolls on its own axis. */
+
+/* A single oversized asset shouldn't be able to widen the page. */
+img,
+svg,
+video,
+canvas,
+iframe {
+  max-width: 100%;
 }
 
 /* --------------------------

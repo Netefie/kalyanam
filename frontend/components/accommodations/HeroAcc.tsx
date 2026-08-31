@@ -65,12 +65,20 @@ export default function HeroAcc() {
       <style>{`
        .heroacc-section {
   width: 100%;
-  height: 100vh;
+  /* min-height, not height: zoomed in, the heading + copy + CTAs are taller
+     than the viewport, and a fixed height would clip them out of scroll
+     range. svh rather than dvh so mobile browser chrome collapsing does not
+     reflow the hero mid-scroll. */
+  min-height: 100svh;
+  padding: 120px 0;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   display: flex;
-  align-items: center;
+  /* "safe" falls back to start-alignment once the content is taller than
+     the box, instead of overflowing equally off both edges. */
+  align-items: safe center;
+  overflow-x: clip;
 }
 
 .heroacc-container {
@@ -246,8 +254,9 @@ export default function HeroAcc() {
 @media (max-width:768px){
 
   .heroacc-section{
-    height:90vh;
-    align-items:center;
+    min-height:90svh;
+    padding:100px 0;
+    align-items:safe center;
   }
 
   .heroacc-container{

@@ -29,7 +29,9 @@ const WeddingsEnd = () => {
           width: 100%;
           background: #f4daae;
           padding: 50px 80px;
-          overflow: hidden;
+          /* Clips the .overlay-pattern ornaments, which hang off both edges at
+             -40px. x-axis only, so tall content is never cut off. */
+          overflow-x: clip;
           font-family: 'Georgia', serif;
         }
 

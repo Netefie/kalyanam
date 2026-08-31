@@ -339,7 +339,9 @@ export default function PaymentConfirmation() {
 
           {/* Price + pay */}
           <div className="lg:col-span-1">
-            <div className="sticky top-28 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            {/* Capped and self-scrolling — see BookingSummary: a sticky panel
+                taller than the viewport hides its own Pay button. */}
+            <div className="sticky top-28 max-h-[calc(100dvh-8rem)] overflow-y-auto overscroll-contain rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
               <h3 className="text-lg font-semibold text-[#222]">Price Summary</h3>
 
               {quoteLoading && !quote ? (

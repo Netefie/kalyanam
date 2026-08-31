@@ -87,8 +87,11 @@ export default function HeroBookingBar() {
     );
   };
 
+  // Rendered in normal flow inside the hero's flex column. It used to be
+  // `absolute bottom-8`, which overlapped the hero copy once either one grew —
+  // e.g. when zoomed in, where this collapses to a four-row stack.
   return (
-    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 w-[95%] max-w-7xl">
+    <div className="relative z-30 mx-auto mb-8 w-[95%] max-w-7xl">
       <div className="backdrop-blur-xl bg-[#5d5048]/75 border border-white/20 rounded-2xl shadow-2xl p-3">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
 

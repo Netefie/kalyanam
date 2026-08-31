@@ -51,11 +51,15 @@ const HeroBanquet = () => {
         .hero-banquet {
           position: relative;
           width: 100%;
-          min-height: 100vh;
-          overflow: hidden;
+          /* svh so mobile browser chrome collapsing does not reflow the hero
+             mid-scroll. Already min-height, so it grows rather than clips. */
+          min-height: 100svh;
+          overflow-x: clip;
           display: flex;
-          align-items: center;
-          padding: 80px;
+          /* "safe" degrades to start-alignment once the content is taller than
+             the box, rather than overflowing off both edges. */
+          align-items: safe center;
+          padding: 80px clamp(24px, 5vw, 80px);
         }
 
         .bg-image {

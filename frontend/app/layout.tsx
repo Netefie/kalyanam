@@ -71,7 +71,7 @@ export default function RootLayout({
         ${pinyon.variable}
       `}
     >
-      <body className="overflow-x-hidden bg-[#FCF8F2] text-black">
+      <body className="bg-[#FCF8F2] text-black">
 
   <LayoutWrapper>
     {children}

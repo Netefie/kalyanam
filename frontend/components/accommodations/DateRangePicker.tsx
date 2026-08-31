@@ -255,6 +255,16 @@ export default function DateRangePicker({
       align-items:flex-end;
       background:rgba(0,0,0,.45);
       padding:16px;
+      max-width:none;
+    }
+
+    /* Matches the cap LuxuryCalendar sets on its own bottom sheet — a fixed
+       sheet is outside page scroll, so a calendar taller than the viewport
+       would otherwise have its top out of reach. */
+    :global(.calendarPopup){
+      max-height:calc(100dvh - 32px);
+      overflow-y:auto;
+      overscroll-behavior:contain;
     }
   }
 

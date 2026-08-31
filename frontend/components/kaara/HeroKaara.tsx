@@ -68,10 +68,14 @@ export default function HeroKaara() {
         .hero {
           position: relative;
           width: 100%;
-          height: 100vh;
+          /* min-height, not height: zoomed in the content outgrows the viewport
+             and a fixed height clipped it out of scroll range. svh so mobile
+             browser chrome collapsing does not reflow the hero mid-scroll.
+             The container below stretches to fill this, so the copy keeps
+             sitting on the hero floor exactly as before. */
+          min-height: 100svh;
           display: flex;
-          align-items: center;
-          overflow: hidden;
+          overflow-x: clip;
         }
 
         .bg {
@@ -93,11 +97,12 @@ export default function HeroKaara() {
           position: relative;
           z-index: 2;
           width: min(1400px, 90%);
-          margin: auto;
+          /* margin-inline only — an auto block margin would cancel the flex
+             stretch that gives this its height. */
+          margin: 0 auto;
           display: flex;
           justify-content: space-between;
           align-items: flex-end;
-          height: 100%;
           padding: 120px 0 80px;
         }
 
@@ -174,7 +179,7 @@ export default function HeroKaara() {
         @media (max-width: 768px) {
           .container {
             flex-direction: column;
-            justify-content: center;
+            justify-content: safe center;
             align-items: flex-start;
             gap: 60px;
             padding: 100px 0 60px;

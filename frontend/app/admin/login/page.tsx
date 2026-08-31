@@ -214,8 +214,10 @@ export default function AdminLogin() {
       </section>
    <style jsx>{`
       .loginPage {
-  height: 100vh;
-  overflow: hidden;
+  /* min-height, not height + overflow:hidden: zoomed in, the sign-in card was
+     taller than the viewport and its submit button got clipped out of scroll
+     range. Now the page grows and scrolls normally. */
+  min-height: 100svh;
   display: grid;
   grid-template-columns: 1.1fr 0.9fr;
   background: #fcf8f2;
@@ -254,14 +256,16 @@ export default function AdminLogin() {
 
 .rightSide {
   display: flex;
-  align-items: center;
+  /* "safe" degrades to start-alignment once the card is taller than the
+     column, rather than overflowing off both edges. */
+  align-items: safe center;
   justify-content: center;
   background: linear-gradient(
     rgba(252,248,242,.95),
     rgba(252,248,242,.95)
   ),
   #FCF8F2;
-    padding: 0 60px;
+    padding: 40px clamp(20px, 5vw, 60px);
 }
 
 .loginCard {

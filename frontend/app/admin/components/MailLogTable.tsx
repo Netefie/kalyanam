@@ -178,7 +178,10 @@ export default function MailLogTable({ logs, loading, onRetried }: MailLogTableP
 
       <style jsx>{`
         .tableCard{
-          background:#fff; border-radius:22px; overflow:hidden;
+          /* overflow-x unconditionally, not only under a width media query — the
+             table has a min-width and can outgrow its container at any viewport
+             once the browser is zoomed in. */
+          background:#fff; border-radius:22px; overflow-x:auto;
           box-shadow:0 12px 35px rgba(0,0,0,.05);
         }
         table{ width:100%; border-collapse:collapse; }
@@ -191,7 +194,6 @@ export default function MailLogTable({ logs, loading, onRetried }: MailLogTableP
         .empty{ text-align:center; color:#999; padding:48px 20px; }
 
         @media(max-width:1200px){
-          .tableCard{ overflow:auto; }
           table{ min-width:1000px; }
         }
       `}</style>

@@ -202,12 +202,17 @@ export default function LuxuryCalendar({
     position: absolute;
     top: calc(100% + 12px);
     left: 0;
+    /* Never let the popover run past the right edge of the page — under zoom
+       the anchor can sit close enough to it that a left-aligned 320px panel
+       would hang off, and it would be clipped rather than scrollable. */
+    max-width: calc(100vw - 24px);
     z-index: 9999;
     animation: fadeUp 0.28s ease;
   }
 
   .calendarPopup {
     width: 320px;
+    max-width: 100%;
     background: #fff;
     border-radius: 18px;
     border: 1px solid #e9dcc3;
@@ -413,10 +418,17 @@ export default function LuxuryCalendar({
       justify-content:center;
       align-items:flex-end;
       padding:20px;
+      max-width:none;
     }
 
     .calendarPopup{
       width:100%;
+      /* A fixed bottom sheet sits outside page scroll, so a calendar taller
+         than the viewport had its top pushed out of reach. Cap it to the
+         space inside the backdrop padding and scroll internally. */
+      max-height:calc(100dvh - 40px);
+      overflow-y:auto;
+      overscroll-behavior:contain;
       border-radius:22px 22px 0 0;
     }
 

@@ -189,6 +189,10 @@ export default function AvailabilityPage() {
             <span><i className="dot soldOut" /> Sold out</span>
           </div>
 
+          {/* Its own x-scroller: seven equal columns squeezed into a zoomed-in
+              viewport become unreadable slivers, so below `min-width` the grid
+              scrolls sideways instead of shrinking. */}
+          <div className="gridScroll">
           <div className="grid">
             {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
               <div key={d} className="weekday">{d}</div>
@@ -209,6 +213,7 @@ export default function AvailabilityPage() {
                 </div>
               );
             })}
+          </div>
           </div>
 
           <div className="blockList">
@@ -422,9 +427,21 @@ export default function AvailabilityPage() {
           background: #dc2626;
         }
 
+        .gridScroll {
+          overflow-x: auto;
+          overscroll-behavior-x: contain;
+          /* Room for the grid card's drop shadow, which the scroller would
+             otherwise clip along the bottom edge. */
+          padding-bottom: 12px;
+        }
+
         .grid {
           display: grid;
           grid-template-columns: repeat(7, 1fr);
+          /* Floor below which seven columns stop being readable and .gridScroll
+             takes over. The mobile rules below tighten the cells for real
+             phones, so the floor drops with them. */
+          min-width: 640px;
           gap: 8px;
           background: #fff;
           border-radius: 16px;
@@ -532,6 +549,7 @@ export default function AvailabilityPage() {
           .grid {
             gap: 4px;
             padding: 12px;
+            min-width: 260px;
           }
 
           .cell {
