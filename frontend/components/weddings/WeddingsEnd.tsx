@@ -1,5 +1,6 @@
 // WeddingsEnd.tsx
 import React from "react";
+import Link from "next/link";
 
 const WeddingsEnd = () => {
   return (
@@ -16,9 +17,9 @@ const WeddingsEnd = () => {
             </p>
           </div>
 
-          <button className="enquire-btn">
+          <Link href="/contact" className="enquire-btn">
             ENQUIRE NOW <span>→</span>
-          </button>
+          </Link>
         </div>
       </section>
 
@@ -59,6 +60,8 @@ const WeddingsEnd = () => {
         }
 
         .enquire-btn {
+          text-decoration: none;
+          white-space: nowrap;
           background: #b88a4a;
           color: white;
           border: none;

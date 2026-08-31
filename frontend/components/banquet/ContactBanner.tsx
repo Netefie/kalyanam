@@ -1,6 +1,8 @@
 // ContactBanner.tsx
 
 import React from "react";
+import Link from "next/link";
+import { PHONE, PHONE_HREF, MAPS_URL } from "@/lib/site";
 import {
   Phone,
   MapPin,
@@ -34,10 +36,10 @@ const ContactBanner = () => {
 
             <p>We’re here to help you plan every detail</p>
 
-            <button>
+            <Link href="/contact" className="enquire-cta">
               ENQUIRE NOW
               <ArrowRight size={18} />
-            </button>
+            </Link>
           </div>
 
           {/* Right Content */}
@@ -48,7 +50,11 @@ const ContactBanner = () => {
               </div>
 
               <h3>Call Us</h3>
-              <p>+91 98765 43210</p>
+              <p>
+                <a href={PHONE_HREF} className="card-link">
+                  {PHONE}
+                </a>
+              </p>
             </div>
 
             <div className="info-card">
@@ -58,9 +64,17 @@ const ContactBanner = () => {
 
               <h3>Location</h3>
               <p>
-                Kalyanam Marriage Lawn
-                <br />
-Sikar              </p>
+                <a
+                  href={MAPS_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="card-link"
+                >
+                  Kalyanam Marriage Lawn
+                  <br />
+                  Sikar
+                </a>
+              </p>
             </div>
 
             <div className="info-card">
@@ -69,7 +83,11 @@ Sikar              </p>
               </div>
 
               <h3>Visit Us</h3>
-              <p>Book a visit & explore our venue</p>
+              <p>
+                <Link href="/contact" className="card-link">
+                  Book a visit &amp; explore our venue
+                </Link>
+              </p>
             </div>
 
             <div className="info-card">
@@ -78,7 +96,11 @@ Sikar              </p>
               </div>
 
               <h3>Event Assistance</h3>
-              <p>We’re here to assist you 24/7</p>
+              <p>
+                <a href={PHONE_HREF} className="card-link">
+                  We’re here to assist you 24/7
+                </a>
+              </p>
             </div>
           </div>
         </div>
@@ -89,11 +111,10 @@ Sikar              </p>
           position: relative;
           width: 100%;
           overflow: hidden;
-          background:
-            linear-gradient(rgba(5, 35, 24, 0.88), rgba(5, 35, 24, 0.9)),
-            url('/green-texture.jpg');
-          background-size: cover;
-          background-position: center;
+          background: linear-gradient(
+            rgba(5, 35, 24, 0.96),
+            rgba(5, 35, 24, 0.98)
+          );
           padding: 55px 60px;
         }
 
@@ -145,7 +166,8 @@ Sikar              </p>
           font-family: Arial, sans-serif;
         }
 
-        .left-section button {
+        .left-section .enquire-cta {
+          text-decoration: none;
           display: inline-flex;
           align-items: center;
           gap: 12px;
@@ -161,7 +183,7 @@ Sikar              </p>
           font-weight: 600;
         }
 
-        .left-section button:hover {
+        .left-section .enquire-cta:hover {
           background: #b4803a;
           transform: translateY(-2px);
         }
@@ -210,6 +232,16 @@ Sikar              </p>
           color: rgba(255,255,255,0.72);
           margin: 0;
           font-family: Arial, sans-serif;
+        }
+
+        .card-link {
+          color: inherit;
+          text-decoration: none;
+          transition: color 0.3s ease;
+        }
+
+        .card-link:hover {
+          color: #ddb174;
         }
 
         /* Decorative Leaves */

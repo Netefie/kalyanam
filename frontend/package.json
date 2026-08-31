@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check:assets": "node scripts/check-assets.mjs",
+    "optimize:images": "node scripts/optimize-images.mjs",
+    "prebuild": "node scripts/check-assets.mjs"
   },
   "dependencies": {
     "date-fns": "^4.4.0",

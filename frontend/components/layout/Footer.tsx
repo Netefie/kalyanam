@@ -5,6 +5,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
+import {
+  ADDRESS,
+  EMAIL,
+  EMAIL_HREF,
+  MAPS_URL,
+  PHONE,
+  PHONE_HREF,
+  SOCIALS,
+} from "@/lib/site";
+
 export default function Footer() {
   const [showTop, setShowTop] = useState(false);
 
@@ -192,38 +202,40 @@ export default function Footer() {
 
                 <li>
                   <a
-                    href="https://maps.google.com"
+                    href={MAPS_URL}
                     target="_blank"
+                    rel="noopener noreferrer"
                     className="footer-reveal"
                   >
-                    Jaipur Road,
+                    {ADDRESS.line1},
                     <br />
-                    Sikar, Rajasthan
+                    {ADDRESS.line2}
                   </a>
                 </li>
 
                 <li>
                   <a
-                    href="tel:+919876543210"
+                    href={PHONE_HREF}
                     className="footer-reveal"
                   >
-                    +91 98765 43210
+                    {PHONE}
                   </a>
                 </li>
 
                 <li>
                   <a
-                    href="mailto:info@kalyanamhotel.com"
+                    href={EMAIL_HREF}
                     className="footer-reveal"
                   >
-                    info@kalyanamhotel.com
+                    {EMAIL}
                   </a>
                 </li>
 
                 <li>
                   <a
-                    href="https://instagram.com"
+                    href={SOCIALS.instagram}
                     target="_blank"
+                    rel="noopener noreferrer"
                     className="footer-reveal"
                   >
                     Instagram
@@ -232,8 +244,9 @@ export default function Footer() {
 
                 <li>
                   <a
-                    href="https://facebook.com"
+                    href={SOCIALS.facebook}
                     target="_blank"
+                    rel="noopener noreferrer"
                     className="footer-reveal"
                   >
                     Facebook

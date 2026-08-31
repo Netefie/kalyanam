@@ -55,9 +55,10 @@ export default function AmbienceSection() {
             <div className="large-image">
 
               <Image
-                src="/ambience-1.AVIF"
+                src="/ambience-1.avif"
                 alt="Restaurant Interior"
                 fill
+                sizes="(max-width: 768px) 100vw, 50vw"
                 priority
               />
 
@@ -72,9 +73,10 @@ export default function AmbienceSection() {
               <div className="small-image">
 
                 <Image
-                  src="/ambience-2.JPG"
+                  src="/ambience-2.jpg"
                   alt="Dining"
                   fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
                 />
 
               </div>
@@ -82,9 +84,10 @@ export default function AmbienceSection() {
               <div className="small-image">
 
                 <Image
-                  src="/ambience-3.JPG"
+                  src="/ambience-3.jpg"
                   alt="Rooftop"
                   fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
                 />
 
               </div>

@@ -14,12 +14,12 @@ const cards = [
     description: "Host lavish receptions under the stars.",
   },
   {
-    image: "/pre-wedding.jpg",
+    image: "/1.jpg",
     title: "Pre-Wedding Functions",
     description: "From mehendi to sangeet, we've got you covered.",
   },
   {
-    image: "/custom-experience.jpg",
+    image: "/venue-large.jpg",
     title: "Custom Experiences",
     description: "Tailored setups for your unique celebrations.",
   },

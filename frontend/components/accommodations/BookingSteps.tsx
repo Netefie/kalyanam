@@ -19,7 +19,12 @@ const steps = [
   },
   {
     id: 3,
-    title: "Payment Confirmation",
+    title: "Review & Pay",
+    icon: "/payment.svg",
+  },
+  {
+    id: 4,
+    title: "Confirmation",
     icon: "/payment.svg",
   },
 ];

@@ -9,8 +9,10 @@ import {
 interface BookingFiltersProps {
   search: string;
   status: string;
+  paymentStatus: string;
   onSearchChange: (value: string) => void;
   onStatusChange: (value: string) => void;
+  onPaymentStatusChange: (value: string) => void;
   onReset: () => void;
   onApply: () => void;
 }
@@ -18,8 +20,10 @@ interface BookingFiltersProps {
 export default function BookingFilters({
   search,
   status,
+  paymentStatus,
   onSearchChange,
   onStatusChange,
+  onPaymentStatusChange,
   onReset,
   onApply,
 }: BookingFiltersProps) {
@@ -69,6 +73,29 @@ export default function BookingFilters({
               <option value="Cancelled">Cancelled</option>
               <option value="CheckedIn">Checked In</option>
               <option value="CheckedOut">Checked Out</option>
+              <option value="Expired">Expired</option>
+            </select>
+
+          </div>
+
+          {/* Payment status */}
+
+          <div className="field">
+
+            <label>
+              Payment Status
+            </label>
+
+            <select
+              value={paymentStatus}
+              onChange={(e) => onPaymentStatusChange(e.target.value)}
+            >
+              <option value="">All</option>
+              <option value="created">Awaiting Payment</option>
+              <option value="paid">Paid</option>
+              <option value="failed">Failed</option>
+              <option value="refunded">Refunded</option>
+              <option value="partially_refunded">Partially Refunded</option>
             </select>
 
           </div>
@@ -108,7 +135,7 @@ export default function BookingFilters({
 
         .grid{
           display:grid;
-          grid-template-columns:2fr 1fr;
+          grid-template-columns:2fr 1fr 1fr;
           gap:18px;
         }
 

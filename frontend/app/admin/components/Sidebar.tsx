@@ -9,11 +9,12 @@ import {
   LayoutDashboard,
   CalendarCheck,
   BedDouble,
-  FileText,
   MessageSquare,
   Settings,
   LogOut,
   ChevronRight,
+  IndianRupee,
+  Mail,
 } from "lucide-react";
 
 const menuItems = [
@@ -28,21 +29,26 @@ const menuItems = [
     icon: CalendarCheck,
   },
   {
+    title: "Payments",
+    href: "/admin/payments",
+    icon: IndianRupee,
+  },
+  {
     title: "Rooms",
     href: "/admin/rooms",
     icon: BedDouble,
-  },
-  {
-    title: "Blogs",
-    href: "/admin/blogs",
-    icon: FileText,
   },
   {
     title: "Enquiries",
     href: "/admin/enquiries",
     icon: MessageSquare,
   },
- 
+  {
+    title: "Emails",
+    href: "/admin/emails",
+    icon: Mail,
+  },
+
 ];
 
 export default function Sidebar() {
@@ -67,7 +73,7 @@ export default function Sidebar() {
             <div className="logoCircle">
 
               <Image
-                src="/Whitelogo.png"
+                src="/whitelogo.png"
                 alt="Kalyanam"
                 width={822}
                 height={822}

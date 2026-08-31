@@ -139,9 +139,25 @@ export default function DashboardPage() {
 
               <OverviewItem
                 icon={<TrendingUp size={20} />}
-                title="Today's Revenue"
+                title="Today's Revenue (Collected)"
                 value={stats ? money(stats.todaysRevenue) : "—"}
               />
+
+              {Boolean(stats?.pendingRevenue) && (
+                <OverviewItem
+                  icon={<TrendingUp size={20} />}
+                  title="Pending Payment"
+                  value={money(stats!.pendingRevenue)}
+                />
+              )}
+
+              {Boolean(stats?.refundedToday) && (
+                <OverviewItem
+                  icon={<TrendingUp size={20} />}
+                  title="Refunded Today"
+                  value={money(stats!.refundedToday)}
+                />
+              )}
 
               <OverviewItem
                 icon={<Users size={20} />}
@@ -249,6 +265,11 @@ export default function DashboardPage() {
         .checkedout{
           background:#ede9fe;
           color:#6d28d9;
+        }
+
+        .expired{
+          background:#f3f4f6;
+          color:#6b7280;
         }
 
         .overview{

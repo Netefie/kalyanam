@@ -27,7 +27,7 @@ const rooms = [
   {
     id: 2,
     title: "Super Deluxe",
-    image: "/rooms/super-deluxe.jpg",
+    image: "/super-deluxe-room.jpg",
     guests: 3,
     size: "420 sq.ft",
     price: "₹5,499",
@@ -38,7 +38,7 @@ const rooms = [
   {
     id: 3,
     title: "Luxury Suite",
-    image: "/rooms/suite.jpg",
+    image: "/deluxe-room.jpg",
     guests: 4,
     size: "650 sq.ft",
     price: "₹8,999",
@@ -88,6 +88,7 @@ export default function RoomTypes() {
                 src={room.image}
                 alt={room.title}
                 fill
+                sizes="(max-width: 768px) 100vw, 33vw"
               />
 
               {room.featured && (

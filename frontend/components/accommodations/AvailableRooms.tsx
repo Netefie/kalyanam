@@ -125,8 +125,12 @@ export default function AvailableRooms() {
       return false;
     }
 
-    // Guest capacity
-    if (booking.adults > room.guests) {
+    // Guest capacity — a room's `guests` cap applies per room, so a party of
+    // 4 booking 2 rooms of a 2-guest room fits. Comparing against a single
+    // room's capacity regardless of `rooms` requested used to hide every
+    // room for exactly this case ("No Rooms Available" for a family that
+    // would fit fine across two doubles).
+    if (booking.adults > room.guests * booking.rooms) {
       return false;
     }
 
@@ -177,7 +181,7 @@ export default function AvailableRooms() {
           <div className="space-y-10">
             {filteredRooms.map((room, index) => (
               <RoomCard
-                key={room.id}
+                key={room.slug}
                 room={room}
                 index={index}
                 roomsSelected={booking.rooms}

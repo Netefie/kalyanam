@@ -1,25 +1,30 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+
+import { KAARA_MENU_URL } from "@/lib/site";
 
 export default function BannerKaara() {
   return (
     <>
-      <Link
-        href="https://dinein.petpooja.com/qr/nre1djqbag/T-5"
+      <a
+        href={KAARA_MENU_URL}
+        target="_blank"
+        rel="noopener noreferrer"
         className="banner-link"
+        aria-label="Open the Kaara menu"
       >
         <section className="banner-kaara">
           <Image
-            src="/kaara-banner.png"
+            src="/kaara-banner.jpg"
             alt="Kaara Restaurant"
             fill
+            sizes="100vw"
             priority
             className="banner-image"
           />
         </section>
-      </Link>
+      </a>
 
       <style>{`
         .banner-link{

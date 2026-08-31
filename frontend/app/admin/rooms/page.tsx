@@ -88,7 +88,8 @@ export default function RoomsPage() {
 
                 <div className="image">
                   {room.image ? (
-                    <Image src={room.image} alt={room.name} fill />
+                    <Image src={room.image} alt={room.name} fill
+  sizes="(max-width: 768px) 100vw, 33vw" />
                   ) : (
                     <div className="noImage">No image</div>
                   )}

@@ -128,7 +128,7 @@ export default function RoomFormModal({
             <input
               value={form.image}
               onChange={(e) => set("image", e.target.value)}
-              placeholder="/rooms/deluxe.png"
+              placeholder="/rooms/deluxe.jpg"
             />
           </div>
 

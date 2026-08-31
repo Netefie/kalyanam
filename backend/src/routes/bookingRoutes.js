@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  quoteBooking,
   createBooking,
   listBookings,
   getBooking,
@@ -10,8 +11,13 @@ import { requireAuth } from "../middleware/auth.js";
 
 export const bookingRouter = Router();
 
-// Public: create a booking from the website.
-bookingRouter.post("/", createBooking);
+// Public: authoritative price + availability for the booking flow's review
+// step. No inventory is held here — see POST /api/payments/order for that.
+bookingRouter.post("/quote", quoteBooking);
+
+// Admin-only: manual/offline booking entry (bypasses payment). The website
+// flow creates bookings via POST /api/payments/order instead.
+bookingRouter.post("/", requireAuth, createBooking);
 
 // Admin-only management.
 bookingRouter.get("/", requireAuth, listBookings);

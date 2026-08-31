@@ -9,7 +9,7 @@ export default function ExpHero() {
       <section
         className="experience-hero"
         style={{
-          backgroundImage: "url('/exphero.png')",
+          backgroundImage: "url('/exphero.jpg')",
         }}
       >
         <div className="experience-overlay"></div>

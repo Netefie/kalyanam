@@ -80,7 +80,7 @@ export default function Topbar() {
             <div className="avatar">
 
               <Image
-                src="/admin-avatar.jpg"
+                src="/logo1.png"
                 alt="Admin"
                 width={44}
                 height={44}

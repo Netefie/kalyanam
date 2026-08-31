@@ -72,6 +72,24 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   return data as T;
 }
 
+// Like request(), but for an endpoint that returns a raw body (text/html or
+// text/plain) instead of JSON — GET /mail/preview/:key is the only one.
+// request() would fail here: it always JSON.parses the response body.
+async function requestText(path: string, options: RequestOptions = {}): Promise<string> {
+  const { method = "GET", auth = false, signal } = options;
+
+  const headers: Record<string, string> = {};
+  if (auth) {
+    const token = getToken();
+    if (token) headers.Authorization = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}/api${path}`, { method, headers, signal });
+  const text = await res.text();
+  if (!res.ok) throw new ApiError(res.status, res.statusText);
+  return text;
+}
+
 /* --------------------------------- types ---------------------------------- */
 
 // A sellable rate for a room ("Room Only", "Room with Breakfast", ...).
@@ -124,6 +142,53 @@ export interface GuestInput {
   specialRequest?: string;
 }
 
+// The full price breakdown snapshot stored on a booking — mirrors
+// backend/src/models/Booking.js's pricingSchema. Also what
+// POST /bookings/quote and POST /payments/order return the numeric fields
+// of, so the UI never has to re-derive a total from raw room prices.
+export interface PricingBreakdown {
+  nightlyRate: number;
+  subtotal: number;
+  taxPercent: number;
+  taxAmount: number;
+  total: number;
+  currency: string;
+}
+
+export interface RefundEntry {
+  refundId: string;
+  amount: number;
+  status: string;
+  reason: string;
+  createdAt: string;
+}
+
+export type PaymentStatus =
+  | "created"
+  | "authorized"
+  | "paid"
+  | "failed"
+  | "refunded"
+  | "partially_refunded";
+
+// Mirrors backend/src/models/Booking.js's paymentSchema — the money
+// lifecycle, kept separate from the booking's stay-lifecycle `status`.
+export interface PaymentInfo {
+  provider: string;
+  status: PaymentStatus;
+  orderId?: string;
+  paymentId?: string;
+  method?: string;
+  cardLast4?: string;
+  amountPaid: number;
+  currency: string;
+  paidAt?: string;
+  failureReason?: string;
+  attempts: number;
+  refunds: RefundEntry[];
+  refundedAmount: number;
+}
+
 export interface Booking {
   _id: string;
   bookingCode: string;
@@ -140,9 +205,38 @@ export interface Booking {
   children: number;
   rooms: number;
   amount: number;
-  status: "Pending" | "Confirmed" | "Cancelled" | "CheckedIn" | "CheckedOut";
+  pricing: PricingBreakdown;
+  payment: PaymentInfo;
+  holdExpiresAt?: string;
+  status: "Pending" | "Confirmed" | "Cancelled" | "CheckedIn" | "CheckedOut" | "Expired";
   source: "website" | "admin";
   createdAt: string;
+}
+
+// POST /bookings/quote response — the authoritative price + availability for
+// a room/plan/dates/rooms selection. See lib/pricing.ts for why the browser
+// never re-derives these numbers itself.
+export interface StayQuote {
+  roomSlug: string;
+  roomName: string;
+  nights: number;
+  rooms: number;
+  plan: { code: string; name: string; label: string };
+  nightlyRate: number;
+  subtotal: number;
+  taxPercent: number;
+  taxAmount: number;
+  total: number;
+  currency: string;
+  availability: { total: number; booked: number; available: number };
+}
+
+export interface PaymentOrderResponse {
+  booking: Booking;
+  order: { id: string; amount: number; currency: string };
+  keyId: string;
+  holdExpiresAt: string;
+  prefill: { name: string; email: string; contact: string };
 }
 
 export interface Paginated<T> {
@@ -162,7 +256,9 @@ export interface AdminUser {
 
 export interface DashboardStats {
   todaysBookings: number;
-  todaysRevenue: number;
+  todaysRevenue: number; // collected only (payment.status paid/partially_refunded)
+  pendingRevenue: number; // created today, not yet paid
+  refundedToday: number;
   guestsStaying: number;
   occupiedRooms: number;
   totalRooms: number;
@@ -184,6 +280,53 @@ export interface Enquiry {
   message?: string;
   status: "new" | "contacted" | "closed";
   createdAt: string;
+}
+
+// Mirrors backend/src/models/MailLog.js's status enum.
+export type MailStatus = "queued" | "sent" | "failed" | "skipped" | "dry-run";
+
+// One row in the admin Emails console's activity log. `html`/`text` are
+// only included when fetching a single row (GET /mail/logs/:id) — see
+// MailLogDetail — the list endpoint omits them to keep the page light.
+export interface MailLog {
+  _id: string;
+  template: string;
+  to: string;
+  subject: string;
+  status: MailStatus;
+  attempts: number;
+  lastError: string;
+  messageId: string;
+  dedupeKey?: string;
+  refs?: { booking?: string; enquiry?: string; subscriber?: string };
+  sentAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MailLogDetail extends MailLog {
+  html: string;
+  text: string;
+}
+
+// Mirrors backend/src/emails/templates/index.js's registry listing.
+export interface MailTemplate {
+  key: string;
+  label: string;
+  description: string;
+  audience: "guest" | "staff";
+}
+
+export interface MailStatusSummary {
+  enabled: boolean;
+  dryRun: boolean;
+  smtpVerified: boolean;
+  queueDepth: number;
+  host: string;
+  from: string;
+  adminTo: string;
+  testTo: string;
+  last24h: Record<MailStatus, number>;
 }
 
 /* ----------------------------------- api ---------------------------------- */
@@ -217,6 +360,22 @@ export const api = {
   },
 
   bookings: {
+    // Authoritative price + availability for the review step — the browser
+    // never computes tax/total itself. See hooks/useBookingQuote.ts.
+    quote: (
+      data: {
+        roomSlug?: string;
+        roomId?: string;
+        ratePlanCode?: string;
+        checkIn: string;
+        checkOut: string;
+        rooms: number;
+      },
+      signal?: AbortSignal
+    ) => request<StayQuote>("/bookings/quote", { method: "POST", body: data, signal }),
+
+    // Admin-only: manual/offline booking entry (bypasses payment). The
+    // website flow creates bookings via api.payments.order instead.
     create: (data: {
       guest: GuestInput;
       roomSlug?: string;
@@ -227,14 +386,23 @@ export const api = {
       adults: number;
       children: number;
       rooms: number;
-    }) => request<Booking>("/bookings", { method: "POST", body: data }),
+    }) => request<Booking>("/bookings", { method: "POST", body: data, auth: true }),
 
-    list: (params: { page?: number; limit?: number; status?: string; search?: string } = {}) => {
+    list: (
+      params: {
+        page?: number;
+        limit?: number;
+        status?: string;
+        paymentStatus?: string;
+        search?: string;
+      } = {}
+    ) => {
       const qs = new URLSearchParams(
         Object.entries(params).filter(([, v]) => v != null && v !== "") as [string, string][]
       ).toString();
       return request<Paginated<Booking>>(`/bookings${qs ? `?${qs}` : ""}`, { auth: true });
     },
+    get: (id: string) => request<Booking>(`/bookings/${id}`, { auth: true }),
     updateStatus: (id: string, status: Booking["status"]) =>
       request<Booking>(`/bookings/${id}/status`, {
         method: "PATCH",
@@ -243,6 +411,66 @@ export const api = {
       }),
     remove: (id: string) =>
       request<{ success: boolean }>(`/bookings/${id}`, { method: "DELETE", auth: true }),
+  },
+
+  payments: {
+    // Prices the stay, holds the room, and opens a Razorpay order. The
+    // returned `keyId` is Razorpay's public key id (safe to expose) — the
+    // secret never leaves the backend.
+    order: (data: {
+      guest: GuestInput;
+      roomSlug?: string;
+      roomId?: string;
+      ratePlanCode?: string;
+      checkIn: string;
+      checkOut: string;
+      adults: number;
+      children: number;
+      rooms: number;
+    }) => request<PaymentOrderResponse>("/payments/order", { method: "POST", body: data }),
+
+    // Called right after Razorpay Checkout returns. The backend
+    // independently re-verifies with Razorpay before confirming anything.
+    verify: (data: {
+      bookingId: string;
+      razorpay_order_id: string;
+      razorpay_payment_id: string;
+      razorpay_signature: string;
+    }) =>
+      request<{ booking: Booking; status: "paid" | "failed" | "processing" }>(
+        "/payments/verify",
+        { method: "POST", body: data }
+      ),
+
+    // Guest self-service receipt lookup — both the code and email must
+    // match the booking, so a leaked code alone can't expose someone else's
+    // stay.
+    lookup: (code: string, email: string) =>
+      request<Booking>(
+        `/payments/lookup?code=${encodeURIComponent(code)}&email=${encodeURIComponent(email)}`
+      ),
+
+    list: (
+      params: {
+        page?: number;
+        limit?: number;
+        status?: string;
+        search?: string;
+        from?: string;
+        to?: string;
+      } = {}
+    ) => {
+      const qs = new URLSearchParams(
+        Object.entries(params).filter(([, v]) => v != null && v !== "") as [string, string][]
+      ).toString();
+      return request<Paginated<Booking> & { totals: { collected: number; refunded: number; net: number } }>(
+        `/payments${qs ? `?${qs}` : ""}`,
+        { auth: true }
+      );
+    },
+
+    refund: (bookingId: string, data: { amount?: number; reason?: string } = {}) =>
+      request<Booking>(`/payments/${bookingId}/refund`, { method: "POST", body: data, auth: true }),
   },
 
   enquiries: {
@@ -286,5 +514,47 @@ export const api = {
         { auth: true }
       );
     },
+  },
+
+  mail: {
+    status: () => request<MailStatusSummary>("/mail/status", { auth: true }),
+
+    templates: () => request<{ items: MailTemplate[] }>("/mail/templates", { auth: true }),
+
+    // Raw HTML for a sandboxed-iframe preview (srcDoc), or the plaintext
+    // body — the endpoint requires admin auth, so it can't just be handed
+    // to an <iframe src="..."> directly.
+    previewHtml: (key: string) => requestText(`/mail/preview/${encodeURIComponent(key)}`, { auth: true }),
+    previewText: (key: string) =>
+      requestText(`/mail/preview/${encodeURIComponent(key)}?format=text`, { auth: true }),
+
+    logs: (
+      params: { page?: number; limit?: number; status?: string; template?: string; search?: string } = {}
+    ) => {
+      const qs = new URLSearchParams(
+        Object.entries(params)
+          .filter(([, v]) => v != null && v !== "")
+          .map(([k, v]) => [k, String(v)])
+      ).toString();
+      return request<Paginated<MailLog> & { totals: Record<MailStatus, number> }>(
+        `/mail/logs${qs ? `?${qs}` : ""}`,
+        { auth: true }
+      );
+    },
+
+    getLog: (id: string) => request<MailLogDetail>(`/mail/logs/${id}`, { auth: true }),
+
+    retry: (id: string) =>
+      request<{ queued?: boolean; alreadySent?: boolean }>(`/mail/logs/${id}/retry`, {
+        method: "POST",
+        auth: true,
+      }),
+
+    sendTest: (template: string, to: string) =>
+      request<{ queued?: boolean; skipped?: boolean }>("/mail/test", {
+        method: "POST",
+        body: { template, to },
+        auth: true,
+      }),
   },
 };

@@ -55,6 +55,7 @@ export default function AdminLogin() {
             src="/ambience-3.jpg"
             alt="Luxury Hotel"
             fill
+            sizes="(max-width: 768px) 100vw, 50vw"
             priority
             className="bgImage"
           />
@@ -256,10 +257,10 @@ export default function AdminLogin() {
   align-items: center;
   justify-content: center;
   background: linear-gradient(
-      rgba(252,248,242,.95),
-      rgba(252,248,242,.95)
-    ),
-    url("/pattern.png");
+    rgba(252,248,242,.95),
+    rgba(252,248,242,.95)
+  ),
+  #FCF8F2;
     padding: 0 60px;
 }
 

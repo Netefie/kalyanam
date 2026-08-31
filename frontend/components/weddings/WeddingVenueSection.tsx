@@ -102,6 +102,7 @@ export default function WeddingVenueSection() {
                 src="/venue-large.jpg"
                 alt="Wedding Lawn"
                 fill
+                sizes="(max-width: 768px) 100vw, 50vw"
                 priority
               />
 
@@ -117,6 +118,7 @@ export default function WeddingVenueSection() {
                   src="/venue-small-1.jpg"
                   alt="Wedding Decor"
                   fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
                 />
 
               </div>
@@ -127,6 +129,7 @@ export default function WeddingVenueSection() {
                   src="/venue-small-2.jpg"
                   alt="Wedding Entrance"
                   fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
                 />
 
               </div>

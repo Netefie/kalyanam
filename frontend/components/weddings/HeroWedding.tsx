@@ -4,6 +4,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Play } from "lucide-react";
 
+import WatchVideoLink from "@/components/common/WatchVideoLink";
+import { VIDEO_URLS } from "@/lib/site";
+
 export default function HeroWedding() {
   return (
     <>
@@ -15,6 +18,7 @@ export default function HeroWedding() {
           src="/wedding-hero.jpg"
           alt="Marriage Lawn by Kalyanam"
           fill
+          sizes="100vw"
           priority
           className="hero-bg"
         />
@@ -71,15 +75,16 @@ export default function HeroWedding() {
 
         <div className="watch-wrapper">
 
-          <button
+          <WatchVideoLink
+            url={VIDEO_URLS.weddingExperience}
             className="play-btn"
-            aria-label="Watch Experience"
+            ariaLabel="Watch the wedding experience"
           >
             <Play
               size={22}
               fill="currentColor"
             />
-          </button>
+          </WatchVideoLink>
 
           <div className="watch-text">
 
@@ -295,6 +300,8 @@ background: linear-gradient( 90deg, rgba(15,15,15,.98) 0%, rgba(15,15,15,.95) 20
 }
 
 .play-btn{
+
+  text-decoration:none;
 
   width:78px;
 

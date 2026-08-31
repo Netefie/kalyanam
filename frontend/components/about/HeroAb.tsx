@@ -8,7 +8,7 @@ export default function HeroAb() {
       <section
         className="about-hero"
         style={{
-          backgroundImage: "url('/abouthero.png')",
+          backgroundImage: "url('/abouthero.jpg')",
         }}
       >
         <div className="about-overlay"></div>

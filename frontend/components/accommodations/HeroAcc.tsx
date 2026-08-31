@@ -3,13 +3,16 @@
 import Link from "next/link";
 import { Play } from "lucide-react";
 
+import WatchVideoLink from "@/components/common/WatchVideoLink";
+import { VIDEO_URLS } from "@/lib/site";
+
 export default function HeroAcc() {
   return (
     <>
       <section
         className="heroacc-section"
         style={{
-          backgroundImage: "url('/ahero.png')",
+          backgroundImage: "url('/ahero.jpg')",
         }}
       >
         <div className="heroacc-container">
@@ -39,7 +42,11 @@ export default function HeroAcc() {
                 <span className="heroacc-arrow">→</span>
               </Link>
 
-              <button className="heroacc-video">
+              <WatchVideoLink
+                url={VIDEO_URLS.roomTour}
+                className="heroacc-video"
+                ariaLabel="Watch the room tour"
+              >
                 <div className="heroacc-play">
                   <Play
                     size={18}
@@ -49,7 +56,7 @@ export default function HeroAcc() {
                 </div>
 
                 <span>WATCH ROOM TOUR</span>
-              </button>
+              </WatchVideoLink>
             </div>
           </div>
         </div>
@@ -158,6 +165,7 @@ export default function HeroAcc() {
 }
 
 .heroacc-video {
+  text-decoration: none;
   display: flex;
   align-items: center;
   gap: 16px;

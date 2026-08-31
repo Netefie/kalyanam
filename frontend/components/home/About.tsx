@@ -18,6 +18,7 @@ export default function About() {
                   src="/icon1.avif"
                   alt="Kalyanam Hotel"
                   fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
                   priority
                 />
               </div>
@@ -58,7 +59,7 @@ export default function About() {
 
               <div className="signature-wrapper">
                 <Image
-                  src="/Signature.png"
+                  src="/signature.png"
                   alt="Signature"
                   width={190}
                   height={95}

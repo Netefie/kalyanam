@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+
+import { KAARA_MENU_URL } from "@/lib/site";
 
 const stats = [
   {
@@ -49,8 +50,10 @@ export default function MenuKaara() {
               experience.
             </p>
 
-            <Link
-              href="https://dinein.petpooja.com/qr/nre1djqbag/T-5"
+            <a
+              href={KAARA_MENU_URL}
+              target="_blank"
+              rel="noopener noreferrer"
               className="menu-btn"
             >
               Explore Our Menu
@@ -59,7 +62,7 @@ export default function MenuKaara() {
                 size={18}
                 strokeWidth={2}
               />
-            </Link>
+            </a>
 
           </div>
 

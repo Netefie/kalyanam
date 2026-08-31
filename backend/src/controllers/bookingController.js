@@ -1,63 +1,56 @@
 import { Booking } from "../models/Booking.js";
-import { RoomType } from "../models/RoomType.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { requireFields } from "../utils/validate.js";
 import { getAvailableCount } from "../services/availability.js";
-import { findRatePlan } from "../services/ratePlans.js";
-import { sendMail } from "../services/mailer.js";
-import { bookingConfirmationEmail } from "../emails/bookingConfirmation.js";
+import { quoteStay } from "../services/pricing.js";
+import { resolveRoomForBooking, resolveStayDates } from "../services/bookingRequest.js";
+import { onBookingConfirmed, onBookingCancelled } from "../services/notifications.js";
 
-const MS_PER_DAY = 1000 * 60 * 60 * 24;
+// POST /api/bookings/quote  (public) — the authoritative price breakdown for
+// a room/plan/dates/rooms selection, plus live availability for that range.
+// The booking flow renders this rather than re-deriving totals client-side
+// (see frontend hooks/useBookingQuote.ts) — see services/pricing.js for why.
+export const quoteBooking = asyncHandler(async (req, res) => {
+  const { roomSlug, roomId, ratePlanCode, checkIn, checkOut, rooms } = req.body;
 
-function nightsBetween(checkIn, checkOut) {
-  const n = Math.ceil((checkOut.getTime() - checkIn.getTime()) / MS_PER_DAY);
-  return n > 0 ? n : 1;
-}
+  const room = await resolveRoomForBooking({ roomId, roomSlug });
+  const { inDate, outDate } = resolveStayDates(checkIn, checkOut);
 
-// POST /api/bookings  (public) — created from the website booking flow.
+  const quote = await quoteStay({ room, ratePlanCode, checkIn: inDate, checkOut: outDate, rooms });
+  const availability = await getAvailableCount(room, inDate, outDate);
+
+  res.json({
+    roomSlug: room.slug,
+    roomName: room.name,
+    ...quote,
+    plan: { code: quote.plan.code, name: quote.plan.name, label: quote.plan.label },
+    availability,
+  });
+});
+
+// POST /api/bookings  (admin-only) — direct/manual booking creation that
+// bypasses payment entirely (e.g. a phone reservation the front desk is
+// recording). The website flow now creates bookings via
+// POST /api/payments/order, which prices, holds inventory with an
+// expiry, and only confirms once a payment is verified. This endpoint
+// requires admin auth (see routes/bookingRoutes.js) specifically so it
+// can't be used to plant unpaid, non-expiring holds on public inventory.
 export const createBooking = asyncHandler(async (req, res) => {
-  const {
-    guest,
-    roomSlug,
-    roomId,
-    ratePlanCode,
-    checkIn,
-    checkOut,
-    adults,
-    children,
-    rooms,
-  } = req.body;
+  const { guest, roomSlug, roomId, ratePlanCode, checkIn, checkOut, adults, children, rooms } =
+    req.body;
 
-  if (!guest?.firstName || !guest?.email || !guest?.phone) {
-    throw new ApiError(400, "Guest name, email and phone are required");
-  }
+  requireFields(guest || {}, ["firstName", "email", "phone"]);
 
-  const inDate = new Date(checkIn);
-  const outDate = new Date(checkOut);
-  if (Number.isNaN(inDate.getTime()) || Number.isNaN(outDate.getTime())) {
-    throw new ApiError(400, "Valid check-in and check-out dates are required");
-  }
-  if (outDate <= inDate) {
-    throw new ApiError(400, "Check-out must be after check-in");
-  }
+  const room = await resolveRoomForBooking({ roomId, roomSlug });
+  const { inDate, outDate } = resolveStayDates(checkIn, checkOut);
 
-  // Resolve the room by id or slug so pricing is authoritative (never trust a
-  // client-supplied amount).
-  const room = await RoomType.findOne(
-    roomId ? { _id: roomId } : { slug: roomSlug }
-  );
-  if (!room) throw new ApiError(404, "Selected room type not found");
-
-  const nights = nightsBetween(inDate, outDate);
-  const roomCount = Math.max(1, Number(rooms) || 1);
-  const plan = findRatePlan(room, ratePlanCode);
-  const nightlyRate = plan.offerPrice ?? plan.price;
-  const amount = nightlyRate * nights * roomCount;
+  const quote = await quoteStay({ room, ratePlanCode, checkIn: inDate, checkOut: outDate, rooms });
 
   // Block overbooking: requested rooms must fit within remaining inventory
   // for the selected dates.
   const { available } = await getAvailableCount(room, inDate, outDate);
-  if (roomCount > available) {
+  if (quote.rooms > available) {
     throw new ApiError(
       409,
       available > 0
@@ -70,26 +63,34 @@ export const createBooking = asyncHandler(async (req, res) => {
     guest,
     roomType: room._id,
     roomName: room.name,
-    ratePlanCode: plan.code,
-    ratePlanName: plan.name,
-    nightlyRate,
+    ratePlanCode: quote.plan.code,
+    ratePlanName: quote.plan.name,
+    nightlyRate: quote.nightlyRate,
     checkIn: inDate,
     checkOut: outDate,
-    nights,
+    nights: quote.nights,
     adults: Math.max(1, Number(adults) || 1),
     children: Math.max(0, Number(children) || 0),
-    rooms: roomCount,
-    amount,
-    status: "Pending",
-    source: "website",
+    rooms: quote.rooms,
+    amount: quote.total,
+    pricing: {
+      nightlyRate: quote.nightlyRate,
+      subtotal: quote.subtotal,
+      taxPercent: quote.taxPercent,
+      taxAmount: quote.taxAmount,
+      total: quote.total,
+      currency: quote.currency,
+    },
+    // Admin-entered bookings are treated as already settled (cash/offline) —
+    // confirmed immediately, no room hold/expiry to manage.
+    status: "Confirmed",
+    payment: { status: "paid", amountPaid: quote.total, paidAt: new Date(), method: "offline" },
+    source: "admin",
   });
 
-  // Fire-and-forget: a slow/failed email must never block or fail the booking.
-  // No-ops silently until SMTP is configured in the environment.
-  sendMail({
-    to: booking.guest.email,
-    ...bookingConfirmationEmail(booking),
-  }).catch((err) => console.error("[mail] confirmation failed:", err.message));
+  // Fire-and-forget: a slow/failed email must never block or fail the
+  // booking. onBookingConfirmed() no-ops silently until SMTP is configured.
+  onBookingConfirmed(booking);
 
   res.status(201).json(booking);
 });
@@ -98,10 +99,11 @@ export const createBooking = asyncHandler(async (req, res) => {
 export const listBookings = asyncHandler(async (req, res) => {
   const page = Math.max(1, Number(req.query.page) || 1);
   const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
-  const { status, search } = req.query;
+  const { status, paymentStatus, search } = req.query;
 
   const filter = {};
   if (status) filter.status = status;
+  if (paymentStatus) filter["payment.status"] = paymentStatus;
   if (search) {
     filter.$or = [
       { bookingCode: new RegExp(search, "i") },
@@ -110,6 +112,7 @@ export const listBookings = asyncHandler(async (req, res) => {
       { "guest.lastName": new RegExp(search, "i") },
       { "guest.email": new RegExp(search, "i") },
       { "guest.phone": new RegExp(search, "i") },
+      { "payment.paymentId": new RegExp(search, "i") },
     ];
   }
 
@@ -141,12 +144,23 @@ export const getBooking = asyncHandler(async (req, res) => {
 // PATCH /api/bookings/:id/status  (protected)
 export const updateBookingStatus = asyncHandler(async (req, res) => {
   const { status } = req.body;
+
+  // Read the prior status first so a cancellation email only fires on the
+  // actual transition into Cancelled, not on every PATCH that happens to
+  // (re-)set a booking that was already Cancelled.
+  const previous = await Booking.findById(req.params.id).select("status").lean();
+  if (!previous) throw new ApiError(404, "Booking not found");
+
   const booking = await Booking.findByIdAndUpdate(
     req.params.id,
     { status },
     { new: true, runValidators: true }
   );
-  if (!booking) throw new ApiError(404, "Booking not found");
+
+  if (status === "Cancelled" && previous.status !== "Cancelled") {
+    onBookingCancelled(booking, { reason: "Cancelled by hotel staff" });
+  }
+
   res.json(booking);
 });
 

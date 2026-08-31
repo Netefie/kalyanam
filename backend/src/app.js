@@ -26,6 +26,17 @@ export function createApp() {
     })
   );
 
+  // The Razorpay webhook needs the exact, untouched request bytes to verify
+  // its signature (services/razorpay.js#verifyWebhookSignature), so it gets
+  // its own raw-body parser mounted ahead of the global JSON one below.
+  // body-parser marks the request as already-parsed (`req._body`) once this
+  // runs, so express.json() correctly no-ops for this path instead of
+  // trying (and failing) to re-read the consumed stream.
+  app.use(
+    "/api/payments/webhook",
+    express.raw({ type: "application/json", limit: "100kb" })
+  );
+
   // JSON only, with a small cap — this API never accepts large payloads.
   app.use(express.json({ limit: "100kb" }));
 
@@ -34,6 +45,19 @@ export function createApp() {
     rateLimit({
       windowMs: 15 * 60 * 1000,
       max: 300,
+      standardHeaders: true,
+      legacyHeaders: false,
+    })
+  );
+
+  // Payment endpoints get a tighter limit on top of the global one above —
+  // order creation and verification are more expensive (they call out to
+  // Razorpay) and more attractive to abuse than a typical read endpoint.
+  app.use(
+    "/api/payments",
+    rateLimit({
+      windowMs: 15 * 60 * 1000,
+      max: 60,
       standardHeaders: true,
       legacyHeaders: false,
     })

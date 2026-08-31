@@ -2,12 +2,14 @@
 
 import { Trash2 } from "lucide-react";
 import type { Booking } from "@/lib/api";
+import PaymentStatusPill from "./PaymentStatusPill";
 
 interface BookingTableProps {
   bookings: Booking[];
   loading: boolean;
   onStatusChange: (id: string, status: Booking["status"]) => void;
   onDelete: (id: string) => void;
+  onRowClick: (booking: Booking) => void;
 }
 
 const STATUSES: Booking["status"][] = [
@@ -16,6 +18,7 @@ const STATUSES: Booking["status"][] = [
   "Cancelled",
   "CheckedIn",
   "CheckedOut",
+  "Expired",
 ];
 
 function formatDate(iso: string) {
@@ -40,6 +43,7 @@ export default function BookingTable({
   loading,
   onStatusChange,
   onDelete,
+  onRowClick,
 }: BookingTableProps) {
   return (
     <>
@@ -57,6 +61,7 @@ export default function BookingTable({
               <th>Stay</th>
               <th>Guests</th>
               <th>Amount</th>
+              <th>Payment</th>
               <th>Status</th>
               <th>Action</th>
 
@@ -68,13 +73,13 @@ export default function BookingTable({
 
             {loading ? (
               <tr>
-                <td colSpan={8} className="empty">
+                <td colSpan={9} className="empty">
                   Loading bookings…
                 </td>
               </tr>
             ) : bookings.length === 0 ? (
               <tr>
-                <td colSpan={8} className="empty">
+                <td colSpan={9} className="empty">
                   No bookings found.
                 </td>
               </tr>
@@ -85,7 +90,7 @@ export default function BookingTable({
                 }`.trim();
 
                 return (
-                  <tr key={booking._id}>
+                  <tr key={booking._id} className="clickableRow" onClick={() => onRowClick(booking)}>
 
                     <td>{booking.bookingCode}</td>
 
@@ -127,6 +132,13 @@ export default function BookingTable({
                     <td>{formatAmount(booking.amount)}</td>
 
                     <td>
+                      <PaymentStatusPill status={booking.payment.status} />
+                      {booking.payment.amountPaid > 0 && (
+                        <div className="paidAmount">{formatAmount(booking.payment.amountPaid)} paid</div>
+                      )}
+                    </td>
+
+                    <td onClick={(e) => e.stopPropagation()}>
                       <select
                         className={`status ${statusClass(booking.status)}`}
                         value={booking.status}
@@ -149,7 +161,7 @@ export default function BookingTable({
                       </select>
                     </td>
 
-                    <td>
+                    <td onClick={(e) => e.stopPropagation()}>
 
                       <div className="actions">
 
@@ -229,6 +241,16 @@ export default function BookingTable({
           background:#FCFAF6;
         }
 
+        .clickableRow{
+          cursor:pointer;
+        }
+
+        .paidAmount{
+          margin-top:6px;
+          font-size:12px;
+          color:#888;
+        }
+
         .guest{
           display:flex;
           align-items:center;
@@ -299,6 +321,11 @@ export default function BookingTable({
           color:#6D28D9;
         }
 
+        .expired{
+          background:#F3F4F6;
+          color:#6B7280;
+        }
+
         .actions{
           display:flex;
           gap:10px;
@@ -330,7 +357,7 @@ export default function BookingTable({
           }
 
           table{
-            min-width:1100px;
+            min-width:1250px;
           }
 
         }

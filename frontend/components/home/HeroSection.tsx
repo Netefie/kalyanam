@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import HeroBookingBar from "./HeroBookingBar";
 
 export default function HeroSection() {
@@ -8,9 +9,10 @@ export default function HeroSection() {
           booking bar's dropdowns can overflow the hero) */}
       <div className="absolute inset-0 overflow-hidden">
         <Image
-          src="/hero.png"
+          src="/hero.jpg"
           alt="Kalyanam Banquet Hall"
           fill
+          sizes="100vw"
           priority
           className="object-cover"
         />
@@ -34,13 +36,19 @@ export default function HeroSection() {
 </p>
 
 <div className="flex flex-wrap justify-center gap-5 mt-4">
-  <button className="px-8 py-4 rounded-full bg-white text-black font-medium hover:bg-[#e9dccd] transition">
+  <Link
+    href="/contact"
+    className="px-8 py-4 rounded-full bg-white text-black font-medium hover:bg-[#e9dccd] transition"
+  >
     Book a Visit
-  </button>
+  </Link>
 
-  <button className="px-8 py-4 rounded-full border border-white/40 backdrop-blur-sm bg-white/10 hover:bg-white/20 transition">
+  <Link
+    href="/banquet"
+    className="px-8 py-4 rounded-full border border-white/40 backdrop-blur-sm bg-white/10 hover:bg-white/20 transition"
+  >
     Explore Venue
-  </button>
+  </Link>
           </div>
         </div>
       </div>

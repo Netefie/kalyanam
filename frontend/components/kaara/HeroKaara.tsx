@@ -4,6 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { Play, ArrowRight } from "lucide-react";
 
+import WatchVideoLink from "@/components/common/WatchVideoLink";
+import { VIDEO_URLS } from "@/lib/site";
+
 export default function HeroKaara() {
   return (
     <>
@@ -13,6 +16,7 @@ export default function HeroKaara() {
           src="/3.jpg"
           alt="Kaara Restaurant"
           fill
+          sizes="100vw"
           priority
           className="bg"
         />
@@ -44,9 +48,13 @@ export default function HeroKaara() {
 
           {/* Right Bottom */}
           <div className="watch">
-            <button className="play">
+            <WatchVideoLink
+              url={VIDEO_URLS.kaaraExperience}
+              className="play"
+              ariaLabel="Watch the Kaara experience"
+            >
               <Play fill="white" size={20} />
-            </button>
+            </WatchVideoLink>
 
             <div>
               <span>WATCH</span>
@@ -131,6 +139,7 @@ export default function HeroKaara() {
         }
 
         .play {
+          text-decoration: none;
           width: 70px;
           height: 70px;
           border-radius: 50%;

@@ -97,6 +97,7 @@ export default function NearbyPlaces() {
                     src={place.image}
                     alt={place.title}
                     fill
+                    sizes="(max-width: 768px) 100vw, 33vw"
                     className="place-img"
                   />
 

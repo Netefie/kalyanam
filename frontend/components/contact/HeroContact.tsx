@@ -1,5 +1,7 @@
 "use client";
 
+import { EMAIL, EMAIL_HREF, PHONE, PHONE_HREF } from "@/lib/site";
+
 export default function HeroContact() {
   return (
     <>
@@ -36,14 +38,18 @@ export default function HeroContact() {
 
               <div className="info-item">
                 <h4>Call Us</h4>
-                <span>+91 98765 43210</span>
+                <a href={PHONE_HREF} className="info-link">
+                  {PHONE}
+                </a>
               </div>
 
               <div className="info-divider"></div>
 
               <div className="info-item">
                 <h4>Email</h4>
-                <span>info@kalyanamhotel.com</span>
+                <a href={EMAIL_HREF} className="info-link">
+                  {EMAIL}
+                </a>
               </div>
 
             </div>
@@ -166,10 +172,21 @@ export default function HeroContact() {
     color:#fff;
 }
 
-.info-item span{
+.info-item span,
+.info-item .info-link{
     font-family:var(--font-lato);
     font-size:14px;
     color:rgba(255,255,255,.85);
+}
+
+.info-item .info-link{
+    text-decoration:none;
+
+    transition:color .3s ease;
+}
+
+.info-item .info-link:hover{
+    color:#fff;
 }
 
 .info-divider{
@@ -236,7 +253,8 @@ export default function HeroContact() {
         font-size:20px;
     }
 
-    .info-item span{
+    .info-item span,
+    .info-item .info-link{
         font-size:13px;
     }
 
@@ -287,7 +305,8 @@ export default function HeroContact() {
         font-size:18px;
     }
 
-    .info-item span{
+    .info-item span,
+    .info-item .info-link{
         font-size:13px;
     }
 
