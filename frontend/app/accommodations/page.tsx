@@ -13,13 +13,10 @@ import BookingSearchBar from "@/components/accommodations/BookingSearchBar";
 import AvailableRooms from "@/components/accommodations/AvailableRooms";
 import PersonalDetails from "@/components/accommodations/PersonalDetails";
 import PaymentConfirmation from "@/components/accommodations/PaymentConfirmation";
-
-// Future Components
-// import PaymentDetails from "@/components/accommodations/PaymentDetails";
-// import BookingSuccess from "@/components/accommodations/BookingSuccess";
+import BookingSuccess from "@/components/accommodations/BookingSuccess";
 
 function BookingContent() {
-  const { booking, setBooking, resetBooking } = useBookingContext();
+  const { booking, setBooking } = useBookingContext();
 
   // Keep the step section in view when moving between steps, so changing step
   // never dumps the user at the hero or leaves them scrolled past the form.
@@ -32,6 +29,18 @@ function BookingContent() {
         ?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }, [booking.currentStep]);
+
+  // Steps 2 and 3 both require a selected room (PersonalDetails/BookingSummary
+  // and PaymentConfirmation each render nothing without one). A resumed
+  // session — sessionStorage restored on a fresh load, or the guest using
+  // the browser's back/forward buttons — can otherwise land on either step
+  // with `selectedRoom: null`, which read as a blank page with no way
+  // forward. Bounce back to room selection instead.
+  useEffect(() => {
+    if ((booking.currentStep === 2 || booking.currentStep === 3) && !booking.selectedRoom) {
+      setBooking((prev) => ({ ...prev, currentStep: 1 }));
+    }
+  }, [booking.currentStep, booking.selectedRoom, setBooking]);
 
   // Prefill "PLAN YOUR STAY" from ?roomType&checkIn&checkOut&adults&children&rooms
   // (set by the hero bar / navbar reservation widget) and auto-run the search.
@@ -93,34 +102,7 @@ function BookingContent() {
       )}
 
       {/* STEP 4 */}
-      {booking.currentStep === 4 && (
-        <section className="py-24">
-          <div className="mx-auto max-w-7xl px-6 text-center">
-            <h2 className="font-cormorant text-5xl text-[#2d2d2d]">
-              Booking Confirmed
-            </h2>
-
-            <p className="mt-4 text-gray-500">
-              Your reservation has been successfully confirmed.
-            </p>
-
-            {booking.bookingCode && (
-              <p className="mt-6 inline-block rounded-full bg-[#B68D40]/10 px-6 py-3 text-lg font-semibold text-[#B68D40]">
-                Booking Reference: {booking.bookingCode}
-              </p>
-            )}
-
-            <div className="mt-8">
-              <button
-                onClick={resetBooking}
-                className="rounded-lg bg-[#B68D40] px-8 py-3 font-semibold text-white transition hover:bg-[#9f7b37]"
-              >
-                Book Another Stay
-              </button>
-            </div>
-          </div>
-        </section>
-      )}
+      {booking.currentStep === 4 && <BookingSuccess />}
     </>
   );
 }

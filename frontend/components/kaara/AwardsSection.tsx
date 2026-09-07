@@ -2,14 +2,15 @@
 
 import Image from "next/image";
 
-const awards = [
-  "/award1.svg",
-  "/award2.svg",
-  "/award3.svg",
-  "/award4.svg",
-];
+// The four award logos this section was built around were never committed to the
+// repo, so every tile rendered as a broken image. To bring the section back: drop
+// the logo files into /public, list them here, and re-add <AwardsSection /> to
+// app/kaara/page.tsx. Empty list renders nothing rather than broken tiles.
+const awards: string[] = [];
 
 export default function AwardsSection() {
+  if (awards.length === 0) return null;
+
   return (
     <>
       <section className="awards-section">

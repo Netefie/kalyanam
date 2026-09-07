@@ -53,8 +53,10 @@ Admin panel: `http://localhost:3000/admin/login`
 
 ## Deploy
 
-- **Backend:** Render / Railway / Fly.io free tier + MongoDB Atlas M0. Build
-  `npm install`, start `npm start`, set `NODE_ENV=production`, `MONGODB_URI`,
-  `JWT_SECRET`, `CORS_ORIGIN` (your frontend URL).
+- **Backend:** AWS Lambda (Function URL, no API Gateway/VPC/NAT) via
+  Serverless Framework + MongoDB Atlas M0 — a zero-cost architecture kept
+  inside AWS's always-free tiers. One-time IAM setup:
+  [infra/iam/README.md](infra/iam/README.md); then `cd backend && npm run
+  deploy`. See `backend/serverless.yml` for the full setup and cost reasoning.
 - **Frontend:** Vercel / Netlify. Set `NEXT_PUBLIC_API_URL` to the deployed
-  backend URL.
+  backend's Function URL.

@@ -13,7 +13,7 @@ const rooms = [
     slug: "deluxe-room",
     description:
       "Elegantly designed rooms with modern interiors, premium amenities and scenic resort views.",
-    image: "/rooms/deluxe.png",
+    image: "/deluxe-room.jpg",
     price: 5499,
     offerPrice: 4699,
     rating: 4.8,
@@ -24,7 +24,6 @@ const rooms = [
     breakfast: true,
     cancellation: true,
     totalRooms: 12,
-    availableRooms: 5,
     featured: true,
     active: true,
     ratePlans: [
@@ -58,7 +57,7 @@ const rooms = [
     slug: "super-deluxe-room",
     description:
       "Spacious luxury accommodation perfect for families and leisure travellers.",
-    image: "/rooms/deluxe.png",
+    image: "/super-deluxe-room.jpg",
     price: 7499,
     offerPrice: 6599,
     rating: 4.9,
@@ -69,7 +68,6 @@ const rooms = [
     breakfast: true,
     cancellation: true,
     totalRooms: 10,
-    availableRooms: 3,
     featured: false,
     active: true,
     ratePlans: [
@@ -103,7 +101,10 @@ const rooms = [
     slug: "luxury-suite",
     description:
       "Our finest suite with expansive living space, curated interiors and premium services.",
-    image: "/rooms/suite.jpg",
+    // No dedicated suite photo shot yet — reuses the Super Deluxe image as a
+    // placeholder so the card never shows broken art. Replace with a real
+    // Luxury Suite photo before launch.
+    image: "/super-deluxe-room.jpg",
     price: 8999,
     offerPrice: 8999,
     rating: 5,
@@ -114,7 +115,6 @@ const rooms = [
     breakfast: true,
     cancellation: true,
     totalRooms: 6,
-    availableRooms: 2,
     featured: true,
     active: true,
     ratePlans: [

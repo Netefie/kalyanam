@@ -1,5 +1,6 @@
 // WeddingsEnd.tsx
 import React from "react";
+import Link from "next/link";
 
 const WeddingsEnd = () => {
   return (
@@ -16,9 +17,9 @@ const WeddingsEnd = () => {
             </p>
           </div>
 
-          <button className="enquire-btn">
+          <Link href="/contact" className="enquire-btn">
             ENQUIRE NOW <span>→</span>
-          </button>
+          </Link>
         </div>
       </section>
 
@@ -28,7 +29,9 @@ const WeddingsEnd = () => {
           width: 100%;
           background: #f4daae;
           padding: 50px 80px;
-          overflow: hidden;
+          /* Clips the .overlay-pattern ornaments, which hang off both edges at
+             -40px. x-axis only, so tall content is never cut off. */
+          overflow-x: clip;
           font-family: 'Georgia', serif;
         }
 
@@ -59,6 +62,8 @@ const WeddingsEnd = () => {
         }
 
         .enquire-btn {
+          text-decoration: none;
+          white-space: nowrap;
           background: #b88a4a;
           color: white;
           border: none;

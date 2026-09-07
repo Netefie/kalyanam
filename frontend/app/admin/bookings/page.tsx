@@ -10,6 +10,7 @@ import {
 
 import BookingFilters from "../components/BookingFilters";
 import BookingTable from "../components/BookingTable";
+import BookingDetailDrawer from "../components/BookingDetailDrawer";
 import Pagination from "../components/Pagination";
 import {
   api,
@@ -28,8 +29,11 @@ export default function BookingsPage() {
 
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState("");
+  const [paymentStatus, setPaymentStatus] = useState("");
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
   // Debounce the free-text search so we don't hit the API on every keystroke.
   useEffect(() => {
@@ -45,6 +49,7 @@ export default function BookingsPage() {
         page,
         limit: PAGE_SIZE,
         status,
+        paymentStatus,
         search: debouncedSearch,
       });
       setData(res);
@@ -53,7 +58,7 @@ export default function BookingsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, status, debouncedSearch]);
+  }, [page, status, paymentStatus, debouncedSearch]);
 
   useEffect(() => {
     loadBookings();
@@ -62,7 +67,7 @@ export default function BookingsPage() {
   // Reset to the first page whenever a filter changes.
   useEffect(() => {
     setPage(1);
-  }, [status, debouncedSearch]);
+  }, [status, paymentStatus, debouncedSearch]);
 
   useEffect(() => {
     api.dashboard.stats().then(setStats).catch(() => setStats(null));
@@ -103,6 +108,20 @@ export default function BookingsPage() {
   const handleReset = () => {
     setSearch("");
     setStatus("");
+    setPaymentStatus("");
+  };
+
+  // Applies a booking mutated elsewhere (refund from the detail drawer) back
+  // onto the current page's list, so the table doesn't show stale data
+  // until the next full reload.
+  const handleBookingUpdated = (updated: Booking) => {
+    setData((prev) =>
+      prev
+        ? { ...prev, items: prev.items.map((b) => (b._id === updated._id ? updated : b)) }
+        : prev
+    );
+    setSelectedBooking(updated);
+    api.dashboard.stats().then(setStats).catch(() => {});
   };
 
   const money = (n: number) => `₹${n.toLocaleString("en-IN")}`;
@@ -173,8 +192,10 @@ export default function BookingsPage() {
         <BookingFilters
           search={search}
           status={status}
+          paymentStatus={paymentStatus}
           onSearchChange={setSearch}
           onStatusChange={setStatus}
+          onPaymentStatusChange={setPaymentStatus}
           onReset={handleReset}
           onApply={loadBookings}
         />
@@ -189,6 +210,7 @@ export default function BookingsPage() {
             loading={loading}
             onStatusChange={handleStatusChange}
             onDelete={handleDelete}
+            onRowClick={setSelectedBooking}
           />
         )}
 
@@ -203,6 +225,14 @@ export default function BookingsPage() {
         )}
 
       </div>
+
+      {selectedBooking && (
+        <BookingDetailDrawer
+          booking={selectedBooking}
+          onClose={() => setSelectedBooking(null)}
+          onUpdated={handleBookingUpdated}
+        />
+      )}
 
       <style jsx>{`
         .bookingsPage{

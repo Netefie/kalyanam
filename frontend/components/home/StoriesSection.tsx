@@ -74,6 +74,7 @@ export default function StoriesSection() {
                   src={story.image}
                   alt={story.title}
                   fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
                   className="story-image"
                 />
 

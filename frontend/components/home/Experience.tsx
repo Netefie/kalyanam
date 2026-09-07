@@ -80,6 +80,7 @@ export default function Experience() {
                 src="/icon2.jpg"
                 alt="Luxury Stay"
                 fill
+                sizes="(max-width: 768px) 100vw, 50vw"
               />
 
             </div>

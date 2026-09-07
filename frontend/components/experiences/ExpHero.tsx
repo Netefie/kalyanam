@@ -9,7 +9,7 @@ export default function ExpHero() {
       <section
         className="experience-hero"
         style={{
-          backgroundImage: "url('/exphero.png')",
+          backgroundImage: "url('/exphero.jpg')",
         }}
       >
         <div className="experience-overlay"></div>
@@ -53,13 +53,19 @@ export default function ExpHero() {
         .experience-hero{
           position:relative;
           width:100%;
-          height:100vh;
+          /* min-height, not height: zoomed in the content outgrows the viewport
+             and a fixed height clipped it out of scroll range. svh so mobile
+             browser chrome collapsing does not reflow the hero mid-scroll. */
+          min-height:100svh;
+          padding:120px 0;
           background-size:cover;
           background-position:center;
           background-repeat:no-repeat;
-          overflow:hidden;
+          overflow-x:clip;
           display:flex;
-          align-items:center;
+          /* "safe" degrades to start-alignment once the content is taller than
+             the box, rather than overflowing off both edges. */
+          align-items:safe center;
         }
 
         .experience-overlay{
@@ -215,7 +221,8 @@ export default function ExpHero() {
         @media(max-width:768px){
 
           .experience-hero{
-            height:90vh;
+            min-height:90svh;
+            padding:100px 0;
           }
 
           .experience-container{

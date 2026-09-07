@@ -2,20 +2,26 @@
 
 import { Trash2 } from "lucide-react";
 import type { Booking } from "@/lib/api";
+import PaymentStatusPill from "./PaymentStatusPill";
 
 interface BookingTableProps {
   bookings: Booking[];
   loading: boolean;
   onStatusChange: (id: string, status: Booking["status"]) => void;
   onDelete: (id: string) => void;
+  onRowClick: (booking: Booking) => void;
 }
 
+// "Cancelled" is deliberately not offered here — cancelling a booking with
+// captured money now requires an explicit refund decision (see
+// backend/src/services/bookingLifecycle.js#cancelBooking), which this quick
+// dropdown has no room for. Open the row (BookingDetailDrawer) to cancel.
 const STATUSES: Booking["status"][] = [
   "Pending",
   "Confirmed",
-  "Cancelled",
   "CheckedIn",
   "CheckedOut",
+  "Expired",
 ];
 
 function formatDate(iso: string) {
@@ -40,6 +46,7 @@ export default function BookingTable({
   loading,
   onStatusChange,
   onDelete,
+  onRowClick,
 }: BookingTableProps) {
   return (
     <>
@@ -57,6 +64,7 @@ export default function BookingTable({
               <th>Stay</th>
               <th>Guests</th>
               <th>Amount</th>
+              <th>Payment</th>
               <th>Status</th>
               <th>Action</th>
 
@@ -68,13 +76,13 @@ export default function BookingTable({
 
             {loading ? (
               <tr>
-                <td colSpan={8} className="empty">
+                <td colSpan={9} className="empty">
                   Loading bookings…
                 </td>
               </tr>
             ) : bookings.length === 0 ? (
               <tr>
-                <td colSpan={8} className="empty">
+                <td colSpan={9} className="empty">
                   No bookings found.
                 </td>
               </tr>
@@ -85,7 +93,7 @@ export default function BookingTable({
                 }`.trim();
 
                 return (
-                  <tr key={booking._id}>
+                  <tr key={booking._id} className="clickableRow" onClick={() => onRowClick(booking)}>
 
                     <td>{booking.bookingCode}</td>
 
@@ -127,29 +135,47 @@ export default function BookingTable({
                     <td>{formatAmount(booking.amount)}</td>
 
                     <td>
-                      <select
-                        className={`status ${statusClass(booking.status)}`}
-                        value={booking.status}
-                        onChange={(e) =>
-                          onStatusChange(
-                            booking._id,
-                            e.target.value as Booking["status"]
-                          )
-                        }
-                      >
-                        {STATUSES.map((s) => (
-                          <option key={s} value={s}>
-                            {s === "CheckedIn"
-                              ? "Checked In"
-                              : s === "CheckedOut"
-                              ? "Checked Out"
-                              : s}
-                          </option>
-                        ))}
-                      </select>
+                      <PaymentStatusPill status={booking.payment.status} />
+                      {booking.payment.amountPaid > 0 && (
+                        <div className="paidAmount">{formatAmount(booking.payment.amountPaid)} paid</div>
+                      )}
                     </td>
 
-                    <td>
+                    <td onClick={(e) => e.stopPropagation()}>
+                      {/* Cancelled and Checked Out are terminal — see
+                          backend/src/services/bookingLifecycle.js's
+                          ALLOWED_TRANSITIONS, which permits no further move
+                          from either. An editable dropdown there would just
+                          offer choices the API rejects. */}
+                      {booking.status === "Cancelled" || booking.status === "CheckedOut" ? (
+                        <span className={`status ${statusClass(booking.status)} readOnly`}>
+                          {booking.status === "CheckedOut" ? "Checked Out" : "Cancelled"}
+                        </span>
+                      ) : (
+                        <select
+                          className={`status ${statusClass(booking.status)}`}
+                          value={booking.status}
+                          onChange={(e) =>
+                            onStatusChange(
+                              booking._id,
+                              e.target.value as Booking["status"]
+                            )
+                          }
+                        >
+                          {STATUSES.map((s) => (
+                            <option key={s} value={s}>
+                              {s === "CheckedIn"
+                                ? "Checked In"
+                                : s === "CheckedOut"
+                                ? "Checked Out"
+                                : s}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </td>
+
+                    <td onClick={(e) => e.stopPropagation()}>
 
                       <div className="actions">
 
@@ -187,7 +213,11 @@ export default function BookingTable({
         .tableCard{
           background:#fff;
           border-radius:22px;
-          overflow:hidden;
+          /* Scroll on x unconditionally rather than only under a width media
+             query — the table has a min-width, so it can outgrow its container
+             at any viewport once the browser is zoomed in. The card is the
+             scroller, so the rounded corners still clip the table. */
+          overflow-x:auto;
           box-shadow:0 12px 35px rgba(0,0,0,.05);
         }
 
@@ -227,6 +257,16 @@ export default function BookingTable({
 
         tbody tr:hover{
           background:#FCFAF6;
+        }
+
+        .clickableRow{
+          cursor:pointer;
+        }
+
+        .paidAmount{
+          margin-top:6px;
+          font-size:12px;
+          color:#888;
         }
 
         .guest{
@@ -299,6 +339,16 @@ export default function BookingTable({
           color:#6D28D9;
         }
 
+        .expired{
+          background:#F3F4F6;
+          color:#6B7280;
+        }
+
+        .readOnly{
+          cursor:default;
+          display:inline-block;
+        }
+
         .actions{
           display:flex;
           gap:10px;
@@ -325,12 +375,8 @@ export default function BookingTable({
 
         @media(max-width:1200px){
 
-          .tableCard{
-            overflow:auto;
-          }
-
           table{
-            min-width:1100px;
+            min-width:1250px;
           }
 
         }

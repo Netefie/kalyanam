@@ -3,13 +3,16 @@
 import Link from "next/link";
 import { Play } from "lucide-react";
 
+import WatchVideoLink from "@/components/common/WatchVideoLink";
+import { VIDEO_URLS } from "@/lib/site";
+
 export default function HeroAcc() {
   return (
     <>
       <section
         className="heroacc-section"
         style={{
-          backgroundImage: "url('/ahero.png')",
+          backgroundImage: "url('/ahero.jpg')",
         }}
       >
         <div className="heroacc-container">
@@ -39,7 +42,11 @@ export default function HeroAcc() {
                 <span className="heroacc-arrow">→</span>
               </Link>
 
-              <button className="heroacc-video">
+              <WatchVideoLink
+                url={VIDEO_URLS.roomTour}
+                className="heroacc-video"
+                ariaLabel="Watch the room tour"
+              >
                 <div className="heroacc-play">
                   <Play
                     size={18}
@@ -49,7 +56,7 @@ export default function HeroAcc() {
                 </div>
 
                 <span>WATCH ROOM TOUR</span>
-              </button>
+              </WatchVideoLink>
             </div>
           </div>
         </div>
@@ -58,12 +65,20 @@ export default function HeroAcc() {
       <style>{`
        .heroacc-section {
   width: 100%;
-  height: 100vh;
+  /* min-height, not height: zoomed in, the heading + copy + CTAs are taller
+     than the viewport, and a fixed height would clip them out of scroll
+     range. svh rather than dvh so mobile browser chrome collapsing does not
+     reflow the hero mid-scroll. */
+  min-height: 100svh;
+  padding: 120px 0;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   display: flex;
-  align-items: center;
+  /* "safe" falls back to start-alignment once the content is taller than
+     the box, instead of overflowing equally off both edges. */
+  align-items: safe center;
+  overflow-x: clip;
 }
 
 .heroacc-container {
@@ -158,6 +173,7 @@ export default function HeroAcc() {
 }
 
 .heroacc-video {
+  text-decoration: none;
   display: flex;
   align-items: center;
   gap: 16px;
@@ -238,8 +254,9 @@ export default function HeroAcc() {
 @media (max-width:768px){
 
   .heroacc-section{
-    height:90vh;
-    align-items:center;
+    min-height:90svh;
+    padding:100px 0;
+    align-items:safe center;
   }
 
   .heroacc-container{

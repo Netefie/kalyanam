@@ -8,12 +8,15 @@ import { clearToken } from "@/lib/api";
 import {
   LayoutDashboard,
   CalendarCheck,
+  CalendarRange,
   BedDouble,
-  FileText,
   MessageSquare,
   Settings,
   LogOut,
   ChevronRight,
+  IndianRupee,
+  Mail,
+  Users,
 } from "lucide-react";
 
 const menuItems = [
@@ -28,21 +31,41 @@ const menuItems = [
     icon: CalendarCheck,
   },
   {
+    title: "Payments",
+    href: "/admin/payments",
+    icon: IndianRupee,
+  },
+  {
     title: "Rooms",
     href: "/admin/rooms",
     icon: BedDouble,
   },
   {
-    title: "Blogs",
-    href: "/admin/blogs",
-    icon: FileText,
+    title: "Availability",
+    href: "/admin/availability",
+    icon: CalendarRange,
   },
   {
     title: "Enquiries",
     href: "/admin/enquiries",
     icon: MessageSquare,
   },
- 
+  {
+    title: "Subscribers",
+    href: "/admin/subscribers",
+    icon: Users,
+  },
+  {
+    title: "Emails",
+    href: "/admin/emails",
+    icon: Mail,
+  },
+  {
+    title: "Settings",
+    href: "/admin/settings",
+    icon: Settings,
+  },
+
 ];
 
 export default function Sidebar() {
@@ -67,7 +90,7 @@ export default function Sidebar() {
             <div className="logoCircle">
 
               <Image
-                src="/Whitelogo.png"
+                src="/whitelogo.png"
                 alt="Kalyanam"
                 width={822}
                 height={822}
@@ -155,7 +178,9 @@ export default function Sidebar() {
     top: 0;
     left: 0;
     width: 300px;
-    height: 100vh;
+    /* dvh so the nav still ends at the visible bottom under mobile browser
+       chrome; it already scrolls internally when the menu outgrows it. */
+    height: 100dvh;
     background: #956124;
     border-right: 1px solid rgba(255,255,255,.06);
     display: flex;

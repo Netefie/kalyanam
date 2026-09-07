@@ -94,13 +94,16 @@ export default function Sidebar({
 
         <div className="px-6 pb-6">
 
-          <button
-            className="w-full h-14 bg-[#A46F44] text-white uppercase tracking-[2px]
+          <Link
+            href="/accommodations"
+            onClick={onClose}
+            className="flex w-full h-14 items-center justify-center
+            bg-[#A46F44] text-white uppercase tracking-[2px]
             text-sm font-medium transition-all duration-300
             hover:bg-[#8F5E39]"
           >
             Book a Stay
-          </button>
+          </Link>
 
         </div>
 

@@ -1,6 +1,8 @@
 import { Router } from "express";
 import {
   listRooms,
+  getBatchAvailability,
+  getAvailabilityCalendar,
   getRoom,
   getRoomAvailability,
   createRoom,
@@ -12,7 +14,12 @@ import { requireAuth, optionalAuth } from "../middleware/auth.js";
 export const roomRouter = Router();
 
 // Public reads (optionalAuth lets admins add ?all=true for inactive rooms).
+// The two /availability routes must be registered ahead of /:slug and
+// /:slug/availability — otherwise Express would match "availability" itself
+// as a :slug value.
 roomRouter.get("/", optionalAuth, listRooms);
+roomRouter.get("/availability", getBatchAvailability);
+roomRouter.get("/availability/calendar", getAvailabilityCalendar);
 roomRouter.get("/:slug/availability", getRoomAvailability);
 roomRouter.get("/:slug", getRoom);
 

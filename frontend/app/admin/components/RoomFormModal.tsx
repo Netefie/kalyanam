@@ -32,7 +32,6 @@ export default function RoomFormModal({
     bed: room?.bed ?? "",
     maxGuests: room?.maxGuests ?? 2,
     totalRooms: room?.totalRooms ?? 0,
-    availableRooms: room?.availableRooms ?? 0,
     breakfast: room?.breakfast ?? true,
     cancellation: room?.cancellation ?? true,
     featured: room?.featured ?? false,
@@ -128,7 +127,7 @@ export default function RoomFormModal({
             <input
               value={form.image}
               onChange={(e) => set("image", e.target.value)}
-              placeholder="/rooms/deluxe.png"
+              placeholder="/rooms/deluxe.jpg"
             />
           </div>
 
@@ -184,9 +183,6 @@ export default function RoomFormModal({
                 onChange={(e) => set("maxGuests", Number(e.target.value))}
               />
             </div>
-          </div>
-
-          <div className="row">
             <div className="field">
               <label>Total rooms</label>
               <input
@@ -194,15 +190,6 @@ export default function RoomFormModal({
                 min={0}
                 value={form.totalRooms}
                 onChange={(e) => set("totalRooms", Number(e.target.value))}
-              />
-            </div>
-            <div className="field">
-              <label>Available rooms</label>
-              <input
-                type="number"
-                min={0}
-                value={form.availableRooms}
-                onChange={(e) => set("availableRooms", Number(e.target.value))}
               />
             </div>
           </div>
@@ -268,9 +255,12 @@ export default function RoomFormModal({
           inset:0;
           background:rgba(0,0,0,.45);
           display:flex;
-          align-items:center;
+          /* "safe" degrades to start-alignment once the modal is taller than the
+             viewport, instead of overflowing equally off the top and bottom. */
+          align-items:safe center;
           justify-content:center;
           padding:24px;
+          overflow-y:auto;
           z-index:1000;
         }
 
@@ -279,8 +269,11 @@ export default function RoomFormModal({
           border-radius:20px;
           width:100%;
           max-width:640px;
-          max-height:90vh;
+          /* 90vh plus the backdrop's 24px padding overflows the viewport; cap to
+             the space actually inside the backdrop instead. */
+          max-height:calc(100dvh - 48px);
           overflow-y:auto;
+          overscroll-behavior:contain;
           padding:28px;
           box-shadow:0 30px 70px rgba(0,0,0,.25);
         }

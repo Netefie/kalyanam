@@ -1,5 +1,7 @@
 "use client";
 
+import { EMAIL, EMAIL_HREF, PHONE, PHONE_HREF } from "@/lib/site";
+
 export default function HeroContact() {
   return (
     <>
@@ -36,14 +38,18 @@ export default function HeroContact() {
 
               <div className="info-item">
                 <h4>Call Us</h4>
-                <span>+91 98765 43210</span>
+                <a href={PHONE_HREF} className="info-link">
+                  {PHONE}
+                </a>
               </div>
 
               <div className="info-divider"></div>
 
               <div className="info-item">
                 <h4>Email</h4>
-                <span>info@kalyanamhotel.com</span>
+                <a href={EMAIL_HREF} className="info-link">
+                  {EMAIL}
+                </a>
               </div>
 
             </div>
@@ -57,7 +63,11 @@ export default function HeroContact() {
 .contact-hero{
     position:relative;
     width:100%;
-    height:100vh;
+    /* min-height, not height: zoomed in the content outgrows the viewport and
+       a fixed height clipped it out of scroll range. svh so mobile browser
+       chrome collapsing does not reflow the hero mid-scroll. */
+    min-height:100svh;
+    padding:120px 0;
 
     background-size:cover;
     background-position:center;
@@ -65,9 +75,11 @@ export default function HeroContact() {
 
     display:flex;
     justify-content:center;
-    align-items:center;
+    /* "safe" degrades to start-alignment once the content is taller than
+       the box, rather than overflowing off both edges. */
+    align-items:safe center;
 
-    overflow:hidden;
+    overflow-x:clip;
 }
 
 .contact-overlay{
@@ -166,10 +178,21 @@ export default function HeroContact() {
     color:#fff;
 }
 
-.info-item span{
+.info-item span,
+.info-item .info-link{
     font-family:var(--font-lato);
     font-size:14px;
     color:rgba(255,255,255,.85);
+}
+
+.info-item .info-link{
+    text-decoration:none;
+
+    transition:color .3s ease;
+}
+
+.info-item .info-link:hover{
+    color:#fff;
 }
 
 .info-divider{
@@ -216,7 +239,8 @@ export default function HeroContact() {
 @media (max-width:992px){
 
     .contact-hero{
-        height:85vh;
+        min-height:85svh;
+        padding:110px 0;
     }
 
     .contact-container{
@@ -236,7 +260,8 @@ export default function HeroContact() {
         font-size:20px;
     }
 
-    .info-item span{
+    .info-item span,
+    .info-item .info-link{
         font-size:13px;
     }
 
@@ -249,7 +274,8 @@ export default function HeroContact() {
 @media (max-width:768px){
 
     .contact-hero{
-        height:80vh;
+        min-height:80svh;
+        padding:100px 0;
     }
 
     .contact-container{
@@ -287,7 +313,8 @@ export default function HeroContact() {
         font-size:18px;
     }
 
-    .info-item span{
+    .info-item span,
+    .info-item .info-link{
         font-size:13px;
     }
 
@@ -300,7 +327,8 @@ export default function HeroContact() {
 @media (max-width:480px){
 
     .contact-hero{
-        height:75vh;
+        min-height:75svh;
+        padding:90px 0;
     }
 
     .contact-container{

@@ -1,3 +1,5 @@
+import { EMAIL, EMAIL_HREF, PHONE, PHONE_HREF, WEBSITE } from "@/lib/site";
+
 export default function TermsAndConditionsPage() {
   return (
     <main className="bg-white">
@@ -212,9 +214,19 @@ export default function TermsAndConditionsPage() {
               </h3>
 
               <div className="space-y-2 text-gray-700">
-                <p>Email: info@kalyanamhotel.com</p>
-                <p>Phone: +91 XXXXX XXXXX</p>
-                <p>Website: www.kalyanamhotel.com</p>
+                <p>
+                  Email:{" "}
+                  <a href={EMAIL_HREF} className="underline hover:no-underline">
+                    {EMAIL}
+                  </a>
+                </p>
+                <p>
+                  Phone:{" "}
+                  <a href={PHONE_HREF} className="underline hover:no-underline">
+                    {PHONE}
+                  </a>
+                </p>
+                <p>Website: {WEBSITE}</p>
               </div>
             </div>
           </section>

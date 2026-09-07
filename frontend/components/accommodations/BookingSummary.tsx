@@ -9,17 +9,28 @@ import {
   useBookingContext,
   validateGuestDetails,
 } from "./context/BookingContext";
-import { computeStayTotals, formatINR, nightlyRate } from "@/lib/pricing";
+import { formatINR } from "@/lib/pricing";
+import useBookingQuote from "@/hooks/useBookingQuote";
 
 export default function BookingSummary() {
   const { booking, setBooking, nights, setGuestErrors } = useBookingContext();
 
   const [error, setError] = useState("");
 
-  if (!booking.selectedRoom) return null;
-
   const room = booking.selectedRoom;
   const plan = booking.selectedRatePlan;
+
+  // Authoritative price breakdown from the backend — see lib/pricing.ts for
+  // why this summary no longer computes its own 18%-flat tax client-side.
+  const { quote, loading: quoteLoading } = useBookingQuote({
+    roomSlug: room?.slug,
+    ratePlanCode: plan?.code,
+    checkIn: booking.checkIn,
+    checkOut: booking.checkOut,
+    rooms: booking.rooms,
+  });
+
+  if (!room) return null;
 
   const handleContinue = () => {
     setError("");
@@ -45,15 +56,11 @@ export default function BookingSummary() {
     setBooking((prev) => ({ ...prev, currentStep: 3 }));
   };
 
-  const rate = nightlyRate(plan, room);
-  const { subtotal, taxes, total } = computeStayTotals({
-    rate,
-    nights,
-    rooms: booking.rooms,
-  });
-
+  // The panel is capped and self-scrolling: a sticky element pins its top, so
+  // once it is taller than the viewport (short screen, or zoomed in) its
+  // footer — the Continue button — would sit permanently below the fold.
   return (
-    <div className="sticky top-28">
+    <div className="sticky top-28 max-h-[calc(100dvh-8rem)] overflow-y-auto overscroll-contain">
 
       <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
 
@@ -64,6 +71,7 @@ export default function BookingSummary() {
             src={room.image}
             alt={room.title}
             fill
+            sizes="(max-width: 768px) 100vw, 25vw"
             className="object-cover"
           />
         </div>
@@ -169,46 +177,54 @@ export default function BookingSummary() {
 
           {/* Price */}
 
-          <div className="space-y-3">
+          {quoteLoading && !quote ? (
+            <div className="space-y-3 animate-pulse">
+              <div className="h-4 rounded bg-gray-200" />
+              <div className="h-4 rounded bg-gray-200" />
+              <div className="h-6 rounded bg-gray-200" />
+            </div>
+          ) : quote ? (
+            <div className="space-y-3">
 
-            <div className="flex justify-between">
+              <div className="flex justify-between">
 
-              <span className="text-gray-600">
-                {formatINR(rate)} × {nights} Night
-                {nights > 1 ? "s" : ""}
-              </span>
+                <span className="text-gray-600">
+                  {formatINR(quote.nightlyRate)} × {nights} Night
+                  {nights > 1 ? "s" : ""}
+                </span>
 
-              <span>
-                {formatINR(subtotal)}
-              </span>
+                <span>
+                  {formatINR(quote.subtotal)}
+                </span>
+
+              </div>
+
+              <div className="flex justify-between">
+
+                <span className="text-gray-600">
+                  Taxes &amp; GST ({quote.taxPercent}%)
+                </span>
+
+                <span>
+                  {formatINR(quote.taxAmount)}
+                </span>
+
+              </div>
+
+              <div className="border-t pt-4 flex justify-between">
+
+                <span className="text-xl font-semibold">
+                  Total
+                </span>
+
+                <span className="text-2xl font-bold text-[#B68D40]">
+                  {formatINR(quote.total)}
+                </span>
+
+              </div>
 
             </div>
-
-            <div className="flex justify-between">
-
-              <span className="text-gray-600">
-                Taxes & GST
-              </span>
-
-              <span>
-                {formatINR(taxes)}
-              </span>
-
-            </div>
-
-            <div className="border-t pt-4 flex justify-between">
-
-              <span className="text-xl font-semibold">
-                Total
-              </span>
-
-              <span className="text-2xl font-bold text-[#B68D40]">
-                {formatINR(total)}
-              </span>
-
-            </div>
-
-          </div>
+          ) : null}
 
           {error && (
             <p className="mt-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">

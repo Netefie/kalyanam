@@ -4,6 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { Play, ArrowRight } from "lucide-react";
 
+import WatchVideoLink from "@/components/common/WatchVideoLink";
+import { VIDEO_URLS } from "@/lib/site";
+
 export default function HeroKaara() {
   return (
     <>
@@ -13,6 +16,7 @@ export default function HeroKaara() {
           src="/3.jpg"
           alt="Kaara Restaurant"
           fill
+          sizes="100vw"
           priority
           className="bg"
         />
@@ -44,9 +48,13 @@ export default function HeroKaara() {
 
           {/* Right Bottom */}
           <div className="watch">
-            <button className="play">
+            <WatchVideoLink
+              url={VIDEO_URLS.kaaraExperience}
+              className="play"
+              ariaLabel="Watch the Kaara experience"
+            >
               <Play fill="white" size={20} />
-            </button>
+            </WatchVideoLink>
 
             <div>
               <span>WATCH</span>
@@ -60,10 +68,14 @@ export default function HeroKaara() {
         .hero {
           position: relative;
           width: 100%;
-          height: 100vh;
+          /* min-height, not height: zoomed in the content outgrows the viewport
+             and a fixed height clipped it out of scroll range. svh so mobile
+             browser chrome collapsing does not reflow the hero mid-scroll.
+             The container below stretches to fill this, so the copy keeps
+             sitting on the hero floor exactly as before. */
+          min-height: 100svh;
           display: flex;
-          align-items: center;
-          overflow: hidden;
+          overflow-x: clip;
         }
 
         .bg {
@@ -85,11 +97,12 @@ export default function HeroKaara() {
           position: relative;
           z-index: 2;
           width: min(1400px, 90%);
-          margin: auto;
+          /* margin-inline only — an auto block margin would cancel the flex
+             stretch that gives this its height. */
+          margin: 0 auto;
           display: flex;
           justify-content: space-between;
           align-items: flex-end;
-          height: 100%;
           padding: 120px 0 80px;
         }
 
@@ -131,6 +144,7 @@ export default function HeroKaara() {
         }
 
         .play {
+          text-decoration: none;
           width: 70px;
           height: 70px;
           border-radius: 50%;
@@ -165,7 +179,7 @@ export default function HeroKaara() {
         @media (max-width: 768px) {
           .container {
             flex-direction: column;
-            justify-content: center;
+            justify-content: safe center;
             align-items: flex-start;
             gap: 60px;
             padding: 100px 0 60px;

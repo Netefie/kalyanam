@@ -37,6 +37,7 @@ export default function KaaraRestaurantSection() {
               src="/restaurant-main.png"
               alt="Kaara Rooftop Restaurant"
               fill
+              sizes="(max-width: 768px) 100vw, 50vw"
               className="leftImage"
             />
           </div>
@@ -52,6 +53,7 @@ export default function KaaraRestaurantSection() {
     src="/palace-top.png"
     alt="Palace"
     fill
+    sizes="(max-width: 768px) 100vw, 50vw"
     style={{ objectFit: "contain" }}
   />
 </div>
@@ -158,6 +160,7 @@ export default function KaaraRestaurantSection() {
         src="/bottom-banner.png"
         alt="Bottom Banner"
         fill
+        sizes="(max-width: 768px) 100vw, 50vw"
         className="bottomBannerImage"
     />
 </div>

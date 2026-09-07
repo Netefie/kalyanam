@@ -1,33 +1,42 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
 
-import type {
-  BookingSearchState,
-  RoomType,
-} from "./types";
+import type { RoomType } from "./types";
 
 import DateRangePicker from "./DateRangePicker";
 import GuestRoomSelector from "./GuestRoomSelector";
 import RoomSelector from "./RoomSelector";
 
 import { useBookingContext } from "./context/BookingContext";
-
-const roomTypes: RoomType[] = [
-  {
-    id: "deluxe-room",
-    name: "Deluxe Room",
-  },
-  {
-    id: "super-deluxe-room",
-    name: "Super Deluxe Room",
-  },
- 
-];
+import { api } from "@/lib/api";
 
 export default function BookingSearchBar() {
   const { booking, setBooking } =
     useBookingContext();
+
+  // Room list drives the "Room Type" dropdown — loaded from the same API
+  // AvailableRooms renders, so a room added/renamed/retired in the admin
+  // panel shows up here too instead of drifting from a hardcoded list.
+  const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
+  const [searchError, setSearchError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    api.rooms
+      .list()
+      .then((rooms) => {
+        if (!cancelled) setRoomTypes(rooms.map((r) => ({ id: r.slug, name: r.name })));
+      })
+      .catch(() => {
+        // The dropdown just stays empty ("Any Room") — AvailableRooms below
+        // will surface its own error if the API is genuinely down.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const updateBooking = (
     data: Partial<typeof booking>
@@ -36,19 +45,21 @@ export default function BookingSearchBar() {
       ...prev,
       ...data,
     }));
+    setSearchError("");
   };
 
   const handleSearch = () => {
     if (!booking.checkIn) {
-      alert("Please select check-in date.");
+      setSearchError("Please select a check-in date.");
       return;
     }
 
     if (!booking.checkOut) {
-      alert("Please select check-out date.");
+      setSearchError("Please select a check-out date.");
       return;
     }
 
+    setSearchError("");
     setBooking((prev) => ({
       ...prev,
       searched: true,
@@ -65,6 +76,10 @@ export default function BookingSearchBar() {
   return (
     <>
       <section className="booking-search-bar w-full mt-10">
+
+        {searchError && (
+          <p className="px-4 pt-3 text-sm font-medium text-red-600 sm:px-6">{searchError}</p>
+        )}
 
         <div className="booking-grid">
 
@@ -97,6 +112,8 @@ export default function BookingSearchBar() {
                   checkOut,
                 })
               }
+              roomSlug={booking.roomType}
+              roomsRequested={booking.rooms}
             />
 
           </div>

@@ -8,6 +8,15 @@ import {
   Clock3,
 } from "lucide-react";
 import { api, ApiError } from "@/lib/api";
+import {
+  ADDRESS,
+  EMAIL,
+  EMAIL_HREF,
+  MAPS_URL,
+  PHONE,
+  PHONE_HREF,
+  SOCIALS,
+} from "@/lib/site";
 
 export default function ContactInfo() {
   const [form, setForm] = useState({
@@ -187,11 +196,18 @@ export default function ContactInfo() {
                   <h4>Visit Us</h4>
 
                   <p>
-                    Kalyanam Hotel & Resort
-                    <br />
-                    Jaipur Road, Sikar
-                    <br />
-                    Rajasthan, India
+                    <a
+                      href={MAPS_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="detail-link"
+                    >
+                      Kalyanam Hotel &amp; Resort
+                      <br />
+                      {ADDRESS.line1}, {ADDRESS.line2}
+                      <br />
+                      {ADDRESS.country}
+                    </a>
                   </p>
                 </div>
 
@@ -206,7 +222,11 @@ export default function ContactInfo() {
                 <div>
                   <h4>Call Us</h4>
 
-                  <p>+91 XXXXX XXXXX</p>
+                  <p>
+                    <a href={PHONE_HREF} className="detail-link">
+                      {PHONE}
+                    </a>
+                  </p>
                 </div>
 
               </div>
@@ -220,7 +240,11 @@ export default function ContactInfo() {
                 <div>
                   <h4>Email</h4>
 
-                  <p>info@kalyanamhotel.com</p>
+                  <p>
+                    <a href={EMAIL_HREF} className="detail-link">
+                      {EMAIL}
+                    </a>
+                  </p>
                 </div>
 
               </div>
@@ -246,7 +270,7 @@ export default function ContactInfo() {
   <div className="social-links">
 
     <a
-      href="https://instagram.com/"
+      href={SOCIALS.instagram}
       target="_blank"
       rel="noopener noreferrer"
     >
@@ -254,7 +278,7 @@ export default function ContactInfo() {
     </a>
 
     <a
-      href="https://facebook.com/"
+      href={SOCIALS.facebook}
       target="_blank"
       rel="noopener noreferrer"
     >
@@ -499,6 +523,17 @@ export default function ContactInfo() {
     line-height:1.4;
 
     color:#6C635B;
+}
+
+.detail-link{
+    color:inherit;
+    text-decoration:none;
+
+    transition:color .3s ease;
+}
+
+.detail-link:hover{
+    color:#A66F43;
 }
 
 .social-wrapper{

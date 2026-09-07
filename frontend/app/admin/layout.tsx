@@ -39,7 +39,7 @@ export default function AdminLayout({
     return (
       <div
         style={{
-          minHeight: "100vh",
+          minHeight: "100svh",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -72,13 +72,16 @@ export default function AdminLayout({
       <style jsx>{`
         .adminLayout {
           display: flex;
-          min-height: 100vh;
+          min-height: 100svh;
           background: #f8f5ef;
         }
 
         .mainContent {
           flex: 1;
-          margin-left: 280px;
+          min-width: 0;
+          /* Must match the Sidebar width exactly — it is position:fixed, so this
+             margin is the only thing keeping the page out from under it. */
+          margin-left: 300px;
           display: flex;
           flex-direction: column;
         }
@@ -89,7 +92,9 @@ export default function AdminLayout({
 
         @media (max-width: 992px) {
           .mainContent {
-            margin-left: 0;
+            /* The sidebar collapses to 92px here but stays fixed, so the gutter
+               has to shrink to match, not disappear. */
+            margin-left: 92px;
           }
 
           .pageContent {

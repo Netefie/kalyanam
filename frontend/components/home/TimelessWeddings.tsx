@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 const weddingSlides = [
@@ -109,6 +110,7 @@ export default function TimelessWeddings() {
                 src={activeSlide.image}
                 alt={activeSlide.title}
                 fill
+                sizes="(max-width: 768px) 100vw, 50vw"
                 priority
                 className="image"
               />
@@ -123,9 +125,9 @@ export default function TimelessWeddings() {
 
               <p>{activeSlide.description}</p>
 
-              <button className="discover-btn">
+              <Link href="/weddings" className="discover-btn">
                 Discover More
-              </button>
+              </Link>
 
             </div>
 
@@ -167,6 +169,7 @@ export default function TimelessWeddings() {
                   src={slide.image}
                   alt={slide.title}
                   fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
                 />
 
               </div>
@@ -177,9 +180,9 @@ export default function TimelessWeddings() {
 
                 <p>{slide.description}</p>
 
-                <button className="discover-btn">
+                <Link href="/weddings" className="discover-btn">
                   Discover More
-                </button>
+                </Link>
 
               </div>
 
@@ -368,6 +371,8 @@ export default function TimelessWeddings() {
 
 .discover-btn{
 
+  display:inline-block;
+
   margin-top:18px;
 
   background:none;
@@ -381,6 +386,8 @@ export default function TimelessWeddings() {
   font-size:17px;
 
   letter-spacing:1px;
+
+  text-decoration:none;
 }
 
 /* ---------- ANIMATION ---------- */
@@ -526,6 +533,8 @@ color:#666;
 
 .mobile-content .discover-btn{
 
+display:inline-block;
+
 margin-top:18px;
 
 background:none;
@@ -535,6 +544,8 @@ border:none;
 color:#a87a2d;
 
 font-size:16px;
+
+text-decoration:none;
 }
 
 }

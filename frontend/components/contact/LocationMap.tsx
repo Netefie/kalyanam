@@ -7,6 +7,8 @@ import {
   Plane,
 } from "lucide-react";
 
+import { MAPS_EMBED_URL, MAPS_URL } from "@/lib/site";
+
 export default function LocationMap() {
   return (
     <>
@@ -38,7 +40,7 @@ export default function LocationMap() {
             <div className="map-card">
 
               <iframe
-  src="https://maps.google.com/maps?q=Kalyanam%20Hotel%20%26%20Resort%20Sikar&t=&z=15&ie=UTF8&iwloc=&output=embed"
+  src={MAPS_EMBED_URL}
   width="100%"
   height="100%"
   style={{ border: 0 }}
@@ -135,7 +137,7 @@ export default function LocationMap() {
               </div>
 
               <a
-                href="https://maps.google.com/?q=Kalyanam+Hotel+%26+Resort+Sikar"
+                href={MAPS_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="direction-btn"

@@ -10,9 +10,16 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
-    "seed": "node src/seed/seed.js"
+    "seed": "node src/seed/seed.js",
+    "test:payments": "node scripts/test-payment-flow.mjs",
+    "test:booking": "node scripts/test-booking-flow.mjs",
+    "test:mail": "node scripts/test-mail.mjs",
+    "deploy": "AWS_PROFILE=kalyanam npx serverless deploy",
+    "logs": "AWS_PROFILE=kalyanam npx serverless logs -f api -t",
+    "remove": "AWS_PROFILE=kalyanam npx serverless remove"
   },
   "dependencies": {
+    "@vendia/serverless-express": "^4.12.6",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -21,6 +28,10 @@
     "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.5",
-    "nodemailer": "^6.9.16"
+    "nodemailer": "^6.9.16",
+    "razorpay": "^2.9.8"
+  },
+  "devDependencies": {
+    "serverless": "^3.40.0"
   }
 }

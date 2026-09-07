@@ -59,13 +59,16 @@ export default function Lightbox({
       aria-modal="true"
       aria-label={`${title} photos`}
       onClick={onClose}
-      className="animate-fade-in fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+      // `items-center-safe` + `overflow-y-auto`: on a short or zoomed viewport the
+      // frame is taller than the screen, and plain centring would push its top
+      // out of scroll range.
+      className="animate-fade-in fixed inset-0 z-[100] flex items-center-safe justify-center overflow-y-auto overscroll-contain bg-black/80 p-4 backdrop-blur-sm"
     >
       <button
         type="button"
         onClick={onClose}
         aria-label="Close gallery"
-        className="absolute right-5 top-5 rounded-full bg-white/10 p-2.5 text-white transition hover:bg-white/25"
+        className="fixed right-5 top-5 rounded-full bg-white/10 p-2.5 text-white transition hover:bg-white/25"
       >
         <X size={22} />
       </button>
@@ -75,7 +78,9 @@ export default function Lightbox({
         onClick={(e) => e.stopPropagation()}
         className="animate-zoom-in relative w-full max-w-5xl"
       >
-        <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl bg-black/40">
+        {/* The 16:10 box is sized off width, so it outgrows a short viewport;
+            cap it and let the image letterbox inside. */}
+        <div className="relative aspect-[16/10] max-h-[calc(100dvh-9rem)] w-full overflow-hidden rounded-2xl bg-black/40">
           <Image
             src={images[index]}
             alt={`${title} — photo ${index + 1} of ${count}`}

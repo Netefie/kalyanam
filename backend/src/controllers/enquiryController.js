@@ -2,6 +2,7 @@ import { Enquiry } from "../models/Enquiry.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { requireFields, isEmail, check } from "../utils/validate.js";
+import { onEnquiryCreated } from "../services/notifications.js";
 
 // POST /api/enquiries  (public) — reservation popup + contact form.
 export const createEnquiry = asyncHandler(async (req, res) => {
@@ -20,6 +21,11 @@ export const createEnquiry = asyncHandler(async (req, res) => {
   }
 
   const enquiry = await Enquiry.create({ ...req.body, type });
+
+  // Fire-and-forget: acknowledges the guest (if they gave an email) and
+  // always alerts staff. Never blocks or fails the enquiry submission.
+  onEnquiryCreated(enquiry);
+
   res.status(201).json(enquiry);
 });
 

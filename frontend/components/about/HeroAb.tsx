@@ -8,7 +8,7 @@ export default function HeroAb() {
       <section
         className="about-hero"
         style={{
-          backgroundImage: "url('/abouthero.png')",
+          backgroundImage: "url('/abouthero.jpg')",
         }}
       >
         <div className="about-overlay"></div>
@@ -45,13 +45,19 @@ export default function HeroAb() {
         .about-hero{
           position:relative;
           width:100%;
-          height:100vh;
+          /* min-height, not height: zoomed in the content outgrows the viewport,
+             and a fixed height clipped it out of scroll range. svh so mobile
+             browser chrome collapsing does not reflow the hero mid-scroll. */
+          min-height:100svh;
+          padding:120px 0;
           background-size:cover;
           background-position:center;
           background-repeat:no-repeat;
           display:flex;
-          align-items:center;
-          overflow:hidden;
+          /* "safe" degrades to start-alignment once the content is taller than
+             the box, rather than overflowing off both edges. */
+          align-items:safe center;
+          overflow-x:clip;
         }
 
         .about-overlay{
@@ -158,7 +164,8 @@ export default function HeroAb() {
         @media(max-width:768px){
 
           .about-hero{
-            height:90vh;
+            min-height:90svh;
+            padding:100px 0;
           }
 
           .about-container{

@@ -19,6 +19,13 @@ const settingsSchema = new mongoose.Schema(
     taxPercent: { type: Number, default: 18, min: 0, max: 100 },
     currency: { type: String, default: "INR" },
 
+    // How close to check-in a guest can still self-cancel a refundable
+    // booking for a full refund — controllers/bookingController.js
+    // #cancelBookingSelf reads this; inside the window (or on a
+    // non-refundable rate plan) the guest is asked to contact the hotel
+    // instead of the refund happening automatically.
+    cancellationWindowHours: { type: Number, default: 24, min: 0 },
+
     socials: {
       instagram: { type: String, default: "" },
       facebook: { type: String, default: "" },

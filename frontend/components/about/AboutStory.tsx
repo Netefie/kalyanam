@@ -12,7 +12,7 @@ export default function AboutStory() {
 
           <div className="about-story-image">
 <Image
-  src="/aboutstory.png"
+  src="/aboutstory.jpg"
   alt="Kalyanam Hotel & Resort"
   width={520}
   height={650}

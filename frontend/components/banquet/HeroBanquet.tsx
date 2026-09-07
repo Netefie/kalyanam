@@ -1,6 +1,7 @@
 // HeroBanquet.tsx
 
 import React from "react";
+import Link from "next/link";
 
 const HeroBanquet = () => {
   return (
@@ -8,7 +9,7 @@ const HeroBanquet = () => {
       <section className="hero-banquet">
         {/* Background Image */}
         <img
-          src="/2.AVIF"
+          src="/2.avif"
           alt="Banquet Hall"
           className="bg-image"
         />
@@ -40,7 +41,9 @@ const HeroBanquet = () => {
             anniversaries, corporate events and more.
           </p>
 
-          <button>Book a Visit</button>
+          <Link href="/contact" className="hero-cta">
+            Book a Visit
+          </Link>
         </div>
       </section>
 
@@ -48,11 +51,15 @@ const HeroBanquet = () => {
         .hero-banquet {
           position: relative;
           width: 100%;
-          min-height: 100vh;
-          overflow: hidden;
+          /* svh so mobile browser chrome collapsing does not reflow the hero
+             mid-scroll. Already min-height, so it grows rather than clips. */
+          min-height: 100svh;
+          overflow-x: clip;
           display: flex;
-          align-items: center;
-          padding: 80px;
+          /* "safe" degrades to start-alignment once the content is taller than
+             the box, rather than overflowing off both edges. */
+          align-items: safe center;
+          padding: 80px clamp(24px, 5vw, 80px);
         }
 
         .bg-image {
@@ -134,7 +141,9 @@ const HeroBanquet = () => {
           font-family: Arial, sans-serif;
         }
 
-        .hero-content button {
+        .hero-content .hero-cta {
+          display: inline-block;
+          text-decoration: none;
           background: #c08a3e;
           color: white;
           border: none;
@@ -145,7 +154,7 @@ const HeroBanquet = () => {
           font-weight: 500;
         }
 
-        .hero-content button:hover {
+        .hero-content .hero-cta:hover {
           background: #a9742f;
           transform: translateY(-2px);
         }
@@ -187,8 +196,9 @@ const HeroBanquet = () => {
             line-height: 1.7;
           }
 
-          .hero-content button {
+          .hero-content .hero-cta {
             width: 100%;
+            text-align: center;
             padding: 16px;
             font-size: 16px;
           }

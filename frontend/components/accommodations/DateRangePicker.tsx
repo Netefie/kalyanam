@@ -14,12 +14,19 @@ interface DateRangePickerProps {
     checkIn: Date | null,
     checkOut: Date | null
   ) => void;
+  // Forwarded to LuxuryCalendar so it can shade sold-out days for whatever
+  // is currently selected — the room type filter ("" = any room) and how
+  // many rooms are wanted.
+  roomSlug?: string;
+  roomsRequested?: number;
 }
 
 export default function DateRangePicker({
   checkIn,
   checkOut,
   onChange,
+  roomSlug,
+  roomsRequested,
 }: DateRangePickerProps) {
   const [open, setOpen] = useState(false);
 
@@ -121,6 +128,8 @@ export default function DateRangePicker({
             range?.to ?? null
           );
         }}
+        roomSlug={roomSlug}
+        roomsRequested={roomsRequested}
       />
 
       <style jsx>{`
@@ -246,6 +255,16 @@ export default function DateRangePicker({
       align-items:flex-end;
       background:rgba(0,0,0,.45);
       padding:16px;
+      max-width:none;
+    }
+
+    /* Matches the cap LuxuryCalendar sets on its own bottom sheet — a fixed
+       sheet is outside page scroll, so a calendar taller than the viewport
+       would otherwise have its top out of reach. */
+    :global(.calendarPopup){
+      max-height:calc(100dvh - 32px);
+      overflow-y:auto;
+      overscroll-behavior:contain;
     }
   }
 

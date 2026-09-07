@@ -73,6 +73,7 @@ export default function MomentsSection() {
               src={leftSmall.image}
               alt=""
               fill
+              sizes="(max-width: 768px) 100vw, 50vw"
               className="moment-image"
             />
 
@@ -86,6 +87,7 @@ export default function MomentsSection() {
               src={leftMain.image}
               alt=""
               fill
+              sizes="(max-width: 768px) 100vw, 50vw"
               className="moment-image"
             />
 
@@ -161,6 +163,7 @@ export default function MomentsSection() {
               src={rightMain.image}
               alt=""
               fill
+              sizes="(max-width: 768px) 100vw, 50vw"
               className="moment-image"
             />
 
@@ -174,6 +177,7 @@ export default function MomentsSection() {
               src={rightSmall.image}
               alt=""
               fill
+              sizes="(max-width: 768px) 100vw, 50vw"
               className="moment-image"
             />
 

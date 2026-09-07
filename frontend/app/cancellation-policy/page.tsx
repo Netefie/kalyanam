@@ -1,4 +1,27 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { EMAIL, EMAIL_HREF, PHONE, PHONE_HREF, WEBSITE } from "@/lib/site";
+import { api, type SiteSettings } from "@/lib/api";
+
 export default function CancellationPolicyPage() {
+  // The one number on this page that's actually enforced by the booking
+  // flow — GET /settings is public, and backend/src/controllers/
+  // bookingController.js#cancelBookingSelf reads the same
+  // cancellationWindowHours field to decide whether a guest's self-service
+  // cancellation gets an automatic refund. 24h (the schema default) is
+  // shown while this loads so the page never flashes a blank number.
+  const [settings, setSettings] = useState<Pick<SiteSettings, "cancellationWindowHours" | "policies"> | null>(
+    null
+  );
+
+  useEffect(() => {
+    api.settings.get().then(setSettings).catch(() => {});
+  }, []);
+
+  const windowHours = settings?.cancellationWindowHours ?? 24;
+
   return (
     <main className="bg-white">
       {/* Hero Section */}
@@ -28,6 +51,23 @@ export default function CancellationPolicyPage() {
       {/* Content */}
       <section className="max-w-5xl mx-auto px-6 py-16">
         <div className="space-y-14 text-gray-700 leading-8">
+
+          <div className="rounded-2xl border border-[#E6DCCB] bg-[#F8F5F0] p-8">
+            <h3 className="text-xl font-semibold text-[#1E1E1E] mb-2">Your Cancellation Window</h3>
+            <p>
+              For refundable rate plans, cancel at least <strong>{windowHours} hours</strong> before check-in
+              for a full, automatic refund. Cancellations inside this window, or on a non-refundable rate,
+              require contacting our reservations team directly.
+            </p>
+            {settings?.policies.cancellation && <p className="mt-3">{settings.policies.cancellation}</p>}
+            <p className="mt-4">
+              Already have a reservation?{" "}
+              <Link href="/manage-booking" className="underline hover:no-underline">
+                Manage or cancel your booking online
+              </Link>
+              .
+            </p>
+          </div>
 
           <section>
             <h2 className="text-3xl font-semibold text-[#1E1E1E] mb-5">
@@ -171,9 +211,19 @@ export default function CancellationPolicyPage() {
               </h3>
 
               <div className="space-y-2 text-gray-700">
-                <p>Email: info@kalyanamhotel.com</p>
-                <p>Phone: +91 XXXXX XXXXX</p>
-                <p>Website: www.kalyanamhotel.com</p>
+                <p>
+                  Email:{" "}
+                  <a href={EMAIL_HREF} className="underline hover:no-underline">
+                    {EMAIL}
+                  </a>
+                </p>
+                <p>
+                  Phone:{" "}
+                  <a href={PHONE_HREF} className="underline hover:no-underline">
+                    {PHONE}
+                  </a>
+                </p>
+                <p>Website: {WEBSITE}</p>
               </div>
             </div>
           </section>

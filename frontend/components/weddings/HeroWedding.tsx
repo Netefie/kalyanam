@@ -4,6 +4,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Play } from "lucide-react";
 
+import WatchVideoLink from "@/components/common/WatchVideoLink";
+import { VIDEO_URLS } from "@/lib/site";
+
 export default function HeroWedding() {
   return (
     <>
@@ -15,6 +18,7 @@ export default function HeroWedding() {
           src="/wedding-hero.jpg"
           alt="Marriage Lawn by Kalyanam"
           fill
+          sizes="100vw"
           priority
           className="hero-bg"
         />
@@ -71,15 +75,16 @@ export default function HeroWedding() {
 
         <div className="watch-wrapper">
 
-          <button
+          <WatchVideoLink
+            url={VIDEO_URLS.weddingExperience}
             className="play-btn"
-            aria-label="Watch Experience"
+            ariaLabel="Watch the wedding experience"
           >
             <Play
               size={22}
               fill="currentColor"
             />
-          </button>
+          </WatchVideoLink>
 
           <div className="watch-text">
 
@@ -105,8 +110,14 @@ export default function HeroWedding() {
 .hero-wedding{
   position:relative;
   width:100%;
-  height:100vh;
-  overflow:hidden;
+  /* min-height, not height: zoomed in the content outgrows the viewport and
+     a fixed height clipped it out of scroll range. svh so mobile browser
+     chrome collapsing does not reflow the hero mid-scroll. display:flex so
+     .hero-container stretches to fill it the way height:100% used to. */
+  min-height:100svh;
+  display:flex;
+  padding:120px 0;
+  overflow-x:clip;
   background:#000;
 }
 .hero-bg{
@@ -137,12 +148,15 @@ background: linear-gradient( 90deg, rgba(15,15,15,.98) 0%, rgba(15,15,15,.95) 20
   z-index:5;
 
   width:min(1450px,92%);
-  height:100%;
 
-  margin:auto;
+  /* margin-inline only — an auto block margin would cancel the flex stretch
+     that gives this its height. */
+  margin:0 auto;
 
   display:flex;
-  align-items:center;
+  /* "safe" degrades to start-alignment once the content is taller than the
+     box, rather than overflowing off both edges. */
+  align-items:safe center;
 }
 
 .hero-content{
@@ -295,6 +309,8 @@ background: linear-gradient( 90deg, rgba(15,15,15,.98) 0%, rgba(15,15,15,.95) 20
 }
 
 .play-btn{
+
+  text-decoration:none;
 
   width:78px;
 
