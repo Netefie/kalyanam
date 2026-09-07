@@ -29,7 +29,40 @@ async function listPublic(dir, base = "") {
   return out;
 }
 
-const committed = new Set(await listPublic(PUBLIC));
+// Next's metadata file conventions turn certain files in app/ into rooted URLs
+// that are served like public assets but live nowhere near /public — e.g.
+// app/opengraph-image.jpg is served at /opengraph-image.jpg. They are just as
+// case-sensitive on Vercel as anything in /public, so they belong in the same
+// check rather than being skipped.
+// See node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/01-metadata/.
+const METADATA_FILE =
+  /^(?:favicon|icon\d*|apple-icon\d*|opengraph-image\d*|twitter-image\d*)\.(?:ico|jpe?g|png|svg|gif)$/i;
+
+async function listAppMetadata(dir, segments = []) {
+  const out = [];
+  for (const e of await readdir(dir, { withFileTypes: true })) {
+    if (e.isDirectory()) {
+      // Route groups (group) and parallel routes @slot don't appear in the URL;
+      // private folders _foo aren't routable at all.
+      if (e.name.startsWith("_")) continue;
+      const hidden = /^[(@]/.test(e.name);
+      out.push(
+        ...(await listAppMetadata(
+          path.join(dir, e.name),
+          hidden ? segments : [...segments, e.name]
+        ))
+      );
+    } else if (METADATA_FILE.test(e.name)) {
+      out.push([...segments, e.name].join("/"));
+    }
+  }
+  return out;
+}
+
+const committed = new Set([
+  ...(await listPublic(PUBLIC)),
+  ...(await listAppMetadata(path.resolve(ROOT, "app"))),
+]);
 const byLower = new Map([...committed].map((f) => [f.toLowerCase(), f]));
 
 const SKIP = new Set(["node_modules", ".next", ".git", "public", "scripts"]);
@@ -47,7 +80,11 @@ async function* walk(dir) {
 // Any rooted string literal that looks like an asset, plus css url(...).
 const LITERAL =
   /["'`](\/[^"'`\s)]*\.(?:png|jpe?g|avif|webp|svg|gif|ico))["'`]/gi;
-const CSS_URL = /url\(\s*['"]?(\/[^"'`)\s]+)['"]?\s*\)/gi;
+// (?<![\w$-]) so this matches the CSS `url(` token and not the tail of an
+// identifier — `absoluteUrl("/kaara")` in lib/seo.ts otherwise reads as a CSS
+// url() pointing at a missing image, and every route path becomes a false
+// positive.
+const CSS_URL = /(?<![\w$-])url\(\s*['"]?(\/[^"'`)\s]+)['"]?\s*\)/gi;
 
 const missing = [];
 const wrongCase = [];
