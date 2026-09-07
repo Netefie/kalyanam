@@ -33,7 +33,7 @@ export default function Navbar() {
             top-[92px] / h-[calc(100dvh-92px)]. So rather than let the bar grow,
             the contents shrink to stay inside it when the viewport narrows
             (which is what zooming in does). */}
-        <div className="max-w-[1500px] mx-auto h-[92px] px-4 sm:px-6 lg:px-10 grid grid-cols-3 items-center gap-2">
+        <div className="max-w-[1500px] mx-auto h-[92px] px-4 sm:px-6 lg:px-10 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
 
           {/* LEFT */}
 
@@ -41,7 +41,8 @@ export default function Navbar() {
 
             <button
               onClick={() => setSidebarOpen(true)}
-              className="cursor-pointer transition-transform duration-300 hover:scale-105"
+              aria-label="Open menu"
+              className="shrink-0 cursor-pointer transition-transform duration-300 hover:scale-105"
             >
               <Menu
                 size={34}
@@ -52,7 +53,7 @@ export default function Navbar() {
               />
             </button>
 
-            <nav className="hidden lg:flex items-center gap-10 uppercase tracking-wide text-[15px]">
+            <nav className="hidden xl:flex items-center gap-10 uppercase tracking-wide text-[15px]">
 
               <Link
                 href="/"

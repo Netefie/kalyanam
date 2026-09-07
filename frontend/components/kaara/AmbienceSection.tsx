@@ -115,7 +115,9 @@ export default function AmbienceSection() {
   margin: 0 auto;
 
   display: grid;
-  grid-template-columns: 30% 70%;
+    /* fr, not %: percentages summing to 100 leave no room for the gap, which
+     made this grid 50px wider than its container at every width. */
+  grid-template-columns: 3fr 7fr;
   gap: 50px;
   align-items: center;
 

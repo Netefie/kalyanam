@@ -102,7 +102,9 @@ export default function Experience() {
   margin: 0 auto;
 
   display: grid;
-  grid-template-columns: 45% 55%;
+    /* fr, not %: percentages summing to 100 leave no room for the gap, which
+     made this grid 32px wider than its container at every width. */
+  grid-template-columns: 9fr 11fr;
   gap: 2rem;
   align-items: center;
 }

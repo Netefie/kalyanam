@@ -123,6 +123,11 @@ export default function LuxuryCalendar({
           <DayPicker
             mode="range"
             numberOfMonths={1}
+            // Renders prev/caption/next as siblings inside .rdp-month, so the
+            // month reads "‹ September 2026 ›". Without it the chevrons live in
+            // a separate .rdp-nav container that has to be absolutely positioned
+            // over the caption, which pinned them to the popup's outer edges.
+            navLayout="around"
             month={month}
             onMonthChange={setMonth}
             selected={selected}
@@ -135,19 +140,23 @@ export default function LuxuryCalendar({
             modifiersClassNames={{ soldOut: "rdp-day_sold_out" }}
             showOutsideDays
             components={{
-              PreviousMonthButton: (props) => (
+              // props.className carries rdp-button_previous / rdp-button_next,
+              // which is what navLayout="around" keys its positioning off — so
+              // it has to be kept, not replaced, or both chevrons collapse to
+              // the same spot.
+              PreviousMonthButton: ({ className, ...props }) => (
                 <button
                   {...props}
-                  className="navButton"
+                  className={`${className ?? ""} navButton`}
                 >
                   <ChevronLeft size={18} />
                 </button>
               ),
 
-              NextMonthButton: (props) => (
+              NextMonthButton: ({ className, ...props }) => (
                 <button
                   {...props}
-                  className="navButton"
+                  className={`${className ?? ""} navButton`}
                 >
                   <ChevronRight size={18} />
                 </button>
@@ -200,7 +209,9 @@ export default function LuxuryCalendar({
      <style jsx global>{`
   .calendarOverlay {
     position: absolute;
-    top: calc(100% + 12px);
+    /* Anchored bottom-to-top: the booking bar sits at the foot of the hero, so
+       a downward panel opened straight into the fold. */
+    bottom: calc(100% + 12px);
     left: 0;
     /* Never let the popover run past the right edge of the page — under zoom
        the anchor can sit close enough to it that a left-aligned 320px panel
@@ -211,26 +222,48 @@ export default function LuxuryCalendar({
   }
 
   .calendarPopup {
-    width: 320px;
+    /* 7 day cells (7 x 46px) + .rdp's 24px side padding. Anything narrower
+       clips the last column. */
+    width: 380px;
     max-width: 100%;
+    /* Opening upward means the growth direction is toward the top of the
+       screen, so on a short viewport the header would be the part that goes
+       out of reach. Scroll internally instead. */
+    max-height: calc(100svh - 140px);
     background: #fff;
     border-radius: 18px;
     border: 1px solid #e9dcc3;
     box-shadow: 0 30px 70px rgba(0, 0, 0, 0.14);
-    overflow: hidden;
+    /* x hidden keeps the rounded corners clipping; y auto lets the max-height
+       above actually scroll rather than truncate. */
+    overflow: hidden auto;
   }
 
   /* ---------------- Header ---------------- */
 
-  .rdp {
+  /* .rdp-root, not .rdp — v10 names the root rdp-root, so the old .rdp
+     rule here never matched anything and its padding was never applied. */
+  .rdp-root {
     margin: 0;
-    padding: 28px;
+    padding: 20px;
+    /* The mobile sheet is full-bleed and much wider than the grid, which
+       otherwise sits hard against the left edge. */
+    display: flex;
+    justify-content: center;
     --rdp-accent-color: #b28a35;
     --rdp-background-color: #f8f5ee;
+    /* Must match .navButton below: navLayout="around" reserves exactly this
+       much inline margin on the caption for the two absolute chevrons. */
+    --rdp-nav_button-width: 36px;
+    /* One knob for the day cell, so the mobile clamp below only has to set
+       this rather than restate every width/height. */
+    --cell: 46px;
   }
 
+  /* navLayout="around" positions the chevrons at the caption's inline edges
+     itself (see .rdp-root[data-nav-layout="around"] in the library stylesheet),
+     so all that's left here is the gap under the header. */
   .rdp-month_caption {
-    justify-content: center;
     margin-bottom: 20px;
   }
 
@@ -242,19 +275,7 @@ export default function LuxuryCalendar({
     letter-spacing: 1px;
   }
 
-  .rdp-nav {
-    width: 100%;
-    position: absolute;
-    top: 26px;
-    left: 0;
-    padding: 0 24px;
-    display: flex;
-    justify-content: space-between;
-    pointer-events: none;
-  }
-
   .navButton {
-    pointer-events: all;
     width: 36px;
     height: 36px;
     border-radius: 50%;
@@ -287,16 +308,16 @@ export default function LuxuryCalendar({
   /* ---------------- Days ---------------- */
 
   .rdp-day {
-    width: 46px;
-    height: 46px;
+    width: var(--cell);
+    height: var(--cell);
     font-size: 15px;
     border-radius: 10px;
     transition: .25s;
   }
 
   .rdp-day_button {
-    width: 42px;
-    height: 42px;
+    width: calc(var(--cell) - 4px);
+    height: calc(var(--cell) - 4px);
     border-radius: 10px;
     transition: .25s;
     font-weight: 500;
@@ -432,13 +453,19 @@ export default function LuxuryCalendar({
       border-radius:22px 22px 0 0;
     }
 
-    .rdp{
-      padding:20px;
+    /* 28px is wider than the sheet once both 36px chevrons are beside it:
+       "September 2026" alone is ~218px, and at 320px there are only ~222px to
+       share between all three. */
+    .rdp-caption_label{
+      font-size: clamp(18px, 5.5vw, 28px);
     }
 
-    .rdp-day{
-      width:42px;
-      height:42px;
+    .rdp-root{
+      padding:20px;
+      /* The sheet is (100dvw - 40px) wide and this adds 20px of padding each
+         side, so seven cells have to fit in 100dvw - 80px. Below ~360px that
+         is narrower than 46px a cell, and the last column used to be clipped. */
+      --cell: min(46px, calc((100dvw - 80px) / 7));
     }
 
   }

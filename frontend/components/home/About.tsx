@@ -96,7 +96,9 @@ export default function About() {
       }
 .about-grid {
   display: grid;
-  grid-template-columns: 40% 60%;
+    /* fr, not %: percentages summing to 100 leave no room for the gap, which
+     made this grid 80px wider than its container at every width. */
+  grid-template-columns: 2fr 3fr;
   gap: 5rem;
   align-items: center;
 }
