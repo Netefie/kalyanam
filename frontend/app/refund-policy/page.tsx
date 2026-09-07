@@ -1,4 +1,12 @@
+import { pageMetadata } from "@/lib/seo";
 import { EMAIL, EMAIL_HREF, PHONE, PHONE_HREF, WEBSITE } from "@/lib/site";
+
+export const metadata = pageMetadata({
+  title: "Refund Policy",
+  description:
+    "How refunds are processed for bookings at Kalyanam Hotel & Resort, including timelines and the cases that qualify.",
+  path: "/refund-policy",
+});
 
 export default function RefundPolicyPage() {
   return (

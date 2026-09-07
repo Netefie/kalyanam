@@ -1,3 +1,5 @@
+import JsonLd from "@/components/common/JsonLd";
+import { faqSchema, jsonLdGraph } from "@/lib/seo";
 import HeroSection from "@/components/home/HeroSection";
 import About from "@/components/home/About";
 import Experience from "@/components/home/Experience";
@@ -13,6 +15,10 @@ import KaaraRestaurantSection from "@/components/home/KaaraRestaurantSection";
 export default function Home() {
   return (
     <main>
+      {/* The homepage FAQ, restated for search engines — Google can surface
+          these as expandable Q&A directly in the result. */}
+      <JsonLd data={jsonLdGraph(faqSchema())} />
+
       {/* Hero Section */}
       <HeroSection />
       {/* About Section */}

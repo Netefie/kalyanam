@@ -1,4 +1,12 @@
+import { pageMetadata } from "@/lib/seo";
 import { EMAIL, EMAIL_HREF, PHONE, PHONE_HREF, WEBSITE } from "@/lib/site";
+
+export const metadata = pageMetadata({
+  title: "Terms & Conditions",
+  description:
+    "The terms that govern bookings, stays and use of the Kalyanam Hotel & Resort website.",
+  path: "/terms-and-conditions",
+});
 
 export default function TermsAndConditionsPage() {
   return (

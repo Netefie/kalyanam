@@ -1,4 +1,12 @@
+import { pageMetadata } from "@/lib/seo";
 import { EMAIL, EMAIL_HREF, PHONE, PHONE_HREF, WEBSITE } from "@/lib/site";
+
+export const metadata = pageMetadata({
+  title: "Privacy Policy",
+  description:
+    "How Kalyanam Hotel & Resort collects, uses and protects the personal information you share when booking a stay or making an enquiry.",
+  path: "/privacy-policy",
+});
 
 export default function PrivacyPolicyPage() {
   return (
