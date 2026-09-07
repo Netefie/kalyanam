@@ -22,9 +22,14 @@ export const createEnquiry = asyncHandler(async (req, res) => {
 
   const enquiry = await Enquiry.create({ ...req.body, type });
 
-  // Fire-and-forget: acknowledges the guest (if they gave an email) and
-  // always alerts staff. Never blocks or fails the enquiry submission.
-  onEnquiryCreated(enquiry);
+  // Acknowledges the guest (if they gave an email) and always alerts staff.
+  // Awaited, but this still cannot fail or reject the request: notifications.js#safeSend
+  // catches everything. sendMail() returns once the MailLog row is written and the job is
+  // queued - milliseconds, not SMTP - so the cost here is a DB write, and the actual send is
+  // flushed by drainMailQueue() in lambda.js. Without this await the handler could return
+  // before the row was even created, and Lambda froze the write mid-flight: no row, no mail,
+  // no error anywhere.
+  await onEnquiryCreated(enquiry);
 
   res.status(201).json(enquiry);
 });

@@ -7,6 +7,7 @@ import { createApp } from "./app.js";
 import { connectDB } from "./config/db.js";
 import { ensureBookingCounterSeeded } from "./models/Counter.js";
 import { Booking, backfillLegacyPaymentDefaults } from "./models/Booking.js";
+import { drainMailQueue } from "./services/mailer.js";
 
 // Built once per cold start, reused by every invocation the same warm
 // container handles — connectDB() itself already caches the connection
@@ -40,5 +41,19 @@ export const handler = async (event, context) => {
   }
 
   const serverlessHandler = await handlerPromise;
-  return serverlessHandler(event, context);
+  const response = await serverlessHandler(event, context);
+
+  // Lambda freezes the execution environment the instant the response is returned, which
+  // suspends any in-flight work. services/mailer.js#sendMail deliberately hands SMTP to
+  // services/mailQueue.js and returns without waiting, so on Lambda that send was being
+  // abandoned mid-flight and the MailLog row sat at "queued" forever - no error, no retry,
+  // no mail. server.js already drains for the same reason on SIGTERM; this is that, for the
+  // one other moment this process stops running.
+  //
+  // drain() has its own deadline and resolves rather than throwing, so it cannot hang or fail
+  // an invocation. Anything it does not finish is picked up by the stuck-row sweep in
+  // services/mailScheduler.js.
+  await drainMailQueue();
+
+  return response;
 };

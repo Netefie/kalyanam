@@ -106,7 +106,7 @@ export async function cancelBooking({ booking, reason, refund, by = "staff" }) {
     // already told the guest their money is on its way, which doubles as
     // cancellation confirmation, so a second "cancelled" mail would be
     // redundant.
-    onBookingCancelled(booking, {
+    await onBookingCancelled(booking, {
       reason: reason || (by === "guest" ? "Cancelled by guest" : "Cancelled by hotel staff"),
     });
   }

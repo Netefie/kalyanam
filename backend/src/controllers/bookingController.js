@@ -109,9 +109,13 @@ export const createBooking = asyncHandler(async (req, res) => {
     }),
   });
 
-  // Fire-and-forget: a slow/failed email must never block or fail the
-  // booking. onBookingConfirmed() no-ops silently until SMTP is configured.
-  onBookingConfirmed(booking);
+  // Awaited, but this still cannot fail or reject the request: notifications.js#safeSend
+  // catches everything. sendMail() returns once the MailLog row is written and the job is
+  // queued - milliseconds, not SMTP - so the cost here is a DB write, and the actual send is
+  // flushed by drainMailQueue() in lambda.js. Without this await the handler could return
+  // before the row was even created, and Lambda froze the write mid-flight: no row, no mail,
+  // no error anywhere.
+  await onBookingConfirmed(booking);
 
   res.status(201).json(booking);
 });

@@ -25,8 +25,13 @@ export const createSubscriber = asyncHandler(async (req, res) => {
   const subscriber = result.value;
   const isNew = Boolean(result.lastErrorObject?.upserted);
 
-  // Fire-and-forget: never blocks or fails the subscribe action.
-  onSubscriberCreated(subscriber, { isNew });
+  // Awaited, but this still cannot fail or reject the request: notifications.js#safeSend
+  // catches everything. sendMail() returns once the MailLog row is written and the job is
+  // queued - milliseconds, not SMTP - so the cost here is a DB write, and the actual send is
+  // flushed by drainMailQueue() in lambda.js. Without this await the handler could return
+  // before the row was even created, and Lambda froze the write mid-flight: no row, no mail,
+  // no error anywhere.
+  await onSubscriberCreated(subscriber, { isNew });
 
   res.status(201).json({ success: true, subscriber });
 });

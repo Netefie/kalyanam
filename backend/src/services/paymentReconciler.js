@@ -81,10 +81,12 @@ export async function applyPaymentSuccess({ booking, rpPayment }) {
 
   await booking.save();
 
+  // Awaited so the MailLog rows exist before the handler returns - see lambda.js for why
+  // (Lambda freezes on return, which was silently discarding these writes mid-flight).
   if (strandedNoRoom) {
-    onBookingNeedsAttention(booking);
+    await onBookingNeedsAttention(booking);
   } else {
-    onBookingConfirmed(booking);
+    await onBookingConfirmed(booking);
   }
 
   return booking;
@@ -104,7 +106,7 @@ export async function applyPaymentFailure({ booking, reason }) {
   booking.payment.attempts += 1;
   await booking.save();
 
-  onPaymentFailed(booking);
+  await onPaymentFailed(booking);
 
   return booking;
 }
@@ -136,7 +138,7 @@ export async function applyRefund({ booking, rpRefund, reason }) {
   await booking.save();
 
   const refundRecord = booking.payment.refunds[booking.payment.refunds.length - 1];
-  onRefundProcessed(booking, refundRecord);
+  await onRefundProcessed(booking, refundRecord);
 
   return booking;
 }
