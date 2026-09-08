@@ -5,17 +5,31 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
-import {
-  ADDRESS,
-  EMAIL,
-  EMAIL_HREF,
-  MAPS_URL,
-  PHONE,
-  PHONE_HREF,
-  SOCIALS,
-} from "@/lib/site";
+import { addressLines, mailHref, telHref } from "@/lib/contact";
+import { useSettings } from "@/components/SettingsProvider";
 
 export default function Footer() {
+  const settings = useSettings();
+
+  const lines = addressLines(settings.address);
+
+  // The brand block is typeset as a large first word over a small, spaced-out
+  // remainder ("Kalyanam" / "HOTEL & RESORT"). Splitting on the first space
+  // keeps that treatment for an admin-editable name; a single-word name simply
+  // renders without the second line.
+  const [brandLead, ...brandRest] = settings.hotelName.trim().split(/\s+/);
+  const brandTail = brandRest.join(" ");
+
+  // Only the handles that are actually set get a link — the rest of the list
+  // closes up rather than leaving a dead entry.
+  const socialLinks = (
+    [
+      ["Instagram", settings.socials.instagram],
+      ["Facebook", settings.socials.facebook],
+      ["YouTube", settings.socials.youtube],
+    ] as const
+  ).filter(([, url]) => Boolean(url));
+
   const [showTop, setShowTop] = useState(false);
 
   useEffect(() => {
@@ -69,14 +83,13 @@ export default function Footer() {
               />
 
               <h2>
-                Kalyanam
-                <span>Hotel & Resort</span>
+                {brandLead}
+                {brandTail && <span>{brandTail}</span>}
               </h2>
 
               <p>
-                Experience timeless hospitality where luxury,
-                celebrations and unforgettable memories come
-                together in the heart of Rajasthan.
+                {settings.tagline ||
+                  "Experience timeless hospitality where luxury, celebrations and unforgettable memories come together in the heart of Rajasthan."}
               </p>
 
               <Link
@@ -200,58 +213,58 @@ export default function Footer() {
 
               <ul>
 
-                <li>
-                  <a
-                    href={MAPS_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="footer-reveal"
-                  >
-                    {ADDRESS.line1},
-                    <br />
-                    {ADDRESS.line2}
-                  </a>
-                </li>
+                {lines.length > 0 && (
+                  <li>
+                    <a
+                      href={settings.mapsUrl || undefined}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="footer-reveal"
+                    >
+                      {lines.map((line, i) => (
+                        <span key={line}>
+                          {line}
+                          {i < lines.length - 1 && <br />}
+                        </span>
+                      ))}
+                    </a>
+                  </li>
+                )}
 
-                <li>
-                  <a
-                    href={PHONE_HREF}
-                    className="footer-reveal"
-                  >
-                    {PHONE}
-                  </a>
-                </li>
+                {settings.phone && (
+                  <li>
+                    <a
+                      href={telHref(settings.phone)}
+                      className="footer-reveal"
+                    >
+                      {settings.phone}
+                    </a>
+                  </li>
+                )}
 
-                <li>
-                  <a
-                    href={EMAIL_HREF}
-                    className="footer-reveal"
-                  >
-                    {EMAIL}
-                  </a>
-                </li>
+                {settings.email && (
+                  <li>
+                    <a
+                      href={mailHref(settings.email)}
+                      className="footer-reveal"
+                    >
+                      {settings.email}
+                    </a>
+                  </li>
+                )}
 
-                <li>
-                  <a
-                    href={SOCIALS.instagram}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="footer-reveal"
-                  >
-                    Instagram
-                  </a>
-                </li>
-
-                <li>
-                  <a
-                    href={SOCIALS.facebook}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="footer-reveal"
-                  >
-                    Facebook
-                  </a>
-                </li>
+                {socialLinks.map(([label, url]) => (
+                  <li key={label}>
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="footer-reveal"
+                    >
+                      {label}
+                    </a>
+                  </li>
+                ))}
 
               </ul>
 
@@ -333,7 +346,7 @@ export default function Footer() {
             <div className="footer-copy">
 
               <p>
-                © {new Date().getFullYear()} Kalyanam Hotel & Resort.
+                © {new Date().getFullYear()} {settings.hotelName}.
                 All Rights Reserved.
               </p>
 

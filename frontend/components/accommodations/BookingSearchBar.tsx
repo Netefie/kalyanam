@@ -13,14 +13,13 @@ import { useBookingContext } from "./context/BookingContext";
 import { api } from "@/lib/api";
 
 export default function BookingSearchBar() {
-  const { booking, setBooking } =
+  const { booking, setBooking, dateError, setDateError } =
     useBookingContext();
 
   // Room list drives the "Room Type" dropdown — loaded from the same API
   // AvailableRooms renders, so a room added/renamed/retired in the admin
   // panel shows up here too instead of drifting from a hardcoded list.
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
-  const [searchError, setSearchError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -45,21 +44,21 @@ export default function BookingSearchBar() {
       ...prev,
       ...data,
     }));
-    setSearchError("");
+    setDateError("");
   };
 
   const handleSearch = () => {
     if (!booking.checkIn) {
-      setSearchError("Please select a check-in date.");
+      setDateError("Please select a check-in date.");
       return;
     }
 
     if (!booking.checkOut) {
-      setSearchError("Please select a check-out date.");
+      setDateError("Please select a check-out date.");
       return;
     }
 
-    setSearchError("");
+    setDateError("");
     setBooking((prev) => ({
       ...prev,
       searched: true,
@@ -75,10 +74,15 @@ export default function BookingSearchBar() {
 
   return (
     <>
-      <section className="booking-search-bar w-full mt-10">
+      <section id="booking-search" className="booking-search-bar w-full mt-10 scroll-mt-28">
 
-        {searchError && (
-          <p className="px-4 pt-3 text-sm font-medium text-red-600 sm:px-6">{searchError}</p>
+        {dateError && (
+          <p
+            role="alert"
+            className="px-4 pt-3 text-sm font-medium text-red-600 sm:px-6"
+          >
+            {dateError}
+          </p>
         )}
 
         <div className="booking-grid">

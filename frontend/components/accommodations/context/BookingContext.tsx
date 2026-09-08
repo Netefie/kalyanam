@@ -141,6 +141,15 @@ interface BookingContextType {
   guestErrors: GuestErrors;
 
   setGuestErrors: Dispatch<SetStateAction<GuestErrors>>;
+
+  // Surfaced by the search bar. Lives here rather than in BookingSearchBar's
+  // own state because the room cards further down the page raise it too —
+  // picking a rate plan without dates has to send the guest back up to the
+  // date fields. Deliberately outside BookingState: it's transient UI, not
+  // progress worth restoring from sessionStorage.
+  dateError: string;
+
+  setDateError: Dispatch<SetStateAction<string>>;
 }
 
 const initialBookingState: BookingState = {
@@ -251,6 +260,8 @@ export function BookingProvider({
 
   const [guestErrors, setGuestErrors] = useState<GuestErrors>({});
 
+  const [dateError, setDateError] = useState("");
+
   useEffect(() => {
     persistState(booking);
   }, [booking]);
@@ -258,6 +269,7 @@ export function BookingProvider({
   const resetBooking = () => {
     setBooking(initialBookingState);
     setGuestErrors({});
+    setDateError("");
     if (typeof window !== "undefined") {
       try {
         window.sessionStorage.removeItem(STORAGE_KEY);
@@ -294,6 +306,8 @@ export function BookingProvider({
         nights,
         guestErrors,
         setGuestErrors,
+        dateError,
+        setDateError,
       }}
     >
       {children}

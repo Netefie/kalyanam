@@ -1,5 +1,3 @@
-"use client";
-
 import {
   MapPin,
   Navigation,
@@ -7,9 +5,16 @@ import {
   Plane,
 } from "lucide-react";
 
-import { MAPS_EMBED_URL, MAPS_URL } from "@/lib/site";
+import { addressLines } from "@/lib/contact";
+import { getSiteSettings } from "@/lib/settings";
 
-export default function LocationMap() {
+// A Server Component: no hooks or handlers here, so it reads the settings
+// singleton directly rather than going through the client-side provider.
+export default async function LocationMap() {
+  const settings = await getSiteSettings();
+
+  const lines = addressLines(settings.address);
+
   return (
     <>
       <section className="location-section">
@@ -20,11 +25,7 @@ export default function LocationMap() {
             FIND US
           </span>
 
-          <h2 className="location-heading">
-            Visit Kalyanam
-            <br />
-            Hotel & Resort
-          </h2>
+          <h2 className="location-heading">Visit {settings.hotelName}</h2>
 
           <p className="location-description">
             Conveniently located on Jaipur Road, Kalyanam Hotel & Resort offers
@@ -39,13 +40,20 @@ export default function LocationMap() {
 
             <div className="map-card">
 
-              <iframe
-  src={MAPS_EMBED_URL}
-  width="100%"
-  height="100%"
-  style={{ border: 0 }}
-  loading="lazy"
-/>
+              {settings.mapsEmbedUrl ? (
+                <iframe
+                  src={settings.mapsEmbedUrl}
+                  title={`Map showing ${settings.hotelName}`}
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  loading="lazy"
+                />
+              ) : (
+                <p className="map-fallback">
+                  Map coming soon — see the address alongside.
+                </p>
+              )}
 
             </div>
 
@@ -66,11 +74,13 @@ export default function LocationMap() {
                   <h4>Address</h4>
 
                   <p>
-                    Kalyanam Hotel & Resort
-                    <br />
-                    Jaipur Road,
-                    <br />
-                    Sikar, Rajasthan
+                    {settings.hotelName}
+                    {lines.map((line) => (
+                      <span key={line}>
+                        <br />
+                        {line}
+                      </span>
+                    ))}
                   </p>
 
                 </div>
@@ -137,7 +147,7 @@ export default function LocationMap() {
               </div>
 
               <a
-                href={MAPS_URL}
+                href={settings.mapsUrl || undefined}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="direction-btn"
@@ -211,6 +221,17 @@ export default function LocationMap() {
     grid-template-columns:1.4fr .9fr;
     gap:34px;
     align-items:stretch;
+}
+
+.map-fallback{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    height:100%;
+    margin:0;
+    padding:24px;
+    text-align:center;
+    color:#8d8d8d;
 }
 
 .map-card{

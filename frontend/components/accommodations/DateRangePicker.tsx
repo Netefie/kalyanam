@@ -42,7 +42,17 @@ export default function DateRangePicker({
     });
   }, [checkIn, checkOut]);
 
-  
+  // Dismissing the panel mid-selection (outside click, or the mobile
+  // backdrop) throws the half-finished range away. Without this the draft
+  // kept the abandoned start date, so reopening showed dates highlighted
+  // that the Check In / Check Out fields above didn't agree with.
+  const handleClose = () => {
+    setOpen(false);
+    setRange({
+      from: checkIn ?? undefined,
+      to: checkOut ?? undefined,
+    });
+  };
 
   const formattedCheckIn = checkIn
     ? format(checkIn, "dd MMM yyyy")
@@ -118,16 +128,12 @@ export default function DateRangePicker({
       <LuxuryCalendar
         open={open}
         selected={range}
-        onClose={() => setOpen(false)}
-        onSelect={(value) =>
-          setRange(value)
-        }
-        onApply={() => {
-          onChange(
-            range?.from ?? null,
-            range?.to ?? null
-          );
-        }}
+        placement="bottom"
+        onClose={handleClose}
+        onSelect={(value) => setRange(value)}
+        // Fired by the calendar once both ends are picked, just before it
+        // closes — this is what replaced the old APPLY DATES button.
+        onApply={({ from, to }) => onChange(from, to)}
         roomSlug={roomSlug}
         roomsRequested={roomsRequested}
       />
@@ -202,15 +208,6 @@ export default function DateRangePicker({
     white-space: nowrap;
   }
 
-  /* Popup Position */
-
-  :global(.calendarOverlay) {
-    position: absolute;
-    top: calc(100% + 12px);
-    left: 0;
-    z-index: 9999;
-  }
-
   @media (max-width:1024px){
 
     .dateItem{
@@ -247,25 +244,6 @@ export default function DateRangePicker({
       font-size:10px;
     }
 
-    :global(.calendarOverlay){
-      position:fixed;
-      inset:0;
-      display:flex;
-      justify-content:center;
-      align-items:flex-end;
-      background:rgba(0,0,0,.45);
-      padding:16px;
-      max-width:none;
-    }
-
-    /* Matches the cap LuxuryCalendar sets on its own bottom sheet — a fixed
-       sheet is outside page scroll, so a calendar taller than the viewport
-       would otherwise have its top out of reach. */
-    :global(.calendarPopup){
-      max-height:calc(100dvh - 32px);
-      overflow-y:auto;
-      overscroll-behavior:contain;
-    }
   }
 
   @media (max-width:480px){

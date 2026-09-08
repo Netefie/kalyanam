@@ -4,6 +4,7 @@ import "./globals.css";
 import LayoutWrapper from "@/components/LayoutWrapper";
 import JsonLd from "@/components/common/JsonLd";
 import { hotelSchema, jsonLdGraph, websiteSchema } from "@/lib/seo";
+import { getSiteSettings } from "@/lib/settings";
 import {
   GOOGLE_SITE_VERIFICATION,
   SITE_DESCRIPTION,
@@ -59,7 +60,18 @@ const pinyon = Pinyon_Script({
   display: "swap",
 });
 
-export const metadata: Metadata = {
+// A function rather than a static object so the hotel name and tagline an
+// admin edits in /admin/settings reach the <title>, the meta description and
+// the share cards. Falls back to the lib/site.ts constants when a field is
+// unset or the API is unreachable.
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
+
+  const name = settings.hotelName || SITE_NAME;
+  const description = settings.tagline || SITE_DESCRIPTION;
+  const headline = `${name} — Luxury Hotel, Wedding & Banquet Venue in Sikar`;
+
+  return {
   // Lets every other metadata field below use relative URLs; without it,
   // relative og:image/canonical values are a build error.
   metadataBase: new URL(SITE_URL),
@@ -67,12 +79,12 @@ export const metadata: Metadata = {
   title: {
     // `default` is what a route inherits when it sets no title of its own;
     // `template` brands the ones that do, so pages export just "Weddings".
-    default: `${SITE_NAME} — Luxury Hotel, Wedding & Banquet Venue in Sikar`,
-    template: `%s | ${SITE_NAME}`,
+    default: headline,
+    template: `%s | ${name}`,
   },
-  description: SITE_DESCRIPTION,
+  description,
 
-  applicationName: SITE_NAME,
+  applicationName: name,
   category: "travel",
   alternates: { canonical: "/" },
 
@@ -94,17 +106,17 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: SITE_URL,
-    siteName: SITE_NAME,
-    title: `${SITE_NAME} — Luxury Hotel, Wedding & Banquet Venue in Sikar`,
-    description: SITE_DESCRIPTION,
+    siteName: name,
+    title: headline,
+    description,
     locale: "en_IN",
     // Images come from app/opengraph-image.jpg via the file convention.
   },
 
   twitter: {
     card: "summary_large_image",
-    title: `${SITE_NAME} — Luxury Hotel, Wedding & Banquet Venue in Sikar`,
-    description: SITE_DESCRIPTION,
+    title: headline,
+    description,
   },
 
   robots: {
@@ -128,7 +140,8 @@ export const metadata: Metadata = {
   ...(GOOGLE_SITE_VERIFICATION
     ? { verification: { google: GOOGLE_SITE_VERIFICATION } }
     : {}),
-};
+  };
+}
 
 // themeColor lives here, not in `metadata` — it has been deprecated on the
 // metadata object since Next 14.
@@ -137,11 +150,16 @@ export const viewport: Viewport = {
   colorScheme: "light",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Fetched once here and handed down, so no client component has to fetch it
+  // and the values are already in the server-rendered HTML (which is what the
+  // JSON-LD below and the crawlers reading it need).
+  const settings = await getSiteSettings();
+
   return (
     <html
       lang="en-IN"
@@ -158,9 +176,11 @@ export default function RootLayout({
 
         {/* Site-wide structured data. Emitted once here so every route carries
             the hotel identity; pages add their own page-level nodes on top. */}
-        <JsonLd data={jsonLdGraph(hotelSchema(), websiteSchema())} />
+        <JsonLd
+          data={jsonLdGraph(hotelSchema(settings), websiteSchema(settings))}
+        />
 
-        <LayoutWrapper>
+        <LayoutWrapper settings={settings}>
           {children}
         </LayoutWrapper>
 

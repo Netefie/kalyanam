@@ -56,13 +56,17 @@ export default function BookingSummary() {
     setBooking((prev) => ({ ...prev, currentStep: 3 }));
   };
 
-  // The panel is capped and self-scrolling: a sticky element pins its top, so
-  // once it is taller than the viewport (short screen, or zoomed in) its
-  // footer — the Continue button — would sit permanently below the fold.
+  // The sticky panel is a flex column: the summary card takes the remaining
+  // height and scrolls inside itself, while the Continue button is a
+  // non-shrinking sibling below it. Previously the button was the card's last
+  // child, so on a short screen it scrolled out of view inside the panel and
+  // the guest had no visible way forward. Below `lg` the sidebar stacks last
+  // in a single column and sticky has no range to work with, so there the
+  // button detaches into a fixed bottom bar instead.
   return (
-    <div className="sticky top-28 max-h-[calc(100dvh-8rem)] overflow-y-auto overscroll-contain">
+    <div className="sticky top-28 z-30 flex max-h-[calc(100dvh-8rem)] flex-col gap-4">
 
-      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain rounded-2xl border border-gray-200 bg-white shadow-sm">
 
         {/* Image */}
 
@@ -226,29 +230,29 @@ export default function BookingSummary() {
             </div>
           ) : null}
 
-          {error && (
-            <p className="mt-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
-              {error}
-            </p>
-          )}
-
-          <button
-            onClick={handleContinue}
-            className="
-              mt-8
-              w-full
-              bg-[#B68D40]
-              py-4
-              font-semibold
-              text-white
-              transition
-              hover:bg-[#9f7b37]
-            "
-          >
-            Continue to Payment
-          </button>
-
         </div>
+
+      </div>
+
+      {/* Action bar — outside the scrolling card so it is always reachable.
+          z-40 keeps it under the navbar's z-50. */}
+      <div className="fixed inset-x-0 bottom-0 z-40 shrink-0 border-t border-gray-200 bg-white p-4 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] lg:static lg:z-auto lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none">
+
+        {error && (
+          <p
+            role="alert"
+            className="mb-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+          >
+            {error}
+          </p>
+        )}
+
+        <button
+          onClick={handleContinue}
+          className="w-full rounded-lg bg-[#B68D40] py-4 font-semibold text-white transition hover:bg-[#9f7b37]"
+        >
+          Continue to Payment
+        </button>
 
       </div>
 

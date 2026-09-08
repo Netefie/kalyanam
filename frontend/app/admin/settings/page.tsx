@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { api, ApiError, type SiteSettings } from "@/lib/api";
+import { api, ApiError, getToken, type SiteSettings } from "@/lib/api";
+import { revalidateSiteSettings } from "./actions";
 
 // Editable form state mirrors SiteSettings minus `key` (immutable) and the
 // timestamps the API adds — see backend/src/models/Settings.js.
@@ -12,7 +13,14 @@ const EMPTY: FormState = {
   tagline: "",
   email: "",
   phone: "",
+  whatsapp: "",
   address: "",
+  city: "",
+  state: "",
+  postalCode: "",
+  country: "IN",
+  mapsUrl: "",
+  mapsEmbedUrl: "",
   checkInTime: "14:00",
   checkOutTime: "11:00",
   taxPercent: 18,
@@ -42,11 +50,15 @@ export default function SettingsPage() {
     setSaved(false);
   };
 
-  const setSocial = (key: keyof FormState["socials"], value: string) =>
+  const setSocial = (key: keyof FormState["socials"], value: string) => {
     setForm((f) => ({ ...f, socials: { ...f.socials, [key]: value } }));
+    setSaved(false);
+  };
 
-  const setPolicy = (key: keyof FormState["policies"], value: string) =>
+  const setPolicy = (key: keyof FormState["policies"], value: string) => {
     setForm((f) => ({ ...f, policies: { ...f.policies, [key]: value } }));
+    setSaved(false);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,6 +68,12 @@ export default function SettingsPage() {
       const { key: _key, ...rest } = await api.settings.update(form);
       setForm(rest);
       setSaved(true);
+
+      // The public site caches these values for five minutes (lib/settings.ts);
+      // purge that so the edit is live now. Best-effort — the save already
+      // succeeded, and the cache would expire on its own regardless.
+      const token = getToken();
+      if (token) void revalidateSiteSettings(token).catch(() => {});
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Could not save settings.");
     } finally {
@@ -82,6 +100,10 @@ export default function SettingsPage() {
       <form onSubmit={handleSubmit}>
         <section className="card">
           <h3>Hotel details</h3>
+          <p className="hint">
+            The name and tagline appear in the site footer, the browser tab, share
+            previews and the search-engine listing.
+          </p>
           <div className="row">
             <div className="field">
               <label>Hotel name</label>
@@ -98,13 +120,78 @@ export default function SettingsPage() {
               <input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} />
             </div>
             <div className="field">
+              <label>Currency</label>
+              <select value={form.currency} onChange={(e) => set("currency", e.target.value)}>
+                <option value="INR">INR — Indian Rupee</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <section className="card">
+          <h3>Contact &amp; location</h3>
+          <p className="hint">
+            Shown in the footer, on the contact page and in the structured data
+            search engines read. Anything left blank is omitted rather than
+            published — an empty phone number is better than a wrong one.
+          </p>
+          <div className="row">
+            <div className="field">
               <label>Phone</label>
-              <input value={form.phone} onChange={(e) => set("phone", e.target.value)} />
+              <input
+                value={form.phone}
+                onChange={(e) => set("phone", e.target.value)}
+                placeholder="+91 98765 43210"
+              />
+            </div>
+            <div className="field">
+              <label>WhatsApp number</label>
+              <input
+                value={form.whatsapp}
+                onChange={(e) => set("whatsapp", e.target.value)}
+                placeholder="+91 98765 43210"
+              />
             </div>
           </div>
           <div className="field">
-            <label>Address</label>
-            <textarea rows={2} value={form.address} onChange={(e) => set("address", e.target.value)} />
+            <label>Address (one line per row)</label>
+            <textarea rows={3} value={form.address} onChange={(e) => set("address", e.target.value)} />
+          </div>
+          <div className="row">
+            <div className="field">
+              <label>City</label>
+              <input value={form.city} onChange={(e) => set("city", e.target.value)} placeholder="Sikar" />
+            </div>
+            <div className="field">
+              <label>State</label>
+              <input value={form.state} onChange={(e) => set("state", e.target.value)} placeholder="Rajasthan" />
+            </div>
+            <div className="field">
+              <label>PIN code</label>
+              <input value={form.postalCode} onChange={(e) => set("postalCode", e.target.value)} />
+            </div>
+            <div className="field">
+              <label>Country code</label>
+              <input value={form.country} onChange={(e) => set("country", e.target.value)} placeholder="IN" />
+            </div>
+          </div>
+          <div className="row">
+            <div className="field">
+              <label>Google Maps link</label>
+              <input
+                value={form.mapsUrl}
+                onChange={(e) => set("mapsUrl", e.target.value)}
+                placeholder="https://maps.google.com/?q=..."
+              />
+            </div>
+            <div className="field">
+              <label>Google Maps embed URL</label>
+              <input
+                value={form.mapsEmbedUrl}
+                onChange={(e) => set("mapsEmbedUrl", e.target.value)}
+                placeholder="https://maps.google.com/maps?q=...&output=embed"
+              />
+            </div>
           </div>
         </section>
 
@@ -184,6 +271,11 @@ export default function SettingsPage() {
               <input value={form.socials.youtube} onChange={(e) => setSocial("youtube", e.target.value)} />
             </div>
           </div>
+          <p className="hint">
+            Paste full profile URLs. A bare https://instagram.com/ is treated as
+            unset — the icon is hidden rather than linking to the network's
+            homepage.
+          </p>
         </section>
 
         <button type="submit" className="saveBtn" disabled={saving}>
@@ -257,19 +349,22 @@ export default function SettingsPage() {
           line-height: 1.5;
         }
 
+        /* auto-fit rather than a fixed column count: these rows hold two,
+           three or four fields and reflow on their own. Grid also avoids the
+           flex trap where min-width:auto stops a field shrinking below its
+           input's intrinsic size:20 width, which forced the card to scroll
+           sideways. */
         .row {
-          display: flex;
-          gap: 16px;
-        }
-
-        .row .field {
-          flex: 1;
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+          gap: 0 16px;
         }
 
         .field {
           display: flex;
           flex-direction: column;
           gap: 6px;
+          min-width: 0;
           margin-bottom: 16px;
         }
 
@@ -280,17 +375,26 @@ export default function SettingsPage() {
         }
 
         input,
-        textarea {
+        textarea,
+        select {
           border: 1px solid #e2ddd0;
           border-radius: 10px;
           padding: 10px 12px;
           font-size: 14px;
           font-family: inherit;
           color: #222;
+          background: #fff;
+          width: 100%;
+          max-width: 100%;
+        }
+
+        textarea {
+          resize: vertical;
         }
 
         input:focus,
-        textarea:focus {
+        textarea:focus,
+        select:focus {
           outline: none;
           border-color: #b68d40;
         }
@@ -317,7 +421,7 @@ export default function SettingsPage() {
 
         @media (max-width: 640px) {
           .row {
-            flex-direction: column;
+            grid-template-columns: 1fr;
             gap: 0;
           }
         }

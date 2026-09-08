@@ -1,8 +1,11 @@
-"use client";
+import { mailHref, telHref } from "@/lib/contact";
+import { getSiteSettings } from "@/lib/settings";
 
-import { EMAIL, EMAIL_HREF, PHONE, PHONE_HREF } from "@/lib/site";
+// A Server Component: it has no hooks or handlers, so it reads the settings
+// singleton directly rather than going through the client-side provider.
+export default async function HeroContact() {
+  const settings = await getSiteSettings();
 
-export default function HeroContact() {
   return (
     <>
       <section
@@ -31,24 +34,28 @@ export default function HeroContact() {
               Whether you're planning a luxurious stay, a destination wedding,
               an intimate celebration, or simply have a question, our team is
               here to assist you. Connect with us and let us help create your
-              next unforgettable experience at Kalyanam Hotel & Resort.
+              next unforgettable experience at {settings.hotelName}.
             </p>
 
             <div className="contact-info">
 
-              <div className="info-item">
-                <h4>Call Us</h4>
-                <a href={PHONE_HREF} className="info-link">
-                  {PHONE}
-                </a>
-              </div>
+              {settings.phone && (
+                <>
+                  <div className="info-item">
+                    <h4>Call Us</h4>
+                    <a href={telHref(settings.phone)} className="info-link">
+                      {settings.phone}
+                    </a>
+                  </div>
 
-              <div className="info-divider"></div>
+                  <div className="info-divider"></div>
+                </>
+              )}
 
               <div className="info-item">
                 <h4>Email</h4>
-                <a href={EMAIL_HREF} className="info-link">
-                  {EMAIL}
+                <a href={mailHref(settings.email)} className="info-link">
+                  {settings.email}
                 </a>
               </div>
 

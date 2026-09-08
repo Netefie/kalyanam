@@ -2,7 +2,8 @@
 
 import React from "react";
 import Link from "next/link";
-import { PHONE, PHONE_HREF, MAPS_URL } from "@/lib/site";
+import { addressLines, telHref } from "@/lib/contact";
+import { getSiteSettings } from "@/lib/settings";
 import {
   Phone,
   MapPin,
@@ -11,7 +12,11 @@ import {
   ArrowRight,
 } from "lucide-react";
 
-const ContactBanner = () => {
+const ContactBanner = async () => {
+  const settings = await getSiteSettings();
+
+  const lines = addressLines(settings.address);
+
   return (
     <>
       <section className="contact-banner">
@@ -51,9 +56,13 @@ const ContactBanner = () => {
 
               <h3>Call Us</h3>
               <p>
-                <a href={PHONE_HREF} className="card-link">
-                  {PHONE}
-                </a>
+                {settings.phone ? (
+                  <a href={telHref(settings.phone)} className="card-link">
+                    {settings.phone}
+                  </a>
+                ) : (
+                  <span className="card-link">Enquire online</span>
+                )}
               </p>
             </div>
 
@@ -65,14 +74,18 @@ const ContactBanner = () => {
               <h3>Location</h3>
               <p>
                 <a
-                  href={MAPS_URL}
+                  href={settings.mapsUrl || undefined}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="card-link"
                 >
-                  Kalyanam Marriage Lawn
-                  <br />
-                  Sikar
+                  {settings.hotelName}
+                  {lines.map((line) => (
+                    <span key={line}>
+                      <br />
+                      {line}
+                    </span>
+                  ))}
                 </a>
               </p>
             </div>
@@ -97,9 +110,15 @@ const ContactBanner = () => {
 
               <h3>Event Assistance</h3>
               <p>
-                <a href={PHONE_HREF} className="card-link">
-                  We’re here to assist you 24/7
-                </a>
+                {settings.phone ? (
+                  <a href={telHref(settings.phone)} className="card-link">
+                    We’re here to assist you 24/7
+                  </a>
+                ) : (
+                  <span className="card-link">
+                    We’re here to assist you 24/7
+                  </span>
+                )}
               </p>
             </div>
           </div>

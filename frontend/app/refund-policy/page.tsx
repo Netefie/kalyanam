@@ -1,5 +1,7 @@
 import { pageMetadata } from "@/lib/seo";
-import { EMAIL, EMAIL_HREF, PHONE, PHONE_HREF, WEBSITE } from "@/lib/site";
+import { mailHref, telHref } from "@/lib/contact";
+import { getSiteSettings } from "@/lib/settings";
+import { WEBSITE } from "@/lib/site";
 
 export const metadata = pageMetadata({
   title: "Refund Policy",
@@ -8,7 +10,9 @@ export const metadata = pageMetadata({
   path: "/refund-policy",
 });
 
-export default function RefundPolicyPage() {
+export default async function RefundPolicyPage() {
+  const settings = await getSiteSettings();
+
   return (
     <main className="bg-white">
       {/* Hero Section */}
@@ -172,22 +176,24 @@ export default function RefundPolicyPage() {
 
             <div className="rounded-2xl bg-[#F8F5F0] p-8 border border-[#E6DCCB]">
               <h3 className="text-2xl font-semibold text-[#1E1E1E] mb-4">
-                Kalyanam Hotel & Resort
+                {settings.hotelName}
               </h3>
 
               <div className="space-y-2 text-gray-700">
                 <p>
                   Email:{" "}
-                  <a href={EMAIL_HREF} className="underline hover:no-underline">
-                    {EMAIL}
+                  <a href={mailHref(settings.email)} className="underline hover:no-underline">
+                    {settings.email}
                   </a>
                 </p>
-                <p>
-                  Phone:{" "}
-                  <a href={PHONE_HREF} className="underline hover:no-underline">
-                    {PHONE}
-                  </a>
-                </p>
+                {settings.phone && (
+                  <p>
+                    Phone:{" "}
+                    <a href={telHref(settings.phone)} className="underline hover:no-underline">
+                      {settings.phone}
+                    </a>
+                  </p>
+                )}
                 <p>Website: {WEBSITE}</p>
               </div>
             </div>

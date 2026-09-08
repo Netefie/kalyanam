@@ -1,26 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { EMAIL, EMAIL_HREF, PHONE, PHONE_HREF, WEBSITE } from "@/lib/site";
-import { api, type SiteSettings } from "@/lib/api";
+
+import { useSettings } from "@/components/SettingsProvider";
+import { mailHref, telHref } from "@/lib/contact";
+import { WEBSITE } from "@/lib/site";
 
 export default function CancellationPolicyPage() {
-  // The one number on this page that's actually enforced by the booking
-  // flow — GET /settings is public, and backend/src/controllers/
-  // bookingController.js#cancelBookingSelf reads the same
-  // cancellationWindowHours field to decide whether a guest's self-service
-  // cancellation gets an automatic refund. 24h (the schema default) is
-  // shown while this loads so the page never flashes a blank number.
-  const [settings, setSettings] = useState<Pick<SiteSettings, "cancellationWindowHours" | "policies"> | null>(
-    null
-  );
+  // The window here is the one the booking flow actually enforces —
+  // backend/src/controllers/bookingController.js#cancelBookingSelf reads the
+  // same cancellationWindowHours field to decide whether a guest's
+  // self-service cancellation gets an automatic refund. It arrives with the
+  // server-rendered HTML now (app/layout.tsx fetches it), so there is no
+  // longer a placeholder number on screen while a request is in flight.
+  const settings = useSettings();
 
-  useEffect(() => {
-    api.settings.get().then(setSettings).catch(() => {});
-  }, []);
-
-  const windowHours = settings?.cancellationWindowHours ?? 24;
+  const windowHours = settings.cancellationWindowHours;
 
   return (
     <main className="bg-white">
@@ -59,7 +54,9 @@ export default function CancellationPolicyPage() {
               for a full, automatic refund. Cancellations inside this window, or on a non-refundable rate,
               require contacting our reservations team directly.
             </p>
-            {settings?.policies.cancellation && <p className="mt-3">{settings.policies.cancellation}</p>}
+            {settings.policies.cancellation && (
+              <p className="mt-3 whitespace-pre-line">{settings.policies.cancellation}</p>
+            )}
             <p className="mt-4">
               Already have a reservation?{" "}
               <Link href="/manage-booking" className="underline hover:no-underline">
@@ -207,22 +204,24 @@ export default function CancellationPolicyPage() {
 
             <div className="rounded-2xl bg-[#F8F5F0] border border-[#E6DCCB] p-8">
               <h3 className="text-2xl font-semibold text-[#1E1E1E] mb-4">
-                Kalyanam Hotel & Resort
+                {settings.hotelName}
               </h3>
 
               <div className="space-y-2 text-gray-700">
                 <p>
                   Email:{" "}
-                  <a href={EMAIL_HREF} className="underline hover:no-underline">
-                    {EMAIL}
+                  <a href={mailHref(settings.email)} className="underline hover:no-underline">
+                    {settings.email}
                   </a>
                 </p>
-                <p>
-                  Phone:{" "}
-                  <a href={PHONE_HREF} className="underline hover:no-underline">
-                    {PHONE}
-                  </a>
-                </p>
+                {settings.phone && (
+                  <p>
+                    Phone:{" "}
+                    <a href={telHref(settings.phone)} className="underline hover:no-underline">
+                      {settings.phone}
+                    </a>
+                  </p>
+                )}
                 <p>Website: {WEBSITE}</p>
               </div>
             </div>

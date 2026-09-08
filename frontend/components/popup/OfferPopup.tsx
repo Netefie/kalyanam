@@ -3,8 +3,21 @@
 import { useEffect, useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import useScrollLock from "@/hooks/useScrollLock";
+import { useSettings } from "@/components/SettingsProvider";
 
 export default function OfferPopup() {
+  const { socials } = useSettings();
+
+  // These were static words before, not links. Only handles the admin has
+  // actually filled in are shown.
+  const socialLinks = (
+    [
+      ["Instagram", socials.instagram],
+      ["Facebook", socials.facebook],
+      ["YouTube", socials.youtube],
+    ] as const
+  ).filter(([, url]) => Boolean(url));
+
   const [open, setOpen] = useState(false);
 
   useScrollLock(open);
@@ -129,12 +142,19 @@ export default function OfferPopup() {
 
           </form>
 
-          <div className="follow-text">
-            Follow us on
-            <span> Instagram </span>
-            &
-            <span> Facebook</span>
-          </div>
+          {socialLinks.length > 0 && (
+            <div className="follow-text">
+              Follow us on
+              {socialLinks.map(([label, url], i) => (
+                <span key={label}>
+                  {i > 0 && (i === socialLinks.length - 1 ? " & " : ", ")}
+                  <a href={url} target="_blank" rel="noopener noreferrer">
+                    {label}
+                  </a>
+                </span>
+              ))}
+            </div>
+          )}
 
         </div>
       </div>
@@ -301,9 +321,14 @@ input:focus{
   color:#777;
 }
 
-.follow-text span{
+.follow-text a{
   color:#A57347;
   font-weight:600;
+  text-decoration:none;
+}
+
+.follow-text a:hover{
+  text-decoration:underline;
 }
 
 @keyframes slideIn{

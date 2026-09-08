@@ -18,7 +18,16 @@ interface LuxuryCalendarProps {
   selected: DateRange | undefined;
   onSelect: (range: DateRange | undefined) => void;
   onClose: () => void;
-  onApply: () => void;
+  // Fired once the guest has picked BOTH ends of the range, just before the
+  // panel closes itself. The completed range is passed in rather than read
+  // back off `selected` — the caller's own state hasn't necessarily settled
+  // by the time this fires. Callers whose onSelect already writes the single
+  // source of truth can omit it.
+  onApply?: (range: { from: Date; to: Date }) => void;
+  // Which way the panel opens off its anchor. The hero booking bar sits at
+  // the foot of the hero, so it opens upward (the default); pickers with room
+  // below them pass "bottom".
+  placement?: "top" | "bottom";
   // The room type currently filtered on ("" = any room) and how many rooms
   // the guest wants — together they decide which calendar days show as
   // sold out. Optional so this component still works anywhere a caller
@@ -33,11 +42,13 @@ export default function LuxuryCalendar({
   onSelect,
   onClose,
   onApply,
+  placement = "top",
   roomSlug,
   roomsRequested = 1,
 }: LuxuryCalendarProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [month, setMonth] = useState<Date>(selected?.from ?? new Date());
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Days in the visible month where every relevant room (the selected room
   // type, or — with "Any Room" — every active room) has fewer rooms free
@@ -111,11 +122,34 @@ export default function LuxuryCalendar({
       );
   }, [open, onClose]);
 
+  useEffect(
+    () => () => {
+      if (closeTimer.current) clearTimeout(closeTimer.current);
+    },
+    []
+  );
+
+  // Picking the second date is the guest's confirmation — there is no Apply
+  // button any more. The short delay lets the completed range paint as
+  // selected before the panel unmounts, so the click isn't swallowed.
+  const handleSelect = (range: DateRange | undefined) => {
+    onSelect(range);
+
+    if (range?.from && range?.to) {
+      if (closeTimer.current) clearTimeout(closeTimer.current);
+      const complete = { from: range.from, to: range.to };
+      closeTimer.current = setTimeout(() => {
+        onApply?.(complete);
+        onClose();
+      }, 160);
+    }
+  };
+
   if (!open) return null;
 
   return (
     <>
-      <div className="calendarOverlay">
+      <div className={`calendarOverlay calendarOverlay--${placement}`}>
         <div
           ref={ref}
           className="calendarPopup"
@@ -131,7 +165,10 @@ export default function LuxuryCalendar({
             month={month}
             onMonthChange={setMonth}
             selected={selected}
-            onSelect={onSelect}
+            onSelect={handleSelect}
+            // A stay is at least one night — without this, clicking the same
+            // day twice yields from === to and a zero-night booking.
+            min={1}
             disabled={[
               { before: new Date() },
               (date: Date) => soldOutDays.has(toDayKey(date)),
@@ -164,54 +201,12 @@ export default function LuxuryCalendar({
             }}
           />
 
-          <div className="calendarFooter">
-            <div className="summary">
-              <div>
-                <span>Check In</span>
-
-                <strong>
-                  {selected?.from
-                    ? format(
-                        selected.from,
-                        "dd MMM yyyy"
-                      )
-                    : "--"}
-                </strong>
-              </div>
-
-              <div>
-                <span>Check Out</span>
-
-                <strong>
-                  {selected?.to
-                    ? format(
-                        selected.to,
-                        "dd MMM yyyy"
-                      )
-                    : "--"}
-                </strong>
-              </div>
-            </div>
-
-            <button
-              className="applyButton"
-              onClick={() => {
-                onApply();
-                onClose();
-              }}
-            >
-              APPLY DATES
-            </button>
-          </div>
         </div>
       </div>
 
      <style jsx global>{`
   .calendarOverlay {
     position: absolute;
-    /* Anchored bottom-to-top: the booking bar sits at the foot of the hero, so
-       a downward panel opened straight into the fold. */
-    bottom: calc(100% + 12px);
     left: 0;
     /* Never let the popover run past the right edge of the page — under zoom
        the anchor can sit close enough to it that a left-aligned 320px panel
@@ -219,6 +214,19 @@ export default function LuxuryCalendar({
     max-width: calc(100vw - 24px);
     z-index: 9999;
     animation: fadeUp 0.28s ease;
+  }
+
+  /* Direction lives on a modifier, not on the base class. Both callers used to
+     redeclare .calendarOverlay globally with opposite anchors at equal
+     specificity, so which one won came down to stylesheet order. */
+  .calendarOverlay--top {
+    /* The hero booking bar sits at the foot of the hero, so a downward panel
+       opened straight into the fold. */
+    bottom: calc(100% + 12px);
+  }
+
+  .calendarOverlay--bottom {
+    top: calc(100% + 12px);
   }
 
   .calendarPopup {
@@ -367,53 +375,6 @@ export default function LuxuryCalendar({
     cursor: not-allowed;
   }
 
-  /* ---------------- Footer ---------------- */
-
-  .calendarFooter {
-    border-top: 1px solid #ece6d8;
-    padding: 22px;
-    background: #faf8f4;
-  }
-
-  .summary {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 18px;
-  }
-
-  .summary span {
-    display: block;
-    font-size: 11px;
-    color: #8d8d8d;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 6px;
-  }
-
-  .summary strong {
-    color: #2c2c2c;
-    font-size: 15px;
-    font-weight: 600;
-  }
-
-  .applyButton {
-    width: 100%;
-    height: 52px;
-    border: none;
-    background: #b28a35;
-    color: white;
-    letter-spacing: 3px;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: .25s;
-    border-radius: 10px;
-  }
-
-  .applyButton:hover {
-    background: #9b772e;
-  }
-
   /* ---------------- Animation ---------------- */
 
   @keyframes fadeUp {
@@ -431,9 +392,13 @@ export default function LuxuryCalendar({
 
   @media (max-width:768px){
 
-    .calendarOverlay{
+    .calendarOverlay,
+    .calendarOverlay--top,
+    .calendarOverlay--bottom{
       position:fixed;
       inset:0;
+      top:0;
+      bottom:0;
       background:rgba(0,0,0,.45);
       display:flex;
       justify-content:center;

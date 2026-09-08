@@ -14,6 +14,7 @@
 
 import type { Metadata } from "next";
 
+import type { SiteSettings } from "@/lib/api";
 import { allFaqs } from "@/lib/faq";
 import {
   ADDRESS_SCHEMA,
@@ -96,37 +97,58 @@ export function pageMetadata({
 export const ORG_ID = `${SITE_URL}/#hotel`;
 export const WEBSITE_ID = `${SITE_URL}/#website`;
 
-const socialProfiles = Object.values(SOCIALS).filter(
-  // The defaults are bare "https://instagram.com/" placeholders — a sameAs
-  // pointing at a network's homepage is worse than no sameAs at all.
-  (u) => /^https?:\/\/[^/]+\/.+/.test(u)
-);
+// A sameAs pointing at a network's homepage is worse than no sameAs at all,
+// and an unset handle comes back from the API as "" — so both are dropped.
+const socialProfiles = (settings?: SiteSettings) =>
+  Object.values(settings?.socials ?? SOCIALS).filter((u) =>
+    /^https?:\/\/[^/]+\/.+/.test(u)
+  );
 
 /**
  * The property itself, as a schema.org `Hotel` (a LocalBusiness subtype, so it
  * is eligible for the local/knowledge-panel treatment).
+ *
+ * Everything the admin can edit is read off `settings` when it is supplied;
+ * the lib/site.ts constants remain the fallback for callers that have none and
+ * for the values that aren't admin-editable (amenities, price band, geo).
  */
-export function hotelSchema() {
+export function hotelSchema(settings?: SiteSettings) {
+  const name = settings?.hotelName || SITE_NAME;
+  const telephone = settings ? settings.phone : PHONE_IS_PLACEHOLDER ? "" : PHONE;
+  const postalCode = settings?.postalCode || POSTAL_CODE;
+  const profiles = socialProfiles(settings);
+
+  // The stored address is free text; its first line is the street.
+  const street =
+    settings?.address.split(/\r?\n|,/)[0]?.trim() || ADDRESS_SCHEMA.streetAddress;
+
   return {
     "@type": "Hotel",
     "@id": ORG_ID,
-    name: SITE_NAME,
+    name,
     alternateName: SITE_SHORT_NAME,
-    description: SITE_DESCRIPTION,
+    description: settings?.tagline || SITE_DESCRIPTION,
     url: SITE_URL,
     logo: absoluteUrl("/logo.png"),
     image: [absoluteUrl("/opengraph-image.jpg"), absoluteUrl("/hero.jpg")],
-    email: EMAIL,
-    ...(PHONE_IS_PLACEHOLDER ? {} : { telephone: PHONE }),
+    ...(settings?.email || EMAIL ? { email: settings?.email || EMAIL } : {}),
+    // Withheld while unset: a phone number in JSON-LD is what Google shows in
+    // the local knowledge panel and what "call" buttons dial.
+    ...(telephone ? { telephone } : {}),
     address: {
       "@type": "PostalAddress",
-      ...ADDRESS_SCHEMA,
-      ...(POSTAL_CODE ? { postalCode: POSTAL_CODE } : {}),
+      streetAddress: street,
+      addressLocality: settings?.city || ADDRESS_SCHEMA.addressLocality,
+      addressRegion: settings?.state || ADDRESS_SCHEMA.addressRegion,
+      addressCountry: settings?.country || ADDRESS_SCHEMA.addressCountry,
+      ...(postalCode ? { postalCode } : {}),
     },
     ...(GEO ? { geo: { "@type": "GeoCoordinates", ...GEO } } : {}),
-    hasMap: MAPS_URL,
+    ...(settings?.mapsUrl || MAPS_URL
+      ? { hasMap: settings?.mapsUrl || MAPS_URL }
+      : {}),
     ...(PRICE_RANGE ? { priceRange: PRICE_RANGE } : {}),
-    currenciesAccepted: "INR",
+    currenciesAccepted: settings?.currency || "INR",
     amenityFeature: AMENITIES.map((name) => ({
       "@type": "LocationFeatureSpecification",
       name,
@@ -144,18 +166,18 @@ export function hotelSchema() {
       servesCuisine: ["Indian", "Chinese", "Continental"],
       url: absoluteUrl("/kaara"),
     },
-    ...(socialProfiles.length ? { sameAs: socialProfiles } : {}),
+    ...(profiles.length ? { sameAs: profiles } : {}),
   };
 }
 
 /** The site as a whole. `WebSite` is what enables the sitelinks search box. */
-export function websiteSchema() {
+export function websiteSchema(settings?: SiteSettings) {
   return {
     "@type": "WebSite",
     "@id": WEBSITE_ID,
     url: SITE_URL,
-    name: SITE_NAME,
-    description: SITE_DESCRIPTION,
+    name: settings?.hotelName || SITE_NAME,
+    description: settings?.tagline || SITE_DESCRIPTION,
     inLanguage: "en-IN",
     publisher: { "@id": ORG_ID },
   };

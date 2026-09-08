@@ -134,9 +134,11 @@ export default function AvailableRooms() {
           <p className="text-gray-500 mt-2">
             {loading
               ? "Loading rooms…"
-              : `${availableCount} room${
+              : booking.searched
+              ? `${availableCount} room${
                   availableCount !== 1 ? "s" : ""
-                } available for your selected dates.`}
+                } available for your selected dates.`
+              : "Choose your dates above to see live availability and pricing."}
           </p>
         </div>
 

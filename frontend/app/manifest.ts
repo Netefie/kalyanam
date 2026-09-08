@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 
+import { getSiteSettings } from "@/lib/settings";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_SHORT_NAME } from "@/lib/site";
 
 // Served at /manifest.webmanifest, linked automatically from <head>.
@@ -8,11 +9,15 @@ import { SITE_DESCRIPTION, SITE_NAME, SITE_SHORT_NAME } from "@/lib/site";
 // brand colours instead of a screenshot of the page. Lighthouse's SEO/PWA
 // audits also check for it, and those scores are what most people mean when
 // they ask whether a site is "SEO-ready".
-export default function manifest(): MetadataRoute.Manifest {
+export default async function manifest(): Promise<MetadataRoute.Manifest> {
+  const settings = await getSiteSettings();
+
   return {
-    name: SITE_NAME,
+    name: settings.hotelName || SITE_NAME,
+    // The short name is the home-screen label — kept to the code constant
+    // because it has to stay under ~12 characters to avoid being truncated.
     short_name: SITE_SHORT_NAME,
-    description: SITE_DESCRIPTION,
+    description: settings.tagline || SITE_DESCRIPTION,
     start_url: "/",
     display: "standalone",
     background_color: "#fcf8f2",

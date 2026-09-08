@@ -21,7 +21,7 @@ export default function PriceCard({
   roomsSelected,
   availableForDates,
 }: PriceCardProps) {
-  const { setBooking } = useBookingContext();
+  const { booking, setBooking, setDateError } = useBookingContext();
 
   const rate = nightlyRate(plan);
 
@@ -36,6 +36,22 @@ export default function PriceCard({
 
   const handleSelectPlan = () => {
     if (selectDisabled) return;
+
+    // Without dates the next step has nothing to price: the summary shows
+    // "--" for both days and useBookingQuote short-circuits, so the whole
+    // cost breakdown vanishes — and step 2 carries no date picker and no way
+    // back. Keep the guest here until the stay is defined.
+    if (!booking.checkIn || !booking.checkOut) {
+      setDateError(
+        "Please choose your check-in and check-out dates before selecting a room."
+      );
+      document
+        .getElementById("booking-search")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+
+    setDateError("");
     setBooking((prev) => ({
       ...prev,
       selectedRoom: room,

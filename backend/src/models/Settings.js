@@ -11,7 +11,22 @@ const settingsSchema = new mongoose.Schema(
 
     email: { type: String, default: "" },
     phone: { type: String, default: "" },
+    whatsapp: { type: String, default: "" },
+
+    // Free text, newline-separated — rendered verbatim in the footer and on
+    // the contact page. The structured parts below exist only because
+    // schema.org's PostalAddress wants them as separate properties; the
+    // street line is taken from the first line of `address`.
     address: { type: String, default: "" },
+    city: { type: String, default: "" },
+    state: { type: String, default: "" },
+    postalCode: { type: String, default: "" },
+    country: { type: String, default: "IN" },
+
+    // Where the "Get directions" links point, and the src of the embedded
+    // map iframe on the contact page.
+    mapsUrl: { type: String, default: "" },
+    mapsEmbedUrl: { type: String, default: "" },
 
     checkInTime: { type: String, default: "14:00" },
     checkOutTime: { type: String, default: "11:00" },

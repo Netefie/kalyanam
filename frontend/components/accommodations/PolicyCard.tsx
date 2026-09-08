@@ -2,7 +2,11 @@
 
 import { ShieldCheck, Info } from "lucide-react";
 
+import { useSettings } from "@/components/SettingsProvider";
+
 export default function PolicyCard() {
+  const { cancellationWindowHours, policies } = useSettings();
+
   return (
     <div className="mt-8 space-y-6">
 
@@ -25,11 +29,12 @@ export default function PolicyCard() {
               Cancellation Policy
             </h3>
 
-            <p className="mt-3 text-gray-600 leading-7">
-              Free cancellation is available up to 48 hours before
-              your scheduled check-in. Cancellations made within
-              48 hours of arrival may incur one night's retention
-              charge.
+            {/* The window is the same number bookingController.js enforces on
+                a self-cancellation, so this can't drift from what the guest
+                will actually be allowed to do. */}
+            <p className="mt-3 whitespace-pre-line text-gray-600 leading-7">
+              {policies.cancellation ||
+                `Free cancellation is available up to ${cancellationWindowHours} hours before your scheduled check-in. Cancellations made within ${cancellationWindowHours} hours of arrival may incur one night's retention charge.`}
             </p>
 
           </div>

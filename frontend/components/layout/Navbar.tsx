@@ -5,11 +5,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { Menu } from "lucide-react";
 
+import { useSettings } from "@/components/SettingsProvider";
 import useScroll from "@/hooks/useScroll";
 import ReservationPopup from "@/components/reservation/ReservationPopup";
 import Sidebar from "./Sidebar";
 
 export default function Navbar() {
+  const settings = useSettings();
   const scrolled = useScroll();
 
   const [hovered, setHovered] = useState(false);
@@ -101,7 +103,7 @@ export default function Navbar() {
                 src={active ? "/logo.png" : "/logo1.png"}
                 width={115}
                 height={115}
-                alt="Kalyanam"
+                alt={settings.hotelName}
                 priority
                 className="h-auto w-[62px] transition-all duration-500 sm:w-[90px] lg:w-[115px]"
               />

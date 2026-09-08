@@ -1,5 +1,7 @@
 import { pageMetadata } from "@/lib/seo";
-import { EMAIL, EMAIL_HREF, PHONE, PHONE_HREF, WEBSITE } from "@/lib/site";
+import { formatTime, mailHref, telHref } from "@/lib/contact";
+import { getSiteSettings } from "@/lib/settings";
+import { WEBSITE } from "@/lib/site";
 
 export const metadata = pageMetadata({
   title: "Terms & Conditions",
@@ -8,7 +10,9 @@ export const metadata = pageMetadata({
   path: "/terms-and-conditions",
 });
 
-export default function TermsAndConditionsPage() {
+export default async function TermsAndConditionsPage() {
+  const settings = await getSiteSettings();
+
   return (
     <main className="bg-white">
       {/* Hero Section */}
@@ -72,8 +76,8 @@ export default function TermsAndConditionsPage() {
             </h2>
 
             <ul className="list-disc pl-6 space-y-3">
-              <li>Standard Check-in Time: 2:00 PM</li>
-              <li>Standard Check-out Time: 11:00 AM</li>
+              <li>Standard Check-in Time: {formatTime(settings.checkInTime)}</li>
+              <li>Standard Check-out Time: {formatTime(settings.checkOutTime)}</li>
               <li>Early check-in and late check-out are subject to availability and may incur additional charges.</li>
               <li>Valid government-issued identification is mandatory at check-in.</li>
             </ul>
@@ -218,22 +222,24 @@ export default function TermsAndConditionsPage() {
 
             <div className="rounded-2xl bg-[#F8F5F0] p-8 border border-[#E6DCCB]">
               <h3 className="text-2xl font-semibold text-[#1E1E1E] mb-4">
-                Kalyanam Hotel & Resort
+                {settings.hotelName}
               </h3>
 
               <div className="space-y-2 text-gray-700">
                 <p>
                   Email:{" "}
-                  <a href={EMAIL_HREF} className="underline hover:no-underline">
-                    {EMAIL}
+                  <a href={mailHref(settings.email)} className="underline hover:no-underline">
+                    {settings.email}
                   </a>
                 </p>
-                <p>
-                  Phone:{" "}
-                  <a href={PHONE_HREF} className="underline hover:no-underline">
-                    {PHONE}
-                  </a>
-                </p>
+                {settings.phone && (
+                  <p>
+                    Phone:{" "}
+                    <a href={telHref(settings.phone)} className="underline hover:no-underline">
+                      {settings.phone}
+                    </a>
+                  </p>
+                )}
                 <p>Website: {WEBSITE}</p>
               </div>
             </div>

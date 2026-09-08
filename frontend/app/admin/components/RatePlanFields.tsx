@@ -232,19 +232,20 @@ export default function RatePlanFields({ value, onChange }: Props) {
           padding: 4px;
         }
 
+        /* Grid rather than flex — a flex item can't shrink below its input's
+           intrinsic size:20 width, which pushed these rows wider than the
+           modal that hosts them. */
         .planRow .row {
-          display: flex;
-          gap: 16px;
-        }
-
-        .planRow .row .field {
-          flex: 1;
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0 16px;
         }
 
         .planRow .field {
           display: flex;
           flex-direction: column;
           gap: 6px;
+          min-width: 0;
           margin-bottom: 12px;
         }
 
@@ -263,6 +264,12 @@ export default function RatePlanFields({ value, onChange }: Props) {
           font-family: inherit;
           outline: none;
           background: #fff;
+          width: 100%;
+          max-width: 100%;
+        }
+
+        .planRow textarea {
+          resize: vertical;
         }
 
         .planRow input:focus,
@@ -272,7 +279,8 @@ export default function RatePlanFields({ value, onChange }: Props) {
 
         .planChecks {
           display: flex;
-          gap: 18px;
+          flex-wrap: wrap;
+          gap: 10px 18px;
           margin-bottom: 10px;
         }
 
@@ -312,7 +320,7 @@ export default function RatePlanFields({ value, onChange }: Props) {
 
         @media (max-width: 640px) {
           .planRow .row {
-            flex-direction: column;
+            grid-template-columns: 1fr;
             gap: 0;
           }
         }

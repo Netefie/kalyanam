@@ -198,7 +198,16 @@ export interface SiteSettings {
   tagline: string;
   email: string;
   phone: string;
+  whatsapp: string;
+  // Free text, newline-separated. The four fields below it are the same
+  // address split the way schema.org's PostalAddress wants it.
   address: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  mapsUrl: string;
+  mapsEmbedUrl: string;
   checkInTime: string;
   checkOutTime: string;
   taxPercent: number;

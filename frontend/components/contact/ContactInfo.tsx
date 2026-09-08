@@ -8,17 +8,22 @@ import {
   Clock3,
 } from "lucide-react";
 import { api, ApiError } from "@/lib/api";
-import {
-  ADDRESS,
-  EMAIL,
-  EMAIL_HREF,
-  MAPS_URL,
-  PHONE,
-  PHONE_HREF,
-  SOCIALS,
-} from "@/lib/site";
+import { addressLines, mailHref, telHref } from "@/lib/contact";
+import { useSettings } from "@/components/SettingsProvider";
 
 export default function ContactInfo() {
+  const settings = useSettings();
+
+  const lines = addressLines(settings.address);
+
+  const socialLinks = (
+    [
+      ["Instagram", settings.socials.instagram],
+      ["Facebook", settings.socials.facebook],
+      ["YouTube", settings.socials.youtube],
+    ] as const
+  ).filter(([, url]) => Boolean(url));
+
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -197,16 +202,18 @@ export default function ContactInfo() {
 
                   <p>
                     <a
-                      href={MAPS_URL}
+                      href={settings.mapsUrl || undefined}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="detail-link"
                     >
-                      Kalyanam Hotel &amp; Resort
-                      <br />
-                      {ADDRESS.line1}, {ADDRESS.line2}
-                      <br />
-                      {ADDRESS.country}
+                      {settings.hotelName}
+                      {lines.map((line) => (
+                        <span key={line}>
+                          <br />
+                          {line}
+                        </span>
+                      ))}
                     </a>
                   </p>
                 </div>
@@ -223,9 +230,15 @@ export default function ContactInfo() {
                   <h4>Call Us</h4>
 
                   <p>
-                    <a href={PHONE_HREF} className="detail-link">
-                      {PHONE}
-                    </a>
+                    {settings.phone ? (
+                      <a href={telHref(settings.phone)} className="detail-link">
+                        {settings.phone}
+                      </a>
+                    ) : (
+                      <span className="detail-link">
+                        Use the enquiry form and we&apos;ll call you back.
+                      </span>
+                    )}
                   </p>
                 </div>
 
@@ -241,8 +254,8 @@ export default function ContactInfo() {
                   <h4>Email</h4>
 
                   <p>
-                    <a href={EMAIL_HREF} className="detail-link">
-                      {EMAIL}
+                    <a href={mailHref(settings.email)} className="detail-link">
+                      {settings.email}
                     </a>
                   </p>
                 </div>
@@ -263,31 +276,28 @@ export default function ContactInfo() {
 
               </div>
 
+              {socialLinks.length > 0 && (
               <div className="social-wrapper">
 
   <h4>Follow Us</h4>
 
   <div className="social-links">
 
-    <a
-      href={SOCIALS.instagram}
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      Instagram
-    </a>
-
-    <a
-      href={SOCIALS.facebook}
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      Facebook
-    </a>
+    {socialLinks.map(([label, url]) => (
+      <a
+        key={label}
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {label}
+      </a>
+    ))}
 
   </div>
 
 </div>
+              )}
 
             </div>
 

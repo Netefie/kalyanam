@@ -162,12 +162,16 @@ export default function HeroBookingBar() {
               <ChevronDown />
             </button>
 
+            {/* No onApply — onSelect already writes the single source of
+                truth here, and the calendar closes itself once both ends of
+                the range are picked. */}
             <LuxuryCalendar
               open={calOpen}
               selected={range}
               onSelect={setRange}
               onClose={() => setCalOpen(false)}
-              onApply={() => setCalOpen(false)}
+              roomSlug={roomType}
+              roomsRequested={rooms}
             />
           </div>
 

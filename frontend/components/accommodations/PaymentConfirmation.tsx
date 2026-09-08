@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 import { useBookingContext } from "./context/BookingContext";
+import { useSettings } from "@/components/SettingsProvider";
 import { api, ApiError } from "@/lib/api";
 import { formatINR } from "@/lib/pricing";
 import useBookingQuote from "@/hooks/useBookingQuote";
@@ -29,6 +30,7 @@ const VERIFY_RETRY_MS = 2500;
 
 export default function PaymentConfirmation() {
   const { booking, setBooking, nights } = useBookingContext();
+  const settings = useSettings();
   const [agreed, setAgreed] = useState(false);
   const [agreeError, setAgreeError] = useState("");
 
@@ -186,7 +188,7 @@ export default function PaymentConfirmation() {
         amount: Math.round(quote.total * 100),
         currency: quote.currency,
         orderId: orderId as string,
-        name: "Kalyanam Hotel & Resort",
+        name: settings.hotelName,
         description: `${room.title} · ${plan?.name ?? "Reservation"}`,
         prefill: {
           name: guestName,

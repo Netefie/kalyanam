@@ -19,7 +19,7 @@ export default function BannerKaara() {
             src="/kaara-banner.jpg"
             alt="Kaara Restaurant"
             fill
-            sizes="100vw"
+            sizes="(max-width: 1650px) 80vw, 1320px"
             priority
             className="banner-image"
           />
@@ -35,7 +35,14 @@ export default function BannerKaara() {
         .banner-kaara{
           position:relative;
           width:80%;
-          height:450px;
+          /* /kaara-banner.jpg is 1536x1024. The old fixed 450px height made
+             the box ~2.5:1 on a desktop viewport, so cover cropped roughly
+             40% of the image away top and bottom; only mobile (where the box
+             happened to land near 3:2) looked right. Matching the asset's own
+             ratio means no crop at any width — the same approach
+             AmbienceSection uses for the gallery images just above. */
+          aspect-ratio:3 / 2;
+          max-width:1320px;
           margin:0 auto 50px;
           overflow:hidden;
           cursor:pointer;
@@ -50,21 +57,10 @@ export default function BannerKaara() {
           transform:scale(1.02);
         }
 
-        @media (max-width:1200px){
-          .banner-kaara{
-            height:450px;
-          }
-        }
-
         @media (max-width:768px){
           .banner-kaara{
-            height:320px;
-          }
-        }
-
-        @media (max-width:480px){
-          .banner-kaara{
-            height:240px;
+            width:88%;
+            margin-bottom:36px;
           }
         }
       `}</style>

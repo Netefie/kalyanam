@@ -682,21 +682,12 @@ export default function KaaraRestaurantSection() {
 
 .card,
 .leftImage,
-.exploreButton,
-.bottomBanner {
+.exploreButton {
   transition: all .35s ease;
 }
 
 .card:hover {
   transform: translateY(-8px);
-}
-
-.bottomBanner:hover .bottomBannerImage {
-  transform: scale(1.05);
-}
-
-.bottomBannerImage {
-  transition: transform .8s ease;
 }
 
 .heading,

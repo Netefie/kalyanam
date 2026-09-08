@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { useBookingContext } from "./context/BookingContext";
+import { useSettings } from "@/components/SettingsProvider";
 import { api, type Booking } from "@/lib/api";
 import { formatINR } from "@/lib/pricing";
 
@@ -42,17 +43,9 @@ export default function BookingSuccess() {
   const { booking, resetBooking } = useBookingContext();
   const [record, setRecord] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
-  // Defaults match Settings' own schema defaults (backend/src/models/
-  // Settings.js), so this reads correctly even before the fetch below
-  // resolves rather than showing a blank time.
-  const [times, setTimes] = useState({ checkInTime: "14:00", checkOutTime: "11:00" });
-
-  useEffect(() => {
-    api.settings
-      .get()
-      .then((s) => setTimes({ checkInTime: s.checkInTime, checkOutTime: s.checkOutTime }))
-      .catch(() => {});
-  }, []);
+  // Server-rendered with the page (app/layout.tsx), so the times are correct
+  // on first paint rather than filled in by a second request after hydration.
+  const settings = useSettings();
 
   const code = booking.bookingCode;
   const email = booking.guest.email;
@@ -106,8 +99,8 @@ export default function BookingSuccess() {
           ) : record ? (
             <>
               <div className="mt-10 grid grid-cols-2 gap-6 text-left sm:grid-cols-4">
-                <Detail icon={<CalendarDays size={16} />} label="Check In" value={fmtDate(record.checkIn)} sub={`from ${fmtTime(times.checkInTime)}`} />
-                <Detail icon={<CalendarDays size={16} />} label="Check Out" value={fmtDate(record.checkOut)} sub={`by ${fmtTime(times.checkOutTime)}`} />
+                <Detail icon={<CalendarDays size={16} />} label="Check In" value={fmtDate(record.checkIn)} sub={`from ${fmtTime(settings.checkInTime)}`} />
+                <Detail icon={<CalendarDays size={16} />} label="Check Out" value={fmtDate(record.checkOut)} sub={`by ${fmtTime(settings.checkOutTime)}`} />
                 <Detail
                   icon={<Users size={16} />}
                   label="Guests"

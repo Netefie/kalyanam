@@ -7,7 +7,9 @@ import PolicyCard from "./PolicyCard";
 
 export default function PersonalDetails() {
   return (
-    <section className="bg-[#faf8f4] py-6">
+    // pb-28 clears the fixed Continue bar BookingSummary renders below `lg`,
+    // so it never covers the form or the site footer.
+    <section className="bg-[#faf8f4] py-6 pb-28 lg:pb-6">
       <div className="max-w-7xl mx-auto px-6">
 
         {/* Heading */}
