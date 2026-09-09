@@ -11,7 +11,7 @@ export default async function HeroContact() {
       <section
         className="contact-hero"
         style={{
-          backgroundImage: "url('/contacthero.jpg')",
+          backgroundImage: "url('/contact.png')",
         }}
       >
         <div className="contact-overlay"></div>
@@ -19,10 +19,7 @@ export default async function HeroContact() {
         <div className="contact-container">
           <div className="contact-content">
 
-            <span className="contact-tag">
-              GET IN TOUCH
-            </span>
-
+            
             <h1 className="contact-title">
               We'd Love
               <br />
@@ -52,12 +49,7 @@ export default async function HeroContact() {
                 </>
               )}
 
-              <div className="info-item">
-                <h4>Email</h4>
-                <a href={mailHref(settings.email)} className="info-link">
-                  {settings.email}
-                </a>
-              </div>
+            
 
             </div>
 

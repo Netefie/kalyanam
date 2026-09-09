@@ -19,7 +19,7 @@ const cards = [
     description: "From mehendi to sangeet, we've got you covered.",
   },
   {
-    image: "/venue-large.jpg",
+    image: "/marriage.png",
     title: "Custom Experiences",
     description: "Tailored setups for your unique celebrations.",
   },

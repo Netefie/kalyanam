@@ -99,7 +99,7 @@ export default function WeddingVenueSection() {
             <div className="gallery-large">
 
               <Image
-                src="/venue-large.jpg"
+                src="/marriage.png"
                 alt="Wedding Lawn"
                 fill
                 sizes="(max-width: 768px) 100vw, 50vw"
@@ -115,7 +115,7 @@ export default function WeddingVenueSection() {
               <div className="gallery-item">
 
                 <Image
-                  src="/venue-small-1.jpg"
+                  src="/marriage2.png"
                   alt="Wedding Decor"
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
@@ -126,7 +126,7 @@ export default function WeddingVenueSection() {
               <div className="gallery-item">
 
                 <Image
-                  src="/venue-small-2.jpg"
+                  src="/marriage3.png"
                   alt="Wedding Entrance"
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
