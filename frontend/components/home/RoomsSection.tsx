@@ -1,9 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import useRooms from "@/hooks/useRooms";
 import { buildAccommodationsUrl } from "@/lib/reservation";
 
 export default function RoomsSection() {
+  // Active rooms from the admin-managed catalogue, featured first.
+  const { rooms, loading, error } = useRooms();
+
   return (
     <>
     <section className="rooms-section">
@@ -13,51 +17,64 @@ export default function RoomsSection() {
 
         <div className="rooms-left">
 
-          <div className="room-card">
+          {/* Two placeholder cards hold the layout while the list loads, so
+              the section doesn't jump when the real cards arrive. */}
+          {loading &&
+            [0, 1].map((i) => (
+              <div key={i} className="room-card room-card-skeleton" aria-hidden="true">
+                <div className="room-image">
+                  <div className="room-image-placeholder" />
+                </div>
+                <div className="room-content" />
+                <div className="room-btn" />
+              </div>
+            ))}
 
-            <div className="room-image">
-              <img
-                src="/deluxe-room.jpg"
-                alt="Deluxe Room"
-              />
+          {!loading &&
+            rooms.map((room) => {
+              const image = room.image || room.images[0];
+
+              return (
+                <div key={room.slug} className="room-card">
+
+                  <div className="room-image">
+                    {image ? (
+                      <img src={image} alt={room.name} />
+                    ) : (
+                      <div className="room-image-placeholder" />
+                    )}
+                  </div>
+
+                  <div className="room-content">
+                    <h3>{room.name}</h3>
+                    {room.description && <p>{room.description}</p>}
+                  </div>
+
+                  <Link
+                    href={buildAccommodationsUrl({ roomType: room.slug })}
+                    className="room-btn"
+                  >
+                    View Details →
+                  </Link>
+
+                </div>
+              );
+            })}
+
+          {/* API down or no active rooms — still point at the booking page
+              rather than leave an empty column. */}
+          {!loading && (error || rooms.length === 0) && (
+            <div className="room-card room-card-fallback">
+              <div className="room-content">
+                <h3>Our Rooms</h3>
+                <p>See rooms and live availability on the booking page.</p>
+              </div>
+
+              <Link href="/accommodations" className="room-btn">
+                Explore Rooms →
+              </Link>
             </div>
-
-            <div className="room-content">
-  <h3>Deluxe Room</h3>
-  <p>Elegant comfort for a relaxing stay.</p>
-</div>  
-
-            <Link
-              href={buildAccommodationsUrl({ roomType: "deluxe-room" })}
-              className="room-btn"
-            >
-              View Details →
-            </Link>
-
-          </div>
-
-          <div className="room-card">
-
-            <div className="room-image">
-              <img
-                src="/super-deluxe-room.jpg"
-                alt="Super Deluxe Room"
-              />
-            </div>
-
-        <div className="room-content">
-  <h3>Super Deluxe Room</h3>
-  <p>Luxury interiors with premium comfort.</p>
-</div>
-
-            <Link
-              href={buildAccommodationsUrl({ roomType: "super-deluxe-room" })}
-              className="room-btn"
-            >
-              View Details →
-            </Link>
-
-          </div>
+          )}
 
         </div>
 
@@ -165,7 +182,47 @@ export default function RoomsSection() {
     line-height: 1.4;
     max-width: 180px;
     font-family: "Poppins", sans-serif;
+
+    /* Descriptions come from the admin panel and can run long. */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
+
+.room-image-placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+  background: #efe3d3;
+}
+
+.room-card-skeleton .room-image-placeholder,
+.room-card-skeleton .room-btn {
+  animation: room-skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+.room-card-skeleton .room-btn {
+  background: #e4d2bb;
+}
+
+.room-card-fallback {
+  grid-column: 1 / -1;
+  min-height: 0;
+}
+
+.room-card-fallback .room-content {
+  padding: 32px 18px;
+}
+
+.room-card-fallback .room-content p {
+  max-width: none;
+}
+
+@keyframes room-skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .55; }
+}
 
 .room-btn {
   margin-top: auto;

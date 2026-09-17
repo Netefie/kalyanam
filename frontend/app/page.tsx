@@ -10,7 +10,7 @@ import Faq from "@/components/home/Faq";
 import StoriesSection from "@/components/home/StoriesSection";
 import MomentsSection from "@/components/home/MomentsSection";
 import KaaraRestaurantSection from "@/components/home/KaaraRestaurantSection";
-import ContactCta from "@/components/home/ContactCta";
+import ContactFormSection from "@/components/contact/ContactFormSection";
 
 
 export default function Home() {
@@ -39,8 +39,8 @@ export default function Home() {
 
       <Faq />
 
-      {/* Closing call to action — hands the reader off to the enquiry form. */}
-      <ContactCta />
+      {/* Closing enquiry form, directly above the footer. */}
+      <ContactFormSection subject="Homepage enquiry" />
     </main>
   );
 }

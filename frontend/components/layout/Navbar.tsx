@@ -114,13 +114,15 @@ export default function Navbar() {
 
           <div className="flex justify-end">
 
+            {/* The wrapper stays mounted below md so the popup can still open
+                from the sidebar; only the button itself moves there. */}
             <div className="relative">
 
               <button
                 onClick={() =>
                   setShowReservation(!showReservation)
                 }
-                className={`whitespace-nowrap px-3 py-2.5 text-[10px] uppercase tracking-[1px] font-semibold transition-all duration-300 sm:px-5 sm:py-3 sm:text-xs sm:tracking-[2px] lg:px-8 lg:py-4 lg:text-sm ${
+                className={`hidden md:block whitespace-nowrap px-5 py-3 text-xs uppercase tracking-[2px] font-semibold transition-all duration-300 lg:px-8 lg:py-4 lg:text-sm ${
                   active
                     ? "bg-[#A66F43] text-white hover:bg-[#8E623D]"
                     : "border border-white text-white hover:bg-white hover:text-black"
@@ -146,6 +148,10 @@ export default function Navbar() {
       <Sidebar
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
+        onMakeReservation={() => {
+          setSidebarOpen(false);
+          setShowReservation(true);
+        }}
       />
 
     </>

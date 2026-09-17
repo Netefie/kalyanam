@@ -14,6 +14,7 @@ import AvailableRooms from "@/components/accommodations/AvailableRooms";
 import PersonalDetails from "@/components/accommodations/PersonalDetails";
 import PaymentConfirmation from "@/components/accommodations/PaymentConfirmation";
 import BookingSuccess from "@/components/accommodations/BookingSuccess";
+import ContactFormSection from "@/components/contact/ContactFormSection";
 
 function BookingContent() {
   const { booking, setBooking } = useBookingContext();
@@ -112,6 +113,14 @@ function BookingContent() {
 
       {/* STEP 4 */}
       {booking.currentStep === 4 && <BookingSuccess />}
+
+      {/* Closing enquiry form, directly above the footer, on every step. */}
+      <ContactFormSection
+        eyebrow="NEED HELP WITH YOUR STAY?"
+        title="Questions About Your Booking?"
+        description="Group bookings, special requests, or a question about a room — send us a note and our reservations team will get back to you."
+        subject="Accommodation enquiry"
+      />
     </>
   );
 }

@@ -15,15 +15,14 @@ import {
 } from "lucide-react";
 
 import LuxuryCalendar from "@/components/accommodations/LuxuryCalendar";
+import useRooms from "@/hooks/useRooms";
 import { buildAccommodationsUrl } from "@/lib/reservation";
-
-const roomTypes = [
-  { id: "deluxe-room", name: "Deluxe" },
-  { id: "super-deluxe-room", name: "Super Deluxe" },
-];
 
 export default function HeroBookingBar() {
   const router = useRouter();
+
+  const { rooms } = useRooms();
+  const roomTypes = rooms.map((r) => ({ id: r.slug, name: r.name }));
 
   const [roomType, setRoomType] = useState("");
   const [range, setRange] = useState<DateRange | undefined>();
@@ -121,6 +120,17 @@ export default function HeroBookingBar() {
 
             {roomOpen && (
               <div className="absolute left-0 bottom-[calc(100%+8px)] z-50 w-full rounded-xl border border-white/20 bg-[#4a3f38]/95 backdrop-blur-xl p-2 shadow-2xl">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRoomType("");
+                    setRoomOpen(false);
+                  }}
+                  className="w-full flex items-center justify-between rounded-lg px-4 py-3 text-left text-white transition hover:bg-white/10"
+                >
+                  <span>Any Room</span>
+                  {roomType === "" && <Check size={18} className="text-[#d8b46b]" />}
+                </button>
                 {roomTypes.map((r) => (
                   <button
                     key={r.id}

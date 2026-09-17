@@ -8,11 +8,15 @@ import useScrollLock from "@/hooks/useScrollLock";
 interface SidebarProps {
   open: boolean;
   onClose: () => void;
+  // Opens the navbar's reservation popup. The navbar hides its own
+  // Make Reservation button below md, so this is where it lives on mobile.
+  onMakeReservation: () => void;
 }
 
 export default function Sidebar({
   open,
   onClose,
+  onMakeReservation,
 }: SidebarProps) {
   useScrollLock(open);
 
@@ -92,7 +96,7 @@ export default function Sidebar({
 
                 {/* Book Button */}
 
-        <div className="px-6 pb-6">
+        <div className="flex flex-col gap-3 px-6 pb-6">
 
           <Link
             href="/accommodations"
@@ -104,6 +108,18 @@ export default function Sidebar({
           >
             Book a Stay
           </Link>
+
+          {/* Mobile only — md and up keep this button in the navbar. */}
+          <button
+            type="button"
+            onClick={onMakeReservation}
+            className="flex w-full h-14 items-center justify-center
+            border border-[#A46F44] text-[#A46F44] uppercase tracking-[2px]
+            text-sm font-medium transition-all duration-300
+            hover:bg-[#A46F44] hover:text-white md:hidden"
+          >
+            Make Reservation
+          </button>
 
         </div>
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import useRooms from "@/hooks/useRooms";
 import { buildAccommodationsUrl } from "@/lib/reservation";
 
 type Props = {
@@ -15,8 +16,13 @@ export default function ReservationPopup({
 }: Props) {
   const popupRef = useRef<HTMLDivElement>(null);
 
+  const { rooms: roomTypes } = useRooms(open);
+
+  // "" = any room. The default used to be a hardcoded "deluxe-room", which
+  // would carry a dead slug to /accommodations once that room is renamed or
+  // retired in the admin panel.
   const [roomType, setRoomType] =
-    useState("deluxe-room");
+    useState("");
 
   const [checkIn, setCheckIn] =
     useState("");
@@ -113,13 +119,15 @@ function handleSubmit(
                 )
               }
             >
-              <option value="deluxe-room">
-                Deluxe
+              <option value="">
+                Any Room
               </option>
 
-              <option value="super-deluxe-room">
-                Super Deluxe
-              </option>
+              {roomTypes.map((room) => (
+                <option key={room.slug} value={room.slug}>
+                  {room.name}
+                </option>
+              ))}
 
             </select>
 
@@ -657,6 +665,28 @@ function handleSubmit(
 .check-btn{
 
   height:46px;
+
+}
+
+}
+
+/* Below md the navbar's Make Reservation button is hidden and the popup is
+   opened from the sidebar instead, so there's no button to hang it off —
+   pin it under the 92px header, full width less a gutter. */
+@media(max-width:767px){
+
+.reservation-popup{
+
+  position:fixed;
+
+  top:104px;
+  left:12px;
+  right:12px;
+
+  width:auto;
+  max-width:none;
+
+  max-height:calc(100dvh - 116px);
 
 }
 
