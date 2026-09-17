@@ -21,8 +21,8 @@ import { buildAccommodationsUrl } from "@/lib/reservation";
 export default function HeroBookingBar() {
   const router = useRouter();
 
-  const { rooms } = useRooms();
-  const roomTypes = rooms.map((r) => ({ id: r.slug, name: r.name }));
+  const { rooms: roomList } = useRooms();
+  const roomTypes = roomList.map((r) => ({ id: r.slug, name: r.name }));
 
   const [roomType, setRoomType] = useState("");
   const [range, setRange] = useState<DateRange | undefined>();
