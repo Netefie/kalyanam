@@ -15,7 +15,7 @@ export default function About() {
             <div className="about-image-wrapper">
               <div className="about-image">
                 <Image
-                  src="/icon1.avif"
+                  src="/kaly_map.png"
                   alt="Kalyanam Hotel"
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
@@ -110,8 +110,7 @@ export default function About() {
 .about-image {
   position: relative;
   width: 100%;
-   border-radius: 12px;
-  height: 480px;
+  height: 680px;
   overflow: hidden;
 }
 

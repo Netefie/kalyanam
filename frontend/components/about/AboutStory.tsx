@@ -12,7 +12,7 @@ export default function AboutStory() {
 
           <div className="about-story-image">
 <Image
-  src="/aboutstory.jpg"
+  src="/time.png"
   alt="Kalyanam Hotel & Resort"
   width={520}
   height={650}
@@ -24,7 +24,7 @@ export default function AboutStory() {
 
           <div className="about-story-content">
             <span className="story-tag">
-              OUR STORY
+              OUR STOR
             </span>
 
             <h2 className="story-heading">
@@ -46,7 +46,7 @@ export default function AboutStory() {
               and celebrated.
             </p>
 
-            <p>
+            {/* <p>
               Whether it is a luxurious stay, a dream wedding, a family
               celebration, or an evening overlooking the city from our rooftop,
               every experience is thoughtfully designed with impeccable
@@ -58,7 +58,7 @@ export default function AboutStory() {
               unforgettable memories that guests cherish long after they leave.
               We don't simply host occasions—we become a part of your most
               meaningful moments.
-            </p>
+            </p> */}
 
             <Link href="/contact" className="story-btn">
               <span>DISCOVER MORE</span>
@@ -87,7 +87,7 @@ export default function AboutStory() {
 .about-story-image{
     position: relative;
     width: 100%;
-    height: 480px;   /* Change this */
+    height: 350px;   /* Change this */
     overflow: hidden;
 }
 
