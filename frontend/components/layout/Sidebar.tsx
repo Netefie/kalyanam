@@ -127,6 +127,45 @@ export default function Sidebar({
 
         <nav className="flex flex-col">
 
+          {/* The navbar's own links — hidden there below xl, so they live
+              here at those widths instead of being unreachable. */}
+
+          <Link
+            href="/"
+            onClick={onClose}
+            className="border-b border-[#DCCFC4] px-6 py-5
+            text-[17px] text-[#2B2B2B]
+            hover:text-[#A46F44]
+            hover:pl-8
+            transition-all duration-300 xl:hidden"
+          >
+            Home
+          </Link>
+
+          <Link
+            href="/experiences"
+            onClick={onClose}
+            className="border-b border-[#DCCFC4] px-6 py-5
+            text-[17px] text-[#2B2B2B]
+            hover:text-[#A46F44]
+            hover:pl-8
+            transition-all duration-300 xl:hidden"
+          >
+            Experiences
+          </Link>
+
+          <Link
+            href="/accommodations"
+            onClick={onClose}
+            className="border-b border-[#DCCFC4] px-6 py-5
+            text-[17px] text-[#2B2B2B]
+            hover:text-[#A46F44]
+            hover:pl-8
+            transition-all duration-300 xl:hidden"
+          >
+            Accommodations
+          </Link>
+
           <Link
             href="/kaara"
             onClick={onClose}

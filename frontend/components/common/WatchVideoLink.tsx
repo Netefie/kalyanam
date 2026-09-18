@@ -24,7 +24,9 @@ export default function WatchVideoLink({
         aria-label={ariaLabel}
         title="Video coming soon"
         disabled
-        style={{ cursor: "not-allowed", opacity: 0.55 }}
+        // Dimmed, but not so far that the hero control disappears into the
+        // photo behind it — the cursor and title still say it's inert.
+        style={{ cursor: "not-allowed", opacity: 0.8 }}
       >
         {children}
       </button>

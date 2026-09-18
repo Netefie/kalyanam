@@ -4,6 +4,7 @@ import HeroKaara from "@/components/kaara/HeroKaara";
 import MenuKaara from "@/components/kaara/MenuKaara";
 import AmbienceSection from "@/components/kaara/AmbienceSection";
 import BannerKaara from "@/components/kaara/BannerKarra";
+import ContactFormSection from "@/components/contact/ContactFormSection";
 
 export const metadata = pageMetadata({
   title: "Kaara Rooftop Restaurant",
@@ -20,7 +21,14 @@ export default function Home() {
       <MenuKaara />
       <AmbienceSection />
       <BannerKaara />
-        
+
+      {/* Closing enquiry form, directly above the footer. */}
+      <ContactFormSection
+        eyebrow="RESERVE A TABLE"
+        title="Dining With Us at Kaara?"
+        description="Table reservations, private dinners and celebration menus — tell us what you have in mind and our team will get back to you."
+        subject="Kaara enquiry"
+      />
     </>
   );
 }

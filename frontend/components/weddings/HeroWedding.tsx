@@ -81,7 +81,7 @@ export default function HeroWedding() {
             ariaLabel="Watch the wedding experience"
           >
             <Play
-              size={22}
+              size={26}
               fill="currentColor"
             />
           </WatchVideoLink>
@@ -296,7 +296,11 @@ background: linear-gradient( 90deg, rgba(15,15,15,.98) 0%, rgba(15,15,15,.95) 20
 
   right:6%;
 
-  bottom:60px;
+  /* Vertically centred in the hero rather than pinned near its floor.
+     Below 992px it goes back to the bottom, centred horizontally. */
+  top:50%;
+
+  transform:translateY(-50%);
 
   z-index:8;
 
@@ -334,7 +338,9 @@ background: linear-gradient( 90deg, rgba(15,15,15,.98) 0%, rgba(15,15,15,.95) 20
 
   transition:.35s;
 
-  box-shadow:0 12px 30px rgba(0,0,0,.18);
+  /* Halo + drop shadow so the control reads against a busy photo instead of
+     dissolving into it. */
+  box-shadow:0 0 0 10px rgba(255,255,255,.22), 0 16px 38px rgba(0,0,0,.3);
 
 }
 
@@ -345,6 +351,8 @@ background: linear-gradient( 90deg, rgba(15,15,15,.98) 0%, rgba(15,15,15,.95) 20
   background:#b78943;
 
   color:white;
+
+  box-shadow:0 0 0 14px rgba(255,255,255,.28), 0 20px 46px rgba(0,0,0,.35);
 
 }
 
@@ -456,6 +464,8 @@ left:50%;
 right:auto;
 
 transform:translateX(-50%);
+
+top:auto;
 
 bottom:60px;
 
