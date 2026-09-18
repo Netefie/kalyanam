@@ -397,9 +397,22 @@ export default function MomentsSection() {
     display:none;
   }
 
-  .left-large,
-  .right-large{
+  /* One card survives the single-column layout. Hiding all four left the
+     prev/next arrows below driving nothing visible — .right-large renders
+     moments[(current + 1) % 4], so they page through the whole set again. */
+  .left-large{
     display:none;
+  }
+
+  .right-large{
+    /* Ahead of .center-content in the single column, so the photo leads and
+       the copy and its arrows follow. Inset to the same gutter the rest of
+       the page uses, so the rounded corners read as a card rather than
+       running off both edges. */
+    order:-1;
+    width:92%;
+    margin-inline:auto;
+    height:360px;
   }
 
   .center-content{
@@ -424,6 +437,10 @@ export default function MomentsSection() {
 
   .moments-section{
     padding:60px 0;
+  }
+
+  .right-large{
+    height:300px;
   }
 
   .center-content h2{

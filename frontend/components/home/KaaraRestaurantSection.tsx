@@ -444,8 +444,13 @@ export default function KaaraRestaurantSection() {
 
   .leftSide {
     height: 550px;
+    /* width:100% is load-bearing. Auto inline margins make a grid item
+       shrink-to-fit, and this box's only child is the position:absolute <img>
+       of a "fill" next/image — so its content width is 0 and the photo
+       disappeared entirely below 1024px. */
+    width: 100%;
     max-width: 700px;
-    margin: auto;
+    margin-inline: auto;
   }
 
   .rightSide {
@@ -454,7 +459,9 @@ export default function KaaraRestaurantSection() {
 
   .palaceImage {
     width: 140px;
-    height: auto;
+    /* Not auto: the only child is a "fill" image, which is absolutely
+       positioned and so contributes no height to size this box by. */
+    height: 140px;
     right: 10px;
     top: -10px;
   }

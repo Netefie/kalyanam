@@ -267,6 +267,10 @@ export default function AmbienceSection() {
 
   width: 100%;
 
+  /* No height here on purpose: the two rows are 1fr each, stretched to the
+     large image beside them. See the mobile block, where that stops being
+     true. */
+
   border-radius: 8px;
 
   overflow: hidden;
@@ -373,6 +377,14 @@ export default function AmbienceSection() {
   .small-images {
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: auto;
+  }
+
+  /* The rows above are no longer stretched by the large image, and these
+     boxes hold nothing but a "fill" image, which is absolutely positioned and
+     so contributes no height — both photos used to collapse to 0px here.
+     Same ratio as .large-image. */
+  .small-image {
+    aspect-ratio: 1.35;
   }
 
   .play-btn {

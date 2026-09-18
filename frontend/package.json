@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "check:assets": "node scripts/check-assets.mjs",
+    "check:mobile-images": "node scripts/check-mobile-images.mjs",
     "optimize:images": "node scripts/optimize-images.mjs",
     "prebuild": "node scripts/check-assets.mjs"
   },
