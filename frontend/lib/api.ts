@@ -133,6 +133,11 @@ export interface Room {
   totalRooms: number;
   featured: boolean;
   active: boolean;
+  // Mongo timestamps (models/RoomType.js sets `timestamps: true`). Optional
+  // because nothing in the booking flow needs them — app/sitemap.ts does, as
+  // the only honest `lastmod` the site has.
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // One room type's live availability over a date range — the shape both
@@ -208,6 +213,10 @@ export interface SiteSettings {
   country: string;
   mapsUrl: string;
   mapsEmbedUrl: string;
+  // The property's map pin, for the JSON-LD's GeoCoordinates. `null` while
+  // unset — see backend/src/models/Settings.js on why 0 is not a safe default.
+  latitude: number | null;
+  longitude: number | null;
   checkInTime: string;
   checkOutTime: string;
   taxPercent: number;

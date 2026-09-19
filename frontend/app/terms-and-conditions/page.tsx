@@ -1,14 +1,22 @@
+import type { Metadata } from "next";
+
 import { pageMetadata } from "@/lib/seo";
 import { formatTime, mailHref, telHref } from "@/lib/contact";
 import { getSiteSettings } from "@/lib/settings";
 import { WEBSITE } from "@/lib/site";
 
-export const metadata = pageMetadata({
-  title: "Terms & Conditions",
-  description:
-    "The terms that govern bookings, stays and use of the Kalyanam Hotel & Resort website.",
-  path: "/terms-and-conditions",
-});
+// Settings-aware so a renamed hotel rebrands this page's share card too.
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
+
+  return pageMetadata({
+    title: "Terms & Conditions",
+    description:
+      "The terms that govern bookings, stays and use of the Kalyanam Hotel & Resort website.",
+    path: "/terms-and-conditions",
+    settings,
+  });
+}
 
 export default async function TermsAndConditionsPage() {
   const settings = await getSiteSettings();

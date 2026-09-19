@@ -21,6 +21,8 @@ const EMPTY: FormState = {
   country: "IN",
   mapsUrl: "",
   mapsEmbedUrl: "",
+  latitude: null,
+  longitude: null,
   checkInTime: "14:00",
   checkOutTime: "11:00",
   taxPercent: 18,
@@ -193,6 +195,47 @@ export default function SettingsPage() {
               />
             </div>
           </div>
+
+          {/* These two are the property's pin in the search-result knowledge
+              panel and on Google Maps. Left blank they are simply omitted from
+              the structured data — which is deliberate: a wrong pin puts the
+              hotel somewhere it isn't, and that is harder to undo than a
+              missing one. Right-click the property in Google Maps and copy the
+              two numbers it shows. */}
+          <div className="row">
+            <div className="field">
+              <label>Latitude</label>
+              <input
+                type="number"
+                step="any"
+                min={-90}
+                max={90}
+                value={form.latitude ?? ""}
+                onChange={(e) =>
+                  set("latitude", e.target.value === "" ? null : Number(e.target.value))
+                }
+                placeholder="27.6094"
+              />
+            </div>
+            <div className="field">
+              <label>Longitude</label>
+              <input
+                type="number"
+                step="any"
+                min={-180}
+                max={180}
+                value={form.longitude ?? ""}
+                onChange={(e) =>
+                  set("longitude", e.target.value === "" ? null : Number(e.target.value))
+                }
+                placeholder="75.1399"
+              />
+            </div>
+          </div>
+          <p className="hint">
+            Used for the map pin in search results. Leave blank rather than
+            guessing — an unset pin is omitted, a wrong one is published.
+          </p>
         </section>
 
         <section className="card">

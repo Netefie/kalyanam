@@ -1,118 +1,79 @@
-"use client";
+import type { Metadata } from "next";
 
-import { useEffect, useRef } from "react";
-import {
-  BookingProvider,
-  useBookingContext,
-} from "@/components/accommodations/context/BookingContext";
-import { readReservationParams } from "@/lib/reservation";
-
-import HeroAcc from "@/components/accommodations/HeroAcc";
-import BookingSteps from "@/components/accommodations/BookingSteps";
-import BookingSearchBar from "@/components/accommodations/BookingSearchBar";
-import AvailableRooms from "@/components/accommodations/AvailableRooms";
-import PersonalDetails from "@/components/accommodations/PersonalDetails";
-import PaymentConfirmation from "@/components/accommodations/PaymentConfirmation";
-import BookingSuccess from "@/components/accommodations/BookingSuccess";
+import JsonLd from "@/components/common/JsonLd";
+import BookingFlow from "@/components/accommodations/BookingFlow";
 import ContactFormSection from "@/components/contact/ContactFormSection";
+import RoomCatalogue from "@/components/rooms/RoomCatalogue";
+import { formatINR } from "@/lib/pricing";
+import { getRooms } from "@/lib/rooms";
+import {
+  breadcrumbSchema,
+  jsonLdGraph,
+  pageMetadata,
+  roomFromRate,
+  roomListSchema,
+} from "@/lib/seo";
+import { getSiteSettings } from "@/lib/settings";
 
-function BookingContent() {
-  const { booking, setBooking } = useBookingContext();
+// A server component that renders the client booking flow rather than being
+// one. It used to be `"use client"` outright, with a sibling layout.tsx holding
+// the metadata — which meant two things a search engine cared about were
+// impossible: the page could not describe its own rooms (they arrived after
+// hydration), and the layout's <head> could not vary with the catalogue.
 
-  // Keep the step section in view when moving between steps, so changing step
-  // never dumps the user at the hero or leaves them scrolled past the form.
-  const prevStep = useRef(booking.currentStep);
-  useEffect(() => {
-    if (prevStep.current !== booking.currentStep) {
-      prevStep.current = booking.currentStep;
-      document
-        .getElementById("booking-steps")
-        ?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  }, [booking.currentStep]);
+export async function generateMetadata(): Promise<Metadata> {
+  const [settings, rooms] = await Promise.all([getSiteSettings(), getRooms()]);
 
-  // Steps 2 and 3 both require a selected room AND dates. PersonalDetails /
-  // BookingSummary and PaymentConfirmation render nothing without a room, and
-  // without dates the quote can't be fetched so the entire price breakdown
-  // silently disappears — neither step offers a date picker or a way back. A
-  // resumed session (sessionStorage restored on a fresh load, or the browser's
-  // back/forward buttons) can land on either step in that state, so bounce
-  // back to room selection.
-  useEffect(() => {
-    if (booking.currentStep !== 2 && booking.currentStep !== 3) return;
+  // The description carries the real "from" rate and the real room count, so
+  // the search snippet answers "how much?" before the click rather than after
+  // it. Both come from the admin-managed catalogue, so neither can go stale.
+  const rates = rooms.map(roomFromRate).filter((n) => n > 0);
+  const from = rates.length ? Math.min(...rates) : 0;
+  const city = settings.city || "Sikar";
 
-    if (!booking.selectedRoom || !booking.checkIn || !booking.checkOut) {
-      setBooking((prev) => ({ ...prev, currentStep: 1 }));
-    }
-  }, [
-    booking.currentStep,
-    booking.selectedRoom,
-    booking.checkIn,
-    booking.checkOut,
-    setBooking,
-  ]);
+  const names = rooms.slice(0, 3).map((r) => r.name);
+  const roomList = names.length
+    ? `${names.join(", ")}${rooms.length > names.length ? " and more" : ""}`
+    : "our rooms";
 
-  // Prefill "PLAN YOUR STAY" from ?roomType&checkIn&checkOut&adults&children&rooms
-  // (set by the hero bar / navbar reservation widget) and auto-run the search.
-  useEffect(() => {
-    const parsed = readReservationParams(window.location.search);
-    if (!parsed) return;
+  return pageMetadata({
+    title: "Rooms & Accommodation",
+    description:
+      `Book ${roomList} at ${settings.hotelName || "Kalyanam Hotel & Resort"}, ${city}` +
+      `${from > 0 ? ` from ${formatINR(from)} per night` : ""}. ` +
+      "Check live availability and reserve direct — air-conditioned rooms, free Wi-Fi and 24x7 room service.",
+    path: "/accommodations",
+    settings,
+  });
+}
 
-    setBooking((prev) => ({
-      ...prev,
-      roomType: parsed.roomType || prev.roomType,
-      checkIn: parsed.checkIn ?? prev.checkIn,
-      checkOut: parsed.checkOut ?? prev.checkOut,
-      adults: parsed.adults ?? prev.adults,
-      children: parsed.children ?? prev.children,
-      rooms: parsed.rooms ?? prev.rooms,
-      currentStep: 1,
-      // Auto-run the search only when dates are present.
-      searched: parsed.hasDates ? true : prev.searched,
-    }));
-
-    if (parsed.hasDates) {
-      setTimeout(() => {
-        document
-          .getElementById("available-rooms")
-          ?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 300);
-    }
-  }, [setBooking]);
+export default async function AccommodationsPage() {
+  const rooms = await getRooms();
 
   return (
     <>
-      {/* Hero */}
-      <HeroAcc />
+      <JsonLd
+        data={jsonLdGraph(
+          breadcrumbSchema([
+            { name: "Rooms & Accommodation", path: "/accommodations" },
+          ]),
+          // Declares the room links below as one set of alternatives rather
+          // than incidental navigation.
+          roomListSchema(rooms, "/accommodations")
+        )}
+      />
 
-      {/* Booking Progress (scroll anchor for step changes; offset for navbar) */}
-      <div id="booking-steps" className="scroll-mt-28">
-        <BookingSteps currentStep={booking.currentStep} />
-      </div>
+      <BookingFlow />
 
-      {/* STEP 1 */}
-      {booking.currentStep === 1 && (
-        <>
-          <div className="mx-auto max-w-6xl px-6">
-            <BookingSearchBar />
-          </div>
-
-          <AvailableRooms />
-        </>
-      )}
-
-      {/* STEP 2 */}
-      {booking.currentStep === 2 && (
-        <PersonalDetails />
-      )}
-
-      {/* STEP 3 — review + confirm (creates the booking) */}
-      {booking.currentStep === 3 && (
-        <PaymentConfirmation />
-      )}
-
-      {/* STEP 4 */}
-      {booking.currentStep === 4 && <BookingSuccess />}
+      {/* Server-rendered, and therefore the only part of this route a crawler
+          can actually read. Also the internal linking that makes the per-room
+          landing pages reachable without a date search. */}
+      <RoomCatalogue
+        eyebrow="EVERY ROOM WE OFFER"
+        title="Browse Our Room Types"
+        description="Full details, photographs and rates for each room — or search your dates above to see what's available and book direct."
+        rooms={rooms}
+      />
 
       {/* Closing enquiry form, directly above the footer, on every step. */}
       <ContactFormSection
@@ -122,13 +83,5 @@ function BookingContent() {
         subject="Accommodation enquiry"
       />
     </>
-  );
-}
-
-export default function Home() {
-  return (
-    <BookingProvider>
-      <BookingContent />
-    </BookingProvider>
   );
 }

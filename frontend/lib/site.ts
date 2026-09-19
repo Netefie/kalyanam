@@ -83,9 +83,12 @@ export const SITE_DESCRIPTION =
 export const PHONE_IS_PLACEHOLDER = true;
 
 // Postal address, split the way schema.org PostalAddress expects.
-// TODO: fill POSTAL_CODE and GEO once the exact street address is confirmed —
-// both are omitted from the JSON-LD while empty rather than guessed, because a
-// wrong pin drops the property in the wrong place on Google Maps.
+//
+// Both of these are now admin-editable — POSTAL_CODE as `postalCode` and GEO
+// as `latitude`/`longitude` in /admin/settings — so what is here is only the
+// fallback for a build where the settings API was unreachable. They stay empty
+// and are omitted from the JSON-LD rather than guessed at, because a wrong pin
+// drops the property in the wrong place on Google Maps.
 export const POSTAL_CODE = "";
 export const GEO: { latitude: number; longitude: number } | null = null;
 
@@ -110,8 +113,10 @@ export const AMENITIES = [
   "Air conditioning",
 ];
 
-// Room types the booking flow actually sells.
-export const ROOM_TYPES = ["Deluxe Room", "Super Deluxe Room"];
+// (A hardcoded ROOM_TYPES list used to sit here and feed the JSON-LD's
+// `makesOffer`. It was removed: the room catalogue is admin-managed, so any
+// copy of it kept in code is wrong the moment a room is added or renamed, and
+// it could carry no prices. lib/rooms.ts reads the real thing instead.)
 
 // TODO: paste the token from Google Search Console once the property is
 // verified. Empty means no verification tag is rendered.

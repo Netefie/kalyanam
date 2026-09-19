@@ -1,14 +1,22 @@
+import type { Metadata } from "next";
+
 import { pageMetadata } from "@/lib/seo";
 import { mailHref, telHref } from "@/lib/contact";
 import { getSiteSettings } from "@/lib/settings";
 import { WEBSITE } from "@/lib/site";
 
-export const metadata = pageMetadata({
-  title: "Privacy Policy",
-  description:
-    "How Kalyanam Hotel & Resort collects, uses and protects the personal information you share when booking a stay or making an enquiry.",
-  path: "/privacy-policy",
-});
+// Settings-aware so a renamed hotel rebrands this page's share card too.
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
+
+  return pageMetadata({
+    title: "Privacy Policy",
+    description:
+      "How Kalyanam Hotel & Resort collects, uses and protects the personal information you share when booking a stay or making an enquiry.",
+    path: "/privacy-policy",
+    settings,
+  });
+}
 
 export default async function PrivacyPolicyPage() {
   const settings = await getSiteSettings();

@@ -1,13 +1,14 @@
-"use client";
-
 import Link from "next/link";
-import useRooms from "@/hooks/useRooms";
-import { buildAccommodationsUrl } from "@/lib/reservation";
 
-export default function RoomsSection() {
-  // Active rooms from the admin-managed catalogue, featured first.
-  const { rooms, loading, error } = useRooms();
+import type { Room } from "@/lib/api";
+import { formatINR } from "@/lib/pricing";
+import { roomFromRate, roomPath } from "@/lib/seo";
 
+// Server component. It used to fetch through hooks/useRooms.ts, which meant
+// the room names and descriptions — the homepage's most valuable text — only
+// existed after hydration and never reached a crawler. The rooms are handed in
+// by app/page.tsx, which reads them through the cached server reader instead.
+export default function RoomsSection({ rooms }: { rooms: Room[] }) {
   return (
     <>
     <section className="rooms-section">
@@ -17,53 +18,44 @@ export default function RoomsSection() {
 
         <div className="rooms-left">
 
-          {/* Two placeholder cards hold the layout while the list loads, so
-              the section doesn't jump when the real cards arrive. */}
-          {loading &&
-            [0, 1].map((i) => (
-              <div key={i} className="room-card room-card-skeleton" aria-hidden="true">
+          {rooms.map((room) => {
+            const image = room.image || room.images[0];
+            const rate = roomFromRate(room);
+
+            return (
+              <div key={room.slug} className="room-card">
+
                 <div className="room-image">
-                  <div className="room-image-placeholder" />
+                  {image ? (
+                    <img src={image} alt={room.name} loading="lazy" decoding="async" />
+                  ) : (
+                    <div className="room-image-placeholder" />
+                  )}
                 </div>
-                <div className="room-content" />
-                <div className="room-btn" />
+
+                <div className="room-content">
+                  {/* The room name is the link, so the indexed anchor text is
+                      "Deluxe Room" rather than "View Details". */}
+                  <h3>
+                    <Link href={roomPath(room.slug)}>{room.name}</Link>
+                  </h3>
+                  {room.description && <p>{room.description}</p>}
+                  {rate > 0 && (
+                    <p className="room-rate">From {formatINR(rate)} / night</p>
+                  )}
+                </div>
+
+                <Link href={roomPath(room.slug)} className="room-btn">
+                  View Details →
+                </Link>
+
               </div>
-            ))}
-
-          {!loading &&
-            rooms.map((room) => {
-              const image = room.image || room.images[0];
-
-              return (
-                <div key={room.slug} className="room-card">
-
-                  <div className="room-image">
-                    {image ? (
-                      <img src={image} alt={room.name} />
-                    ) : (
-                      <div className="room-image-placeholder" />
-                    )}
-                  </div>
-
-                  <div className="room-content">
-                    <h3>{room.name}</h3>
-                    {room.description && <p>{room.description}</p>}
-                  </div>
-
-                  <Link
-                    href={buildAccommodationsUrl({ roomType: room.slug })}
-                    className="room-btn"
-                  >
-                    View Details →
-                  </Link>
-
-                </div>
-              );
-            })}
+            );
+          })}
 
           {/* API down or no active rooms — still point at the booking page
               rather than leave an empty column. */}
-          {!loading && (error || rooms.length === 0) && (
+          {rooms.length === 0 && (
             <div className="room-card room-card-fallback">
               <div className="room-content">
                 <h3>Our Rooms</h3>
@@ -175,6 +167,22 @@ export default function RoomsSection() {
   color: #4f2f16;
 }
 
+.room-content h3 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.room-content h3 a:hover {
+  color: #a95038;
+}
+
+.room-rate {
+  margin-top: 6px;
+  color: #8b5a30;
+  font-size: 13px;
+  font-family: "Poppins", sans-serif;
+}
+
   .room-content p {
     margin-top: 0px;
     color: #8a7157;
@@ -197,15 +205,6 @@ export default function RoomsSection() {
   background: #efe3d3;
 }
 
-.room-card-skeleton .room-image-placeholder,
-.room-card-skeleton .room-btn {
-  animation: room-skeleton-pulse 1.4s ease-in-out infinite;
-}
-
-.room-card-skeleton .room-btn {
-  background: #e4d2bb;
-}
-
 .room-card-fallback {
   grid-column: 1 / -1;
   min-height: 0;
@@ -217,11 +216,6 @@ export default function RoomsSection() {
 
 .room-card-fallback .room-content p {
   max-width: none;
-}
-
-@keyframes room-skeleton-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: .55; }
 }
 
 .room-btn {

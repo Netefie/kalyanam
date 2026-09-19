@@ -14,7 +14,8 @@ import {
   CalendarDays,
 } from "lucide-react";
 import RoomFormModal from "../components/RoomFormModal";
-import { api, type Room } from "@/lib/api";
+import { revalidateRoomCatalogue } from "./actions";
+import { api, getToken, type Room } from "@/lib/api";
 
 export default function RoomsPage() {
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -40,6 +41,17 @@ export default function RoomsPage() {
     load();
   }, [load]);
 
+  // After any write: reload this table, and purge the public site's cached
+  // catalogue so the change reaches the homepage cards, the room landing
+  // pages, the JSON-LD offers and the sitemap right away rather than in up to
+  // fifteen minutes. Fire-and-forget — the save has already succeeded, and the
+  // cache expires on its own regardless.
+  const afterWrite = useCallback(async () => {
+    await load();
+    const token = getToken();
+    if (token) void revalidateRoomCatalogue(token).catch(() => {});
+  }, [load]);
+
   const openCreate = () => {
     setEditing(null);
     setModalOpen(true);
@@ -54,7 +66,7 @@ export default function RoomsPage() {
     if (!window.confirm(`Delete "${room.name}"?`)) return;
     try {
       await api.rooms.remove(room._id);
-      await load();
+      await afterWrite();
     } catch {
       alert("Could not delete the room.");
     }
@@ -161,7 +173,7 @@ export default function RoomsPage() {
           onClose={() => setModalOpen(false)}
           onSaved={() => {
             setModalOpen(false);
-            load();
+            void afterWrite();
           }}
         />
       )}

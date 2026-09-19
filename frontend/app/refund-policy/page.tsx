@@ -1,14 +1,22 @@
+import type { Metadata } from "next";
+
 import { pageMetadata } from "@/lib/seo";
 import { mailHref, telHref } from "@/lib/contact";
 import { getSiteSettings } from "@/lib/settings";
 import { WEBSITE } from "@/lib/site";
 
-export const metadata = pageMetadata({
-  title: "Refund Policy",
-  description:
-    "How refunds are processed for bookings at Kalyanam Hotel & Resort, including timelines and the cases that qualify.",
-  path: "/refund-policy",
-});
+// Settings-aware so a renamed hotel rebrands this page's share card too.
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
+
+  return pageMetadata({
+    title: "Refund Policy",
+    description:
+      "How refunds are processed for bookings at Kalyanam Hotel & Resort, including timelines and the cases that qualify.",
+    path: "/refund-policy",
+    settings,
+  });
+}
 
 export default async function RefundPolicyPage() {
   const settings = await getSiteSettings();

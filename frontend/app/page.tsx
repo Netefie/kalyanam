@@ -1,5 +1,6 @@
 import JsonLd from "@/components/common/JsonLd";
-import { faqSchema, jsonLdGraph } from "@/lib/seo";
+import { faqSchema, jsonLdGraph, roomListSchema } from "@/lib/seo";
+import { getRooms } from "@/lib/rooms";
 import HeroSection from "@/components/home/HeroSection";
 import About from "@/components/home/About";
 import Experience from "@/components/home/Experience";
@@ -13,12 +14,19 @@ import KaaraRestaurantSection from "@/components/home/KaaraRestaurantSection";
 import ContactFormSection from "@/components/contact/ContactFormSection";
 
 
-export default function Home() {
+export default async function Home() {
+  // Read on the server so the room cards below are in the served HTML. The
+  // section used to fetch them in the browser, which left the homepage's
+  // room names, descriptions and rates invisible to search.
+  const rooms = await getRooms();
+
   return (
     <main>
       {/* The homepage FAQ, restated for search engines — Google can surface
-          these as expandable Q&A directly in the result. */}
-      <JsonLd data={jsonLdGraph(faqSchema())} />
+          these as expandable Q&A directly in the result. Alongside it, the
+          room catalogue as an ItemList, so the cards below read as one set of
+          alternatives rather than loose links. */}
+      <JsonLd data={jsonLdGraph(faqSchema(), roomListSchema(rooms, "/"))} />
 
       {/* Hero Section */}
       <HeroSection />
@@ -27,7 +35,7 @@ export default function Home() {
 
       {/* Experience Section */}
       <Experience />
-      <RoomsSelection />
+      <RoomsSelection rooms={rooms} />
       {/* Celebration Section */}
       <Celebration />
       

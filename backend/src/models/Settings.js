@@ -28,6 +28,14 @@ const settingsSchema = new mongoose.Schema(
     mapsUrl: { type: String, default: "" },
     mapsEmbedUrl: { type: String, default: "" },
 
+    // The property's pin, as schema.org GeoCoordinates. Null rather than 0 by
+    // default: 0,0 is a real place in the Gulf of Guinea, and a hotel in Sikar
+    // published there is worse than one with no coordinates at all — so the
+    // frontend omits `geo` from the JSON-LD entirely while these are unset
+    // (see frontend/lib/seo.ts#hotelSchema).
+    latitude: { type: Number, default: null, min: -90, max: 90 },
+    longitude: { type: Number, default: null, min: -180, max: 180 },
+
     checkInTime: { type: String, default: "14:00" },
     checkOutTime: { type: String, default: "11:00" },
 

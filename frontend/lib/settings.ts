@@ -2,6 +2,7 @@ import type { SiteSettings } from "./api";
 import {
   ADDRESS,
   EMAIL,
+  GEO,
   MAPS_EMBED_URL,
   MAPS_URL,
   PHONE,
@@ -49,6 +50,8 @@ export const SETTINGS_FALLBACK: SiteSettings = {
   country: "IN",
   mapsUrl: MAPS_URL,
   mapsEmbedUrl: MAPS_EMBED_URL,
+  latitude: GEO?.latitude ?? null,
+  longitude: GEO?.longitude ?? null,
   checkInTime: "14:00",
   checkOutTime: "11:00",
   taxPercent: 18,
@@ -95,6 +98,10 @@ export async function getSiteSettings(): Promise<SiteSettings> {
       country: pick("country"),
       mapsUrl: pick("mapsUrl"),
       mapsEmbedUrl: pick("mapsEmbedUrl"),
+      // `pick` coalesces on nullish, and these are legitimately null — so a
+      // stored null must not fall through to the constant. Read directly.
+      latitude: typeof data.latitude === "number" ? data.latitude : null,
+      longitude: typeof data.longitude === "number" ? data.longitude : null,
       checkInTime: pick("checkInTime"),
       checkOutTime: pick("checkOutTime"),
       taxPercent: pick("taxPercent"),

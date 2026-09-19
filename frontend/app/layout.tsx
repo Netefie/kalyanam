@@ -3,7 +3,13 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import LayoutWrapper from "@/components/LayoutWrapper";
 import JsonLd from "@/components/common/JsonLd";
-import { hotelSchema, jsonLdGraph, websiteSchema } from "@/lib/seo";
+import {
+  hotelSchema,
+  jsonLdGraph,
+  restaurantSchema,
+  websiteSchema,
+} from "@/lib/seo";
+import { getRooms } from "@/lib/rooms";
 import { getSiteSettings } from "@/lib/settings";
 import {
   GOOGLE_SITE_VERIFICATION,
@@ -69,7 +75,10 @@ export async function generateMetadata(): Promise<Metadata> {
 
   const name = settings.hotelName || SITE_NAME;
   const description = settings.tagline || SITE_DESCRIPTION;
-  const headline = `${name} — Luxury Hotel, Wedding & Banquet Venue in Sikar`;
+  // The city is the single most important word in this title for local search,
+  // and it is admin-editable — so it is read off settings rather than baked in.
+  const city = settings.city || "Sikar";
+  const headline = `${name} — Luxury Hotel, Wedding & Banquet Venue in ${city}`;
 
   return {
   // Lets every other metadata field below use relative URLs; without it,
@@ -89,18 +98,20 @@ export async function generateMetadata(): Promise<Metadata> {
   alternates: { canonical: "/" },
 
   // Not a ranking signal any more, but still read by some regional engines and
-  // by internal site search. Kept to the terms the pages genuinely serve.
+  // by internal site search. Kept to the terms the pages genuinely serve, and
+  // built from the admin's own city/state so renaming the location doesn't
+  // leave a stale one behind here.
   keywords: [
-    "Kalyanam Hotel & Resort",
-    "hotel in Sikar",
-    "luxury hotel Sikar Rajasthan",
-    "wedding venue Sikar",
-    "banquet hall Sikar",
-    "destination wedding Rajasthan",
-    "rooftop restaurant Sikar",
+    name,
+    `hotel in ${city}`,
+    `luxury hotel ${city} ${settings.state || "Rajasthan"}`,
+    `wedding venue ${city}`,
+    `banquet hall ${city}`,
+    `destination wedding ${settings.state || "Rajasthan"}`,
+    `rooftop restaurant ${city}`,
     "Kaara rooftop restaurant",
     "resort near Khatu Shyam",
-    "conference and event venue Sikar",
+    `conference and event venue ${city}`,
   ],
 
   openGraph: {
@@ -158,7 +169,7 @@ export default async function RootLayout({
   // Fetched once here and handed down, so no client component has to fetch it
   // and the values are already in the server-rendered HTML (which is what the
   // JSON-LD below and the crawlers reading it need).
-  const settings = await getSiteSettings();
+  const [settings, rooms] = await Promise.all([getSiteSettings(), getRooms()]);
 
   return (
     <html
@@ -177,7 +188,17 @@ export default async function RootLayout({
         {/* Site-wide structured data. Emitted once here so every route carries
             the hotel identity; pages add their own page-level nodes on top. */}
         <JsonLd
-          data={jsonLdGraph(hotelSchema(settings), websiteSchema(settings))}
+          data={jsonLdGraph(
+            // `rooms` is what turns this from a name-and-address stub into a
+            // node that states what the property sells and what it costs:
+            // makesOffer, containsPlace, priceRange and numberOfRooms are all
+            // derived from the live catalogue.
+            hotelSchema(settings, rooms),
+            websiteSchema(settings),
+            // Kaara as its own node, referenced by the hotel's
+            // subOrganization rather than restated inside it.
+            restaurantSchema(settings)
+          )}
         />
 
         <LayoutWrapper settings={settings}>
