@@ -11,10 +11,18 @@ export const PHONE = "+91 98765 43210";
 // tel: needs digits and an optional leading +, nothing else.
 export const PHONE_HREF = `tel:${PHONE.replace(/[^\d+]/g, "")}`;
 
-export const EMAIL = "info@kalyanamhotel.com";
+export const EMAIL = "stay@kalyanamsikar.com";
 export const EMAIL_HREF = `mailto:${EMAIL}`;
 
-export const WEBSITE = "www.kalyanamhotel.com";
+// The domain the site is actually served on. This is not cosmetic: SITE_URL
+// below is built from it, and every canonical, og:url, sitemap entry and
+// JSON-LD @id is built from SITE_URL in turn.
+//
+// It read www.kalyanamhotel.com until 2026-09-19 — a domain that does not
+// resolve. The live site is www.kalyanamsikar.com, so every page was telling
+// Google its real version lived on a host no crawler could reach, and the
+// whole sitemap pointed there too.
+export const WEBSITE = "www.kalyanamsikar.com";
 
 export const ADDRESS = {
   line1: "Jaipur Road",

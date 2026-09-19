@@ -158,9 +158,9 @@ export default function KaaraRestaurantSection() {
 <div className="bottomBanner">
     <Image
         src="/bottom-banner.png"
-        alt="Bottom Banner"
+        alt="Kaara by Kalyanam — where every meal comes with a view, and every evening becomes a memory"
         fill
-        sizes="(max-width: 768px) 100vw, 50vw"
+        sizes="(max-width: 1320px) 92vw, 1320px"
         className="bottomBannerImage"
     />
 </div>
@@ -371,14 +371,31 @@ export default function KaaraRestaurantSection() {
   width: min(1320px, 92%);
   margin: 20px auto 0;
   position: relative;
-  height: 145px;
+
+  /* The image's own ratio (1091x129), not a fixed height. It is one wide
+     composition — wordmark, pull quote and palace motif side by side — so
+     there is no part of it that can be cropped without losing some of it.
+     Fixed heights (145px here, up to 200px on phones) meant object-fit:cover
+     had to scale it to fill a box far squarer than the artwork: on a 340px
+     phone it was blown up ~5x with most of the width cut off, which is what
+     read as "zoomed in". Matching the ratio leaves nothing to crop at any
+     width. */
+  aspect-ratio: 1091 / 129;
+
   border-radius: 18px;
   overflow: hidden;
   box-shadow: 0 18px 45px rgba(0,0,0,.18);
+
+  /* The artwork's own backdrop, so the rounded corners and any sub-pixel
+     rounding gap read as part of the banner rather than as the page showing
+     through. */
+  background: #3c2a1c;
 }
 
 .bottomBannerImage {
-  object-fit: cover;
+  /* contain, not cover: with the ratio matched the two are equivalent, but
+     contain guarantees a rounding error can never re-introduce a crop. */
+  object-fit: contain;
 }
 
 /* ===========================================================
@@ -489,9 +506,6 @@ export default function KaaraRestaurantSection() {
     margin: auto;
   }
 
-  .bottomBanner {
-    height: 170px;
-  }
 
   .bannerContent {
     flex-direction: column;
@@ -588,10 +602,6 @@ export default function KaaraRestaurantSection() {
     padding: 16px;
   }
 
-  .bottomBanner {
-    height: 200px;
-    border-radius: 16px;
-  }
 
   .bannerOverlay {
     padding: 20px;
@@ -669,9 +679,6 @@ export default function KaaraRestaurantSection() {
     line-height: 1.7;
   }
 
-  .bottomBanner {
-    height: 180px;
-  }
 
   .bannerContent h2 {
     font-size: 38px;
